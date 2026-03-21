@@ -1,18 +1,18 @@
 <template>
-  <div class="fixed inset-0 z-[100] h-screen w-full bg-neutral-950 text-white flex flex-col overflow-hidden font-sans">
+  <div class="min-h-screen w-full bg-neutral-950 text-white flex flex-col overflow-y-auto font-sans pb-10">
     
-    <div v-if="obra" class="flex-1 flex flex-col h-full max-w-md mx-auto w-full relative">
+    <div v-if="obra" class="flex-1 flex flex-col max-w-md mx-auto w-full relative">
       
       <router-link 
         to="/exposiciones" 
-        class="absolute top-6 left-6 z-[110] bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 text-white hover:text-yellow-500 transition-colors"
+        class="absolute top-6 left-6 z-[110] bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 text-white"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </router-link>
 
-      <div class="h-[45vh] w-full relative bg-black shadow-2xl">
+      <div class="h-[40vh] w-full relative bg-black shadow-2xl">
         <video 
           :src="obra.video_url" 
           autoplay 
@@ -24,42 +24,42 @@
         <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-neutral-950 to-transparent"></div>
       </div>
 
-      <div class="flex-1 flex flex-col justify-between p-6 bg-neutral-950">
+      <div class="flex flex-col p-6 space-y-6 bg-neutral-950">
         
-        <div class="text-center space-y-1">
+        <div class="text-center space-y-2">
           <h1 class="text-3xl font-serif text-yellow-500 leading-tight">{{ obra.titulo }}</h1>
           <p class="text-sm text-neutral-400 italic">Por {{ obra.autor }}</p>
         </div>
 
-        <div class="px-2 overflow-hidden">
-          <p class="text-neutral-300 text-sm italic leading-relaxed text-center line-clamp-3">
+        <div class="px-2">
+          <p class="text-neutral-300 text-sm italic leading-relaxed text-center">
             {{ obra.tecnica }} realizada con maestría por el autor.
           </p>
         </div>
 
-        <div class="flex justify-around items-center bg-white/5 py-3 rounded-xl border border-white/5">
-          <div class="text-center">
-            <span class="text-neutral-500 text-[8px] uppercase tracking-tighter block mb-1">Técnica</span>
-            <p class="text-neutral-200 text-[11px] font-medium leading-none">{{ obra.tecnica }}</p>
+        <div class="grid grid-cols-2 gap-4 bg-white/5 py-4 rounded-xl border border-white/5">
+          <div class="text-center border-r border-white/10">
+            <span class="text-neutral-500 text-[10px] uppercase tracking-widest block mb-1">Técnica</span>
+            <p class="text-neutral-200 text-xs font-medium">{{ obra.tecnica }}</p>
           </div>
-          <div class="h-8 w-[1px] bg-white/10"></div>
           <div class="text-center">
-            <span class="text-neutral-500 text-[8px] uppercase tracking-tighter block mb-1">Medidas</span>
-            <p class="text-neutral-200 text-[11px] font-medium leading-none">{{ obra.medidas }}</p>
+            <span class="text-neutral-500 text-[10px] uppercase tracking-widest block mb-1">Medidas</span>
+            <p class="text-neutral-200 text-xs font-medium">{{ obra.medidas }}</p>
           </div>
         </div>
 
-        <div class="space-y-4 mb-2">
+        <div class="space-y-6 pt-4">
           <div class="text-center">
-            <p class="text-2xl font-mono text-white tracking-tighter">
+            <p class="text-3xl font-mono text-white tracking-tighter">
               {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
+              <span class="text-xs text-neutral-500 ml-1">USD</span>
             </p>
           </div>
 
           <a 
             :href="'https://wa.me/573002493543?text=Hola, me interesa la obra: ' + obra.titulo" 
             target="_blank"
-            class="flex items-center justify-center w-full py-4 bg-yellow-600 text-black font-bold rounded-xl uppercase tracking-widest text-xs active:scale-95 transition-transform"
+            class="flex items-center justify-center w-full py-5 bg-yellow-600 text-black font-bold rounded-xl uppercase tracking-[0.2em] text-[10px] active:scale-95 transition-transform shadow-lg shadow-yellow-900/20"
           >
             Consultar Adquisición
           </a>
