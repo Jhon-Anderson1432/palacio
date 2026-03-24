@@ -1,22 +1,30 @@
 <template>
   <div class="min-h-screen bg-neutral-950 text-white pt-28 px-6 pb-20">
     
-    <div class="max-w-7xl mx-auto mb-12">
-      <h2 class="text-4xl font-serif text-yellow-500 mb-2">Exposiciones</h2>
-      <p class="text-neutral-400 italic">Explora nuestra colección exclusiva.</p>
+    <div class="max-w-7xl mx-auto mb-12 text-center md:text-left">
+      <h2 class="text-4xl font-serif text-yellow-500 mb-2">
+        Exposiciones <span class="text-2xl text-yellow-600/50 font-light">/ Exhibitions</span>
+      </h2>
+      <p class="text-neutral-400 italic text-sm">
+        Explora nuestra colección exclusiva. <span class="opacity-50">/ Explore our exclusive collection.</span>
+      </p>
     </div>
 
-    <div v-if="searchQuery" class="max-w-7xl mx-auto mb-8 flex items-center gap-4">
-      <p class="text-sm text-neutral-500">
-        Filtrando por: <span class="text-white font-bold">"{{ searchQuery }}"</span>
+    <div v-if="searchQuery" class="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5 gap-4">
+      <p class="text-sm text-neutral-400">
+        Filtrando por <span class="text-[10px] uppercase tracking-widest opacity-60 mx-1">/ Filtering by:</span>
+        <span class="text-white font-bold text-base ml-1">"{{ searchQuery }}"</span>
       </p>
-      <button @click="searchQuery = ''" class="text-xs text-yellow-600 hover:text-yellow-500 uppercase tracking-widest font-bold">
-        ✕ Quitar Filtro
+      <button @click="searchQuery = ''" class="flex flex-col items-center text-yellow-600 hover:text-yellow-500 transition-colors">
+        <span class="text-xs uppercase tracking-widest font-bold">✕ Quitar Filtro</span>
+        <span class="text-[9px] uppercase tracking-widest opacity-70">Clear Filter</span>
       </button>
     </div>
 
-    <div v-if="cargando" class="text-center py-20 text-neutral-500 animate-pulse uppercase tracking-widest text-xs">
-      Sincronizando galería...
+    <div v-if="cargando" class="flex flex-col items-center justify-center py-20 space-y-2 text-neutral-500">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-yellow-500 mb-4"></div>
+      <span class="uppercase tracking-widest text-xs">Sincronizando galería...</span>
+      <span class="uppercase tracking-widest text-[10px] opacity-60">Syncing gallery...</span>
     </div>
 
     <div v-else-if="obrasFiltradas.length > 0" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -39,33 +47,51 @@
         </div>
 
         <div class="p-6 flex-1 flex flex-col">
-          <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-yellow-500 transition-colors">
-            {{ obra.titulo }}
-          </h3>
-          
-          <p class="text-neutral-400 text-sm italic mb-4">Por {{ obra.autor }}</p>
+          <div class="text-center mb-4">
+            <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-yellow-500 transition-colors">
+              {{ obra.titulo }}
+            </h3>
+            <p class="text-neutral-400 text-xs italic">Por {{ obra.autor }} <span class="opacity-50 mx-1">/</span> By {{ obra.autor }}</p>
+          </div>
 
-          <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 mb-6">
-            <div>
-              <span class="text-[10px] uppercase text-yellow-600 tracking-widest block mb-1">Técnica</span>
-              <p class="text-xs text-neutral-300 font-medium">{{ obra.tecnica }}</p>
+          <div class="space-y-4 py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
+            
+            <div class="grid grid-cols-2 gap-3 items-center">
+              <div class="text-right border-r border-white/10 pr-3">
+                <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Technique</span>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.tecnica }}</p>
+              </div>
+              <div class="text-left pl-3">
+                <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Técnica</span>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.tecnica }}</p>
+              </div>
             </div>
-            <div>
-              <span class="text-[10px] uppercase text-yellow-600 tracking-widest block mb-1">Medidas</span>
-              <p class="text-xs text-neutral-300 font-medium">{{ obra.medidas }}</p>
+
+            <div class="grid grid-cols-2 gap-3 items-center">
+              <div class="text-right border-r border-white/10 pr-3">
+                <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Dimensions</span>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.medidas }}</p>
+              </div>
+              <div class="text-left pl-3">
+                <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Medidas</span>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.medidas }}</p>
+              </div>
             </div>
+            
           </div>
 
           <div class="mt-auto flex items-center justify-between">
-            <span class="text-xl font-mono text-white tracking-tighter">
-              {{ obra.precio }}
+            <span class="text-xl font-mono text-white tracking-tighter flex flex-col justify-end text-right">
+              {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
+              <span class="text-[9px] text-neutral-500 ml-1 leading-none text-left">USD</span>
             </span>
 
             <router-link 
               :to="'/DetalleObra/' + obra.id"
-              class="px-5 py-2 bg-white text-black text-xs font-bold rounded-full hover:bg-yellow-500 transition-all duration-300 uppercase tracking-tighter"
+              class="flex flex-col items-center justify-center px-4 py-2 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-lg"
             >
-              Ver más
+              <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">Ver más</span>
+              <span class="text-[7px] font-bold uppercase tracking-widest opacity-60 leading-none">View more</span>
             </router-link>
           </div>
         </div>
@@ -73,8 +99,9 @@
 
     </div>
 
-    <div v-else class="max-w-7xl mx-auto text-center py-24">
+    <div v-else class="max-w-7xl mx-auto text-center py-24 space-y-2">
       <p class="text-neutral-500 italic text-lg">No encontramos obras que coincidan con tu búsqueda.</p>
+      <p class="text-neutral-500/50 italic text-sm">No artworks found matching your search.</p>
     </div>
 
   </div>
@@ -82,12 +109,11 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { supabase, searchQuery } from '../lib/supabase' // Importamos la conexión real
+import { supabase, searchQuery } from '../lib/supabase' // Asegúrate de que esta ruta sea correcta
 
 const todasLasObras = ref([])
 const cargando = ref(true)
 
-// Función para traer datos de Supabase
 const fetchObras = async () => {
   try {
     cargando.value = true
@@ -109,7 +135,6 @@ onMounted(() => {
   fetchObras()
 })
 
-// Lógica de filtrado reactivo usando el searchQuery global
 const obrasFiltradas = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
   if (!query) return todasLasObras.value
