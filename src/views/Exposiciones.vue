@@ -80,18 +80,18 @@
             
           </div>
 
-          <div class="mt-auto flex items-center justify-between">
-            <span class="text-xl font-mono text-white tracking-tighter flex flex-col justify-end text-right">
+          <div class="mt-auto flex items-center justify-between pt-2">
+            <span class="text-2xl font-mono text-white tracking-tighter flex items-baseline">
               {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
-              <span class="text-[9px] text-neutral-500 ml-1 leading-none text-left">USD</span>
+              <span class="text-[10px] text-neutral-500 ml-1">USD</span>
             </span>
 
             <router-link 
               :to="'/DetalleObra/' + obra.id"
-              class="flex flex-col items-center justify-center px-4 py-2 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-lg"
+              class="flex flex-col items-center justify-center px-6 py-3 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-xl"
             >
-              <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">Ver más</span>
-              <span class="text-[7px] font-bold uppercase tracking-widest opacity-60 leading-none">View more</span>
+              <span class="text-xs font-bold uppercase tracking-widest leading-none mb-1.5">Ver detalles</span>
+              <span class="text-[8.5px] font-bold uppercase tracking-widest opacity-60 leading-none">View details</span>
             </router-link>
           </div>
         </div>
@@ -109,7 +109,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { supabase, searchQuery } from '../lib/supabase' // Asegúrate de que esta ruta sea correcta
+import { supabase, searchQuery } from '../lib/supabase'
 
 const todasLasObras = ref([])
 const cargando = ref(true)
@@ -154,7 +154,6 @@ h2, h3, .font-serif {
   font-family: 'Playfair Display', serif;
 }
 
-/* Animación de entrada para las tarjetas */
 .grid > div {
   animation: fadeIn 0.8s ease-out forwards;
 }
