@@ -79,7 +79,7 @@
           </div>
 
           <a 
-            :href="'https://wa.me/573002493543?text=Hola, me interesa la obra: ' + obra.titulo" 
+            :href="'https://wa.me/573116390177?text=Hola, me interesa la obra: ' + obra.titulo" 
             target="_blank"
             class="flex flex-col items-center justify-center w-full py-4 bg-yellow-600 text-black font-bold rounded-xl active:scale-95 transition-transform shadow-lg shadow-yellow-900/20"
           >
