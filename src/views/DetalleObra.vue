@@ -15,7 +15,8 @@
           class="w-full h-auto block"
         />
       </div>
-      <div class="flex-1 flex flex-col px-4 pt-4">
+
+      <div class="flex-1 flex-col px-4 pt-4">
 
         <router-link 
           to="/exposiciones" 
@@ -39,24 +40,32 @@
         </div>
 
         <div class="text-center space-y-2 mb-10">
-         <h1 class="text-4xl font-serif text-white leading-tight">{{ obra.titulo }}</h1>
+          <h1 class="text-4xl font-serif text-white leading-tight lowercase capitalize">{{ obra.titulo }}</h1>
   
-         <p class="text-xl text-neutral-300 font-serif italic">{{ obra.titulo_en || 'Translation pending' }} </p>
-         <p class="text-2xl text-neutral-200 pt-2 font-serif">{{ obra.autor }}</p>
+          <p class="text-xl text-neutral-300 font-serif italic lowercase capitalize">
+            {{ obra.titulo_en || 'Translation pending' }}
+          </p>
+          <p class="text-2xl text-neutral-200 pt-2 font-serif lowercase capitalize">{{ obra.autor }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-x-8 gap-y-4 px-2 mb-12 border-t border-white/5 pt-8">
           <div class="space-y-3 text-left">
-            <p class="text-sm"><span class="text-neutral-400">Técnica:</span> <span class="text-white">{{ obra.tecnica }}</span></p>
-            <p class="text-sm"><span class="text-neutral-400">Dimensión:</span> <span class="text-white">{{ obra.medidas }}</span></p>
+            <p class="text-sm">
+              <span class="text-neutral-400">Técnica:</span> 
+              <span class="text-white lowercase capitalize">{{ obra.tecnica }}</span>
+            </p>
+            <p class="text-sm"><span class="text-neutral-400">Dimensión:</span> <span class="text-white lowercase">{{ obra.medidas }}</span></p>
             <p class="text-sm"><span class="text-neutral-400">Valor:</span> <span class="text-white">{{ isNaN(obra.precio) ? obra.precio : Number(obra.precio).toLocaleString() }} USD</span></p>
             <p class="text-sm"><span class="text-neutral-400">Contacto:</span> <span class="text-white">3116390177</span></p>
             <p class="text-sm"><span class="text-neutral-400">Info detallada:</span> <span class="text-white">3104470369</span></p>
           </div>
 
           <div class="space-y-3 text-left">
-            <p class="text-sm"><span class="text-neutral-400">Technique:</span> <span class="text-white">{{ obra.tecnica }}</span></p>
-            <p class="text-sm"><span class="text-neutral-400">Dimensions:</span> <span class="text-white">{{ obra.medidas }}</span></p>
+            <p class="text-sm">
+              <span class="text-neutral-400">Technique:</span> 
+              <span class="text-white lowercase capitalize">{{ obra.medidas_en }}</span>
+            </p>
+            <p class="text-sm"><span class="text-neutral-400">Dimensions:</span> <span class="text-white lowercase">{{ obra.medidas }}</span></p>
             <p class="text-sm"><span class="text-neutral-400">Value:</span> <span class="text-white">{{ isNaN(obra.precio) ? obra.precio : Number(obra.precio).toLocaleString() }} USD</span></p>
             <p class="text-sm"><span class="text-neutral-400">Contact:</span> <span class="text-white">3116390177</span></p>
             <p class="text-sm"><span class="text-neutral-400">Detailed info:</span> <span class="text-white">3104470369</span></p>

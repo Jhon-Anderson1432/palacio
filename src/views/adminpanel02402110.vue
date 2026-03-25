@@ -105,6 +105,7 @@
             <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500 USD)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            <input v-model="form.medidas_en" placeholder="TÉCNICA (EJ: ENGLISH TITLE)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.medidas" placeholder="MEDIDAS (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
           </div>
 
@@ -134,7 +135,7 @@ const videoFile = ref(null)
 const obraEditandoId = ref(null)
 
 // Se agrega 'titulo_en' al estado inicial del formulario
-const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '' })
+const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '', medidas_en: "" })
 
 const obrasFiltradas = computed(() => {
   if (!searchQuery.value) return todasLasObras.value
@@ -165,7 +166,7 @@ const openForm = (obra = null) => {
     form.value = { ...obra }
   } else {
     obraEditandoId.value = null
-    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '' }
+    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '', medidas_en: "" }
   }
   videoFile.value = null
   showForm.value = true
