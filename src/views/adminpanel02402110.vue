@@ -105,7 +105,7 @@
             <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500 USD)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.medidas_en" placeholder="TÉCNICA (EJ: ENGLISH TITLE)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            <input v-model="form.medidas_en" placeholder="TÉCNICA (EJ: ÓIL ON CANVA)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.medidas" placeholder="MEDIDAS (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
           </div>
 

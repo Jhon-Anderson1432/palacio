@@ -48,10 +48,13 @@
 
         <div class="p-6 flex-1 flex flex-col">
           <div class="text-center mb-4">
-            <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-yellow-500 transition-colors">
+            <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-yellow-500 transition-colors lowercase capitalize">
               {{ obra.titulo }}
             </h3>
-            <p class="text-neutral-400 text-xs italic">Por {{ obra.autor }} <span class="opacity-50 mx-1">/</span> By {{ obra.autor }}</p>
+            <p v-if="obra.titulo_en" class="text-neutral-500 text-xs italic lowercase capitalize mb-1">
+              {{ obra.titulo_en }}
+            </p>
+            <p class="text-neutral-400 text-xs italic lowercase capitalize">Por {{ obra.autor }} <span class="opacity-50 mx-1">/</span> By {{ obra.autor }}</p>
           </div>
 
           <div class="space-y-4 py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
@@ -59,22 +62,22 @@
             <div class="grid grid-cols-2 gap-3 items-center">
               <div class="text-right border-r border-white/10 pr-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Technique</span>
-                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.tecnica }}</p>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.tecnica }}</p>
               </div>
               <div class="text-left pl-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Técnica</span>
-                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.tecnica }}</p>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.medidas_en }}</p>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 items-center">
               <div class="text-right border-r border-white/10 pr-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Dimensions</span>
-                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.medidas }}</p>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
               </div>
               <div class="text-left pl-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Medidas</span>
-                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight">{{ obra.medidas }}</p>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
               </div>
             </div>
             
@@ -125,15 +128,13 @@ const fetchObras = async () => {
     if (error) throw error
     todasLasObras.value = data || []
   } catch (err) {
-    console.error("Error cargando obras:", err.message)
+    console.error("Error:", err.message)
   } finally {
     cargando.value = false
   }
 }
 
-onMounted(() => {
-  fetchObras()
-})
+onMounted(() => fetchObras())
 
 const obrasFiltradas = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
@@ -148,18 +149,19 @@ const obrasFiltradas = computed(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
-h2, h3, .font-serif {
+.font-serif {
   font-family: 'Playfair Display', serif;
 }
 
-.grid > div {
-  animation: fadeIn 0.8s ease-out forwards;
+/* Animación de entrada para las tarjetas */
+.group {
+  animation: slideUp 1s ease-out forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 </style>
