@@ -56,6 +56,8 @@
 
             <div class="space-y-3">
               <h3 class="text-white font-serif text-xl leading-tight">{{ obra.titulo }}</h3>
+              <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ obra.titulo_en }}</p>
+              
               <p class="text-yellow-500 text-[10px] font-bold uppercase tracking-[0.2em]">{{ obra.autor }}</p>
               
               <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5 text-[10px] uppercase tracking-widest text-neutral-400 font-medium">
@@ -96,7 +98,10 @@
           </div>
 
           <div class="space-y-3">
-            <input v-model="form.titulo" placeholder="TÍTULO" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            <input v-model="form.titulo" placeholder="TÍTULO (ESPAÑOL)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            
+            <input v-model="form.titulo_en" placeholder="TÍTULO (INGLÉS / ENGLISH TITLE)" class="w-full bg-white/10 border border-yellow-500/20 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase italic text-yellow-100/70" required>
+            
             <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500 USD)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
@@ -128,9 +133,9 @@ const enviando = ref(false)
 const videoFile = ref(null)
 const obraEditandoId = ref(null)
 
-const form = ref({ titulo: '', autor: '', precio: '', tecnica: '', medidas: '' })
+// Se agrega 'titulo_en' al estado inicial del formulario
+const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '' })
 
-// FILTRO GLOBAL (Navbar sincronizado)
 const obrasFiltradas = computed(() => {
   if (!searchQuery.value) return todasLasObras.value
   const term = searchQuery.value.toLowerCase()
@@ -156,10 +161,11 @@ const handleFileChange = (e) => {
 const openForm = (obra = null) => {
   if (obra) {
     obraEditandoId.value = obra.id
+    // Al editar, se cargan todos los campos incluyendo titulo_en
     form.value = { ...obra }
   } else {
     obraEditandoId.value = null
-    form.value = { titulo: '', autor: '', precio: '', tecnica: '', medidas: '' }
+    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '' }
   }
   videoFile.value = null
   showForm.value = true
@@ -170,7 +176,6 @@ const guardarObra = async () => {
   try {
     let finalVideoUrl = form.value.video_url
 
-    // Solo subimos video si hay uno nuevo seleccionado
     if (videoFile.value) {
       const fileName = `${Date.now()}_${videoFile.value.name}`
       const { error: uploadError } = await supabase.storage.from('videos-obras').upload(fileName, videoFile.value)
@@ -180,15 +185,13 @@ const guardarObra = async () => {
     }
 
     const payload = { ...form.value, video_url: finalVideoUrl }
-    delete payload.id // Evitamos enviar el ID original en el body del insert/update
+    delete payload.id 
     delete payload.created_at
 
     if (obraEditandoId.value) {
-      // MODO EDICIÓN
       const { error } = await supabase.from('obras').update(payload).eq('id', obraEditandoId.value)
       if (error) throw error
     } else {
-      // MODO NUEVO
       if (!videoFile.value) throw new Error("Debes subir un video para la nueva obra")
       const { error } = await supabase.from('obras').insert([payload])
       if (error) throw error
