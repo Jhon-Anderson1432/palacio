@@ -78,7 +78,7 @@
             <div class="grid grid-cols-2 gap-3 items-center">
               <div class="text-right border-r border-white/10 pr-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Technique</span>
-                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.medida_en }}</p>
+                <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.medidas_en }}</p>
               </div>
               <div class="text-left pl-3">
                 <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Técnica</span>
