@@ -3,7 +3,7 @@
     
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
       <router-link to="/" class="flex-shrink-0 transition-transform duration-300 hover:scale-105">
-        <img src="/logo.png" alt="Palacio Nacional" class="h-10 md:h-12 w-auto" />
+        <img src="../assets/logon.png" alt="Palacio Nacional" class="h-10 md:h-12 w-auto" />
       </router-link>
 
       <div class="flex-1 max-w-md relative group">

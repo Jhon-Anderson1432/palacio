@@ -45,19 +45,21 @@
         </header>
 
         <div v-if="!cargando" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-yellow-500/20 transition-all">
+          <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-yellow-500/20 transition-all relative">
             
             <div class="relative mb-5 overflow-hidden rounded-2xl aspect-square bg-black shadow-inner">
               <video :src="obra.video_url" class="w-full h-full object-cover" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
               <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-yellow-500 font-bold uppercase tracking-tighter">
                 {{ obra.precio }}
               </div>
+              <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest">
+                {{ obra.tipo || 'Pintura' }}
+              </div>
             </div>
 
             <div class="space-y-3">
               <h3 class="text-white font-serif text-xl leading-tight">{{ obra.titulo }}</h3>
               <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ obra.titulo_en }}</p>
-              
               <p class="text-yellow-500 text-[10px] font-bold uppercase tracking-[0.2em]">{{ obra.autor }}</p>
               
               <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5 text-[10px] uppercase tracking-widest text-neutral-400 font-medium">
@@ -98,14 +100,22 @@
           </div>
 
           <div class="space-y-3">
+            
+            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase appearance-none text-white cursor-pointer" required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">SELECCIONA EL TIPO DE OBRA...</option>
+              <option value="Pintura" class="bg-neutral-900">PINTURA</option>
+              <option value="Escultura" class="bg-neutral-900">ESCULTURA</option>
+            </select>
+
             <input v-model="form.titulo" placeholder="TÍTULO (ESPAÑOL)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            
             <input v-model="form.titulo_en" placeholder="TÍTULO (INGLÉS / ENGLISH TITLE)" class="w-full bg-white/10 border border-yellow-500/20 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase italic text-yellow-100/70" required>
-            
             <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
             <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500 USD)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            
             <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.medidas_en" placeholder="TÉCNICA (EJ: ÓIL ON CANVA)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            
+            <input v-model="form.medidas_en" placeholder="TÉCNICA EN INGLÉS (EJ: OIL ON CANVAS)" class="w-full bg-white/10 border border-yellow-500/20 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase italic text-yellow-100/70" required>
+            
             <input v-model="form.medidas" placeholder="MEDIDAS (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
           </div>
 
@@ -113,7 +123,7 @@
             <button type="submit" class="flex-1 bg-yellow-500 text-black font-bold py-4 rounded-xl hover:bg-yellow-400 disabled:bg-neutral-700 text-xs uppercase tracking-widest" :disabled="enviando">
               {{ enviando ? 'PROCESANDO...' : (obraEditandoId ? 'ACTUALIZAR OBRA' : 'PUBLICAR OBRA') }}
             </button>
-            <button @click="showForm = false" type="button" class="flex-1 bg-white/5 py-4 rounded-xl text-xs uppercase tracking-widest">CANCELAR</button>
+            <button @click="showForm = false" type="button" class="flex-1 bg-white/5 py-4 rounded-xl text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">CANCELAR</button>
           </div>
         </form>
       </div>
@@ -134,16 +144,8 @@ const enviando = ref(false)
 const videoFile = ref(null)
 const obraEditandoId = ref(null)
 
-// Se agrega 'titulo_en' al estado inicial del formulario
-const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '', medidas_en: "" })
-
-const obrasFiltradas = computed(() => {
-  if (!searchQuery.value) return todasLasObras.value
-  const term = searchQuery.value.toLowerCase()
-  return todasLasObras.value.filter(o => 
-    o.autor.toLowerCase().includes(term) || o.titulo.toLowerCase().includes(term) || o.tecnica.toLowerCase().includes(term)
-  )
-})
+// El estado inicial ahora incluye 'medidas_en'
+const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas_en: '', medidas: '', tipo: '' })
 
 const fetchObras = async () => {
   cargando.value = true
@@ -154,6 +156,20 @@ const fetchObras = async () => {
 
 onMounted(() => fetchObras())
 
+const obrasFiltradas = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim()
+  if (!query) return todasLasObras.value
+
+  return todasLasObras.value.filter(o => 
+    o.titulo.toLowerCase().includes(query) || 
+    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || 
+    o.autor.toLowerCase().includes(query) ||
+    o.tecnica.toLowerCase().includes(query) ||
+    (o.medidas_en && o.medidas_en.toLowerCase().includes(query)) || // Buscamos también por la técnica en inglés
+    (o.tipo && o.tipo.toLowerCase().includes(query))
+  )
+})
+
 const handleFileChange = (e) => {
   const file = e.target.files[0]
   if (file) videoFile.value = file
@@ -162,11 +178,10 @@ const handleFileChange = (e) => {
 const openForm = (obra = null) => {
   if (obra) {
     obraEditandoId.value = obra.id
-    // Al editar, se cargan todos los campos incluyendo titulo_en
     form.value = { ...obra }
   } else {
     obraEditandoId.value = null
-    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas: '', medidas_en: "" }
+    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas_en: '', medidas: '', tipo: '' }
   }
   videoFile.value = null
   showForm.value = true
