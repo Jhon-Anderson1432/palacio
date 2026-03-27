@@ -27,7 +27,7 @@
           </svg>
         </router-link>
 
-        <div class="w-full relative bg-black my-8 group">
+        <div class="w-full relative bg-black my-4 group">
           <div class="absolute -inset-1 bg-yellow-600/10 blur-xl opacity-50"></div>
           <video 
             :src="obra.video_url" 
@@ -35,21 +35,21 @@
             loop 
             muted 
             playsinline 
-            class="w-full h-auto max-h-[50vh] object-contain relative z-10"
+            class="w-full h-auto max-h-[40vh] object-contain relative z-10"
           ></video>
         </div>
 
-        <div class="text-center space-y-2 mb-10">
-          <h1 class="text-4xl font-serif text-white leading-tight lowercase capitalize">{{ obra.titulo }}</h1>
+        <div class="text-center space-y-2 mb-6">
+          <h1 class="text-3xl md:text-4xl font-serif text-white leading-tight lowercase capitalize">{{ obra.titulo }}</h1>
   
-          <p class="text-xl text-neutral-300 font-serif italic lowercase capitalize">
+          <p class="text-lg md:text-xl text-neutral-300 font-serif italic lowercase capitalize">
             {{ obra.titulo_en || 'Translation pending' }}
           </p>
-          <p class="text-2xl text-neutral-200 pt-2 font-serif lowercase capitalize">{{ obra.autor }}</p>
+          <p class="text-xl md:text-2xl text-neutral-200 pt-1 font-serif lowercase capitalize">{{ obra.autor }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-x-8 gap-y-4 px-2 mb-12 border-t border-white/5 pt-8">
-          <div class="space-y-3 text-left">
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4 px-2 mb-8 border-t border-white/5 pt-4">
+          <div class="space-y-2 text-left">
             <p class="text-sm">
               <span class="text-neutral-400">Técnica:</span> 
               <span class="text-white lowercase capitalize">{{ obra.tecnica }}</span>
@@ -60,7 +60,7 @@
             <p class="text-sm"><span class="text-neutral-400">Info detallada:</span> <span class="text-white">3104470369</span></p>
           </div>
 
-          <div class="space-y-3 text-left">
+          <div class="space-y-2 text-left">
             <p class="text-sm">
               <span class="text-neutral-400">Technique:</span> 
               <span class="text-white lowercase capitalize">{{ obra.medidas_en }}</span>
@@ -93,63 +93,38 @@
 
   </div>
 </template>
+
 <script setup>
-
 import { ref, onMounted } from 'vue'
-
 import { useRoute } from 'vue-router'
-
 import { supabase } from '../lib/supabase'
 
-
-
 const route = useRoute()
-
 const obra = ref(null)
 
-
-
 const obtenerDetalleObra = async () => {
-
   const idBusca = route.params.id
-
- 
-
   try {
-
     const { data, error } = await supabase
-
       .from('obras')
-
       .select('*')
-
       .eq('id', idBusca)
-
       .single()
 
-
-
     if (error) throw error
-
     obra.value = data
-
   } catch (err) {
-
     console.trace("Error al obtener la obra:", err.message)
-
   }
-
 }
 
-
-
 onMounted(() => {
-
+  // CORRECCIÓN: Esto asegura que la persona empiece desde arriba al entrar
+  window.scrollTo(0, 0)
   obtenerDetalleObra()
-
 })
-
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -157,7 +132,6 @@ onMounted(() => {
   font-family: 'Playfair Display', serif;
 }
 
-/* Animación suave para la entrada de texto */
 h1, p {
   animation: fadeIn 1.2s ease-out;
 }
