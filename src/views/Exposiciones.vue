@@ -106,10 +106,10 @@
 
             <router-link 
               :to="'/DetalleObra/' + obra.id"
-              class="flex flex-col items-center justify-center px-6 py-3 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-xl"
+              class="flex flex-col items-center justify-center px-4 py-2 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-xl"
             >
-              <span class="text-xs font-bold uppercase tracking-widest leading-none mb-1.5">Ver detalles</span>
-              <span class="text-[8.5px] font-bold uppercase tracking-widest opacity-60 leading-none">View details</span>
+              <span class="text-[10px] md:text-xs font-bold uppercase tracking-widest leading-none mb-1">Ver detalles</span>
+              <span class="text-[7px] md:text-[8.5px] font-bold uppercase tracking-widest opacity-60 leading-none">View details</span>
             </router-link>
           </div>
         </div>
@@ -131,8 +131,6 @@ import { supabase, searchQuery } from '../lib/supabase'
 
 const todasLasObras = ref([])
 const cargando = ref(true)
-
-// NUEVO: Variable para controlar si vemos Todo, Pintura o Escultura
 const filtroTipo = ref('Todos')
 
 const fetchObras = async () => {
@@ -156,13 +154,9 @@ onMounted(() => fetchObras())
 
 const obrasFiltradas = computed(() => {
   let resultado = todasLasObras.value
-
-  // 1. Filtrar primero por el TIPO (Pintura o Escultura)
   if (filtroTipo.value !== 'Todos') {
     resultado = resultado.filter(o => o.tipo === filtroTipo.value)
   }
-
-  // 2. Filtrar luego por la barra de BÚSQUEDA (si hay algo escrito)
   const query = searchQuery.value.toLowerCase().trim()
   if (query) {
     resultado = resultado.filter(o => 
@@ -172,7 +166,6 @@ const obrasFiltradas = computed(() => {
       (o.tecnica && o.tecnica.toLowerCase().includes(query))
     )
   }
-
   return resultado
 })
 </script>
