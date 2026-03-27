@@ -10,7 +10,7 @@
       
       <div class="w-full relative z-[100] border-b-[2px] border-b-yellow-600/50 pt-6">
         <img 
-          src="@/assets/logon.png" 
+          src="@/assets/logoni.png" 
           alt="Palacio Nacional Galería Header" 
           class="w-full h-auto block"
         />
