@@ -71,7 +71,7 @@
             <p v-if="obra.titulo_en" class="text-neutral-500 text-xs italic lowercase capitalize mb-1">
               {{ obra.titulo_en }}
             </p>
-            <p class="text-neutral-400 text-xs italic lowercase capitalize">Por {{ obra.autor }} <span class="opacity-50 mx-1">/</span> By {{ obra.autor }}</p>
+            <p class="text-neutral-400 text-xs italic lowercase capitalize">By {{ obra.autor }} <span class="opacity-50 mx-1">/</span> Por {{ obra.autor }}</p>
           </div>
 
           <div class="space-y-4 py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
