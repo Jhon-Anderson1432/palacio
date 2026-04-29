@@ -53,7 +53,7 @@
         
         <div v-for="obra in obrasFiltradas" :key="obra.id" class="group bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-[#D4AF37]/40 transition-all duration-500 flex flex-col relative">
           
-          <div class="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[9px] text-white font-bold uppercase tracking-widest">
+          <div class="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs text-white font-bold uppercase tracking-widest">
             {{ obra.tipo === 'Escultura' ? t.sculptureLabel : t.paintingLabel }}
           </div>
 
@@ -79,25 +79,25 @@
 
           <div class="p-6 flex-1 flex flex-col">
             <div class="text-center mb-4">
-              <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-[#D4AF37] transition-colors lowercase capitalize">
+              <h3 class="text-3xl font-serif text-white mb-1 group-hover:text-[#D4AF37] transition-colors lowercase capitalize">
                 {{ obtenerTitulo(obra) }}
               </h3>
-              <p class="text-neutral-400 text-xs italic lowercase capitalize">{{ t.by }} {{ obra.autor }}</p>
+              <p class="text-neutral-400 text-sm italic lowercase capitalize">{{ t.by }} {{ obra.autor }}</p>
             </div>
 
             <div class="py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
               <div class="grid grid-cols-2 gap-4 items-start">
                 
                 <div class="text-left pr-2">
-                  <span class="text-[8px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.techniqueLabel }}</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight capitalize">
+                  <span class="text-[10px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.techniqueLabel }}</span>
+                  <p class="text-sm text-neutral-300 font-medium line-clamp-2 leading-tight capitalize">
                     {{ obtenerTecnica(obra) }}
                   </p>
                 </div>
                 
                 <div class="text-left border-l border-white/10 pl-4">
-                  <span class="text-[8px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.dimensionsLabel }}</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
+                  <span class="text-[10px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.dimensionsLabel }}</span>
+                  <p class="text-sm text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
                 </div>
 
               </div>
@@ -106,14 +106,14 @@
             <div class="mt-auto flex items-center justify-between pt-2">
               <span class="text-2xl font-mono text-white tracking-tighter flex items-baseline">
                 {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
-                <span class="text-[10px] text-neutral-500 ml-1">USD</span>
+                <span class="text-xs text-neutral-500 ml-1">USD</span>
               </span>
 
               <router-link 
                 :to="'/DetalleObra/' + obra.id" 
-                class="flex items-center justify-center px-5 py-3 bg-white text-black rounded-full hover:bg-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-xl"
+                class="flex items-center justify-center px-6 py-3 bg-white text-black rounded-full hover:bg-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-xl"
               >
-                <span class="text-[10px] md:text-xs font-bold uppercase tracking-widest leading-none">{{ t.detailsBtn }}</span>
+                <span class="text-xs font-bold uppercase tracking-widest leading-none">{{ t.detailsBtn }}</span>
               </router-link>
             </div>
           </div>
@@ -142,11 +142,9 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-// IMPORTAMOS EL NAVBAR GLOBAL
 import Navbar from '../components/Navbar.vue' 
 import { supabase, searchQuery, idiomaGlobal } from '../lib/supabase'
 
-// IMPORTAMOS SWIPER PARA LAS IMÁGENES
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
@@ -154,7 +152,6 @@ import 'swiper/css/effect-fade';
 const modules = [Autoplay, EffectFade];
 
 
-// DICCIONARIO DE 4 IDIOMAS
 const traducciones = {
   es: { filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: '✕ Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
   en: { filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: '✕ Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.' },
@@ -164,19 +161,18 @@ const traducciones = {
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
 
-// Lógica de Traducción Dinámica para las Tarjetas
 const obtenerTitulo = (obra) => {
   if (idiomaGlobal.value === 'en' && obra.titulo_en) return obra.titulo_en;
   if (idiomaGlobal.value === 'fr' && obra.titulo_fr) return obra.titulo_fr;
   if (idiomaGlobal.value === 'ja' && obra.titulo_ja) return obra.titulo_ja;
-  return obra.titulo; // Fallback a Español
+  return obra.titulo; 
 }
 
 const obtenerTecnica = (obra) => {
   if (idiomaGlobal.value === 'en' && obra.medidas_en) return obra.medidas_en;
   if (idiomaGlobal.value === 'fr' && obra.medidas_fr) return obra.medidas_fr;
   if (idiomaGlobal.value === 'ja' && obra.medidas_ja) return obra.medidas_ja;
-  return obra.tecnica; // Fallback a Español
+  return obra.tecnica; 
 }
 
 const todasLasObras = ref([])
