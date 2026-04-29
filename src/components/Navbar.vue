@@ -5,7 +5,7 @@
       <div class="flex-shrink-0 flex items-center md:justify-start">
         <button 
           @click="router.push(rutaVolver)" 
-          class="group flex items-center gap-3 px-4 py-2 bg-black/40 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest text-[10px] font-bold shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]"
+          class="group flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 bg-black/40 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest text-[10px] font-bold shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]"
         >
           <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -32,10 +32,9 @@
         <div class="relative">
           <button 
             @click="dropdownAbierto = !dropdownAbierto"
-            class="flex items-center gap-2 px-4 py-2 bg-black/50 border border-white/10 rounded-full text-[#D4AF37] hover:border-[#D4AF37]/50 transition-colors uppercase tracking-widest text-[10px] font-bold"
+            class="flex items-center gap-2 px-3 md:px-4 py-2 bg-black/50 border border-white/10 rounded-full text-[#D4AF37] hover:border-[#D4AF37]/50 transition-colors uppercase tracking-widest text-[10px] font-bold"
           >
-            <span class="hidden md:inline">{{ nombreIdiomaActual }}</span>
-            <span class="md:hidden">{{ idiomaCortoMayusculas }}</span>
+            <span>{{ nombreIdiomaActual }}</span>
             <svg 
               class="w-3 h-3 transition-transform duration-300" 
               :class="{ 'rotate-180': dropdownAbierto }" 
@@ -66,7 +65,6 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchQuery, idiomaGlobal } from '../lib/supabase'
 
-// Añadimos 'rutaVolver' con '/' por defecto para no romper el resto de la app
 defineProps({
   ocultarBuscador: {
     type: Boolean,
@@ -91,9 +89,7 @@ const nombreIdiomaActual = computed(() => {
   return nombres[idiomaGlobal.value] || 'Español'
 })
 
-const idiomaCortoMayusculas = computed(() => {
-  return (idiomaGlobal.value || 'es').toUpperCase()
-})
+// Nota: Puedes eliminar la función 'idiomaCortoMayusculas' de tu script si quieres, ya no se usa.
 
 const traducciones = {
   es: { back: 'Volver', search: 'Buscar obras, autores...' },
