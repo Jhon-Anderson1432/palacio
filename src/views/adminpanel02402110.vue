@@ -2,24 +2,31 @@
   <div class="fixed inset-0 z-[999] bg-[#0a0a0a] overflow-y-auto text-white font-sans flex">
     
     <aside class="w-64 bg-black border-r border-white/10 p-8 hidden md:flex flex-col">
-      <div class="flex items-center gap-3 mb-10 text-yellow-500">
+      <div class="flex items-center gap-3 mb-10 text-[#D4AF37]">
         <span class="font-serif text-xl tracking-tighter uppercase">Palacio Admin</span>
       </div>
       
       <nav class="space-y-4 flex-1">
         <button 
           @click="pestañaActiva = 'inventario'"
-          :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-yellow-500 bg-yellow-500/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
         >
            <span class="font-medium text-sm uppercase tracking-widest">Inventario</span>
         </button>
 
         <button 
           @click="pestañaActiva = 'mensajes'; fetchMensajes()"
-          :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-yellow-500 bg-yellow-500/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
         >
            <span class="font-medium text-sm uppercase tracking-widest">Buzón</span>
-           <span v-if="mensajesNoLeidos > 0" class="bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
+           <span v-if="mensajesNoLeidos > 0" class="bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
+        </button>
+
+        <button 
+          @click="pestañaActiva = 'estadisticas'; calcularEstadisticas()"
+          :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+        >
+           <span class="font-medium text-sm uppercase tracking-widest">Métricas</span>
         </button>
       </nav>
       
@@ -39,20 +46,23 @@
             v-model="searchQuery"
             type="text" 
             placeholder="Buscar obra..." 
-            class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-yellow-500/50 transition-all"
+            class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-[#D4AF37]/50 transition-all text-white"
           />
-          <span class="absolute left-5 top-3.5 text-neutral-500 group-focus-within:text-yellow-500">🔍</span>
+          <span class="absolute left-5 top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37]">🔍</span>
         </div>
         <div v-else class="flex-1">
-          <h2 class="text-xl font-serif text-white">Mensajes de Contacto</h2>
+          <h2 class="text-xl font-serif text-white">
+            {{ pestañaActiva === 'mensajes' ? 'Mensajes de Contacto' : 'Tablero de Estadísticas' }}
+          </h2>
         </div>
         
-        <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-yellow-500 text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-400 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
+        <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
           <span>+</span> AGREGAR OBRA
         </button>
       </nav>
 
-      <div class="p-8 md:p-12">
+      <div class="p-8 md:p-12 overflow-y-auto">
+        
         <div v-if="pestañaActiva === 'inventario'">
           <header class="mb-12">
             <h1 class="text-4xl font-serif text-white">Gestión de Catálogo</h1>
@@ -60,20 +70,18 @@
           </header>
 
           <div v-if="!cargando" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-yellow-500/20 transition-all relative">
+            <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-[#D4AF37]/20 transition-all relative">
               <div class="relative mb-5 overflow-hidden rounded-2xl aspect-square bg-black shadow-inner">
-                <video :src="obra.video_url" class="w-full h-full object-cover" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
-                <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-yellow-500 font-bold uppercase tracking-tighter">{{ obra.precio }}</div>
+                <img v-if="obra.imagen_1" :src="obra.imagen_1" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">Sin Imagen</div>
+                
+                <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold uppercase tracking-tighter">{{ obra.precio }}</div>
                 <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest">{{ obra.tipo || 'Pintura' }}</div>
               </div>
               <div class="space-y-3">
                 <h3 class="text-white font-serif text-xl leading-tight">{{ obra.titulo }}</h3>
                 <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ obra.titulo_en }}</p>
-                <p class="text-yellow-500 text-[10px] font-bold uppercase tracking-[0.2em]">{{ obra.autor }}</p>
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5 text-[10px] uppercase tracking-widest text-neutral-400 font-medium">
-                  <div><span class="block text-neutral-600 mb-1">Técnica:</span><span class="text-white italic">{{ obra.tecnica }}</span></div>
-                  <div><span class="block text-neutral-600 mb-1">Medidas:</span><span class="text-white italic">{{ obra.medidas }}</span></div>
-                </div>
+                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ obra.autor }}</p>
               </div>
               <div class="flex gap-2 mt-6 pt-4 border-t border-white/5">
                 <button @click="openForm(obra)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
@@ -86,30 +94,70 @@
 
         <div v-if="pestañaActiva === 'mensajes'">
           <div v-if="cargandoMensajes" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando buzón...</div>
-          
           <div v-else-if="mensajes.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
             No hay mensajes en la bandeja de entrada.
           </div>
-
           <div v-else class="space-y-4 max-w-4xl">
-            <div v-for="msj in mensajes" :key="msj.id" :class="['p-6 rounded-2xl border transition-all', msj.leido ? 'bg-white/5 border-white/5 opacity-70' : 'bg-neutral-900 border-yellow-500/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]']">
+            <div v-for="msj in mensajes" :key="msj.id" :class="['p-6 rounded-2xl border transition-all', msj.leido ? 'bg-white/5 border-white/5 opacity-70' : 'bg-neutral-900 border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]']">
               <div class="flex justify-between items-start mb-4">
                 <div>
                   <h4 class="text-white font-bold text-lg flex items-center gap-2">
                     {{ msj.nombre }} 
-                    <span v-if="!msj.leido" class="bg-yellow-500 w-2 h-2 rounded-full inline-block"></span>
+                    <span v-if="!msj.leido" class="bg-[#D4AF37] w-2 h-2 rounded-full inline-block"></span>
                   </h4>
-                  <a :href="'mailto:' + msj.email" class="text-yellow-500 text-xs hover:underline">{{ msj.email }}</a>
+                  <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline">{{ msj.email }}</a>
                 </div>
                 <span class="text-neutral-500 text-xs">{{ new Date(msj.creado_en).toLocaleDateString() }}</span>
               </div>
               <p class="text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">{{ msj.mensaje }}</p>
-              
               <div class="mt-6 flex gap-3 border-t border-white/5 pt-4">
-                <button @click="marcarLeido(msj)" v-if="!msj.leido" class="text-[10px] uppercase tracking-widest font-bold text-white hover:text-yellow-500 transition-colors">✔ Marcar como leído</button>
+                <button @click="marcarLeido(msj)" v-if="!msj.leido" class="text-[10px] uppercase tracking-widest font-bold text-white hover:text-[#D4AF37] transition-colors">✔ Marcar como leído</button>
                 <button @click="eliminarMensaje(msj.id)" class="text-[10px] uppercase tracking-widest font-bold text-red-500 hover:text-red-400 transition-colors">🗑 Eliminar</button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div v-if="pestañaActiva === 'estadisticas'">
+          <div class="max-w-5xl mx-auto space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-neutral-900 p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-40">
+                <span class="text-xs text-neutral-400 uppercase tracking-widest font-bold">Total en Catálogo</span>
+                <span class="text-5xl font-serif text-white">{{ stats.total }}</span>
+              </div>
+              <div class="bg-neutral-900 p-6 rounded-3xl border border-[#D4AF37]/20 flex flex-col justify-between h-40">
+                <span class="text-xs text-[#D4AF37]/70 uppercase tracking-widest font-bold">Total Pinturas</span>
+                <span class="text-5xl font-serif text-[#D4AF37]">{{ stats.pinturas }}</span>
+              </div>
+              <div class="bg-neutral-900 p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-40">
+                <span class="text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Esculturas</span>
+                <span class="text-5xl font-serif text-white">{{ stats.esculturas }}</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900 border border-white/5 rounded-3xl p-8">
+              <h3 class="text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Registro de Modificaciones</h3>
+              <div v-if="logsActividad.length > 0" class="space-y-4">
+                <div v-for="(log, index) in logsActividad" :key="index" class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <div class="flex items-center gap-4">
+                    <span class="text-xl">{{ log.accion === 'Creación' ? '✨' : '📝' }}</span>
+                    <div>
+                      <p class="text-sm text-white font-bold">{{ log.accion }} de Obra</p>
+                      <p class="text-xs text-neutral-400">{{ log.titulo }}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">{{ log.fechaFormateada }}</p>
+                    <p class="text-[10px] text-neutral-500 uppercase">{{ log.horaFormateada }}</p>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-neutral-500 text-sm py-4">
+                Aún no hay registros de actividad.
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -117,32 +165,74 @@
     </main>
 
     <div v-if="showForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
-      <div class="bg-neutral-900 border border-white/10 w-full max-w-xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <h2 class="text-2xl font-serif text-yellow-500 mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
-        <form @submit.prevent="guardarObra" class="space-y-4">
-          <div class="p-6 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-yellow-500/30">
-            <input type="file" @change="handleFileChange" accept="video/*" class="absolute inset-0 opacity-0 cursor-pointer">
-            <p class="text-[10px] uppercase tracking-widest text-neutral-400">{{ videoFile ? '✅ ' + videoFile.name : (obraEditandoId ? 'CAMBIAR VIDEO (OPCIONAL)' : 'SUBIR VIDEO DE LA OBRA') }}</p>
+      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <h2 class="text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
+        
+        <form @submit.prevent="guardarObra" class="space-y-6">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+              <input type="file" @change="(e) => handleImageChange(e, 1)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1">{{ imgFiles[1] ? '✅' : '📷' }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[1] ? imgFiles[1].name : (form.imagen_1 ? 'Cambiar Foto 1' : 'Foto Principal') }}</p>
+            </div>
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+              <input type="file" @change="(e) => handleImageChange(e, 2)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1">{{ imgFiles[2] ? '✅' : '📷' }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[2] ? imgFiles[2].name : (form.imagen_2 ? 'Cambiar Foto 2' : 'Foto Detalle A') }}</p>
+            </div>
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+              <input type="file" @change="(e) => handleImageChange(e, 3)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1">{{ imgFiles[3] ? '✅' : '📷' }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[3] ? imgFiles[3].name : (form.imagen_3 ? 'Cambiar Foto 3' : 'Foto Detalle B') }}</p>
+            </div>
           </div>
-          <div class="space-y-3">
-            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase appearance-none text-white cursor-pointer" required>
-              <option value="" disabled class="bg-neutral-900 text-neutral-500">SELECCIONA EL TIPO DE OBRA...</option>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">TIPO DE OBRA...</option>
               <option value="Pintura" class="bg-neutral-900">PINTURA</option>
               <option value="Escultura" class="bg-neutral-900">ESCULTURA</option>
             </select>
-            <input v-model="form.titulo" placeholder="TÍTULO (ESPAÑOL)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.titulo_en" placeholder="TÍTULO (INGLÉS / ENGLISH TITLE)" class="w-full bg-white/10 border border-yellow-500/20 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase italic text-yellow-100/70" required>
-            <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500 USD)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
-            <input v-model="form.medidas_en" placeholder="TÉCNICA EN INGLÉS (EJ: OIL ON CANVAS)" class="w-full bg-white/10 border border-yellow-500/20 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase italic text-yellow-100/70" required>
-            <input v-model="form.medidas" placeholder="MEDIDAS (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-yellow-500/50 uppercase" required>
+            <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
           </div>
-          <div class="flex gap-4 mt-6">
-            <button type="submit" class="flex-1 bg-yellow-500 text-black font-bold py-4 rounded-xl hover:bg-yellow-400 disabled:bg-neutral-700 text-xs uppercase tracking-widest" :disabled="enviando">
+          
+          <input v-model="form.medidas" placeholder="DIMENSIONES UNIVERSALES (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/10 pt-6">
+            
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL (Obligatorio)</h4>
+              <input v-model="form.titulo" placeholder="TÍTULO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+              <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH (Obligatorio)</h4>
+              <input v-model="form.titulo_en" placeholder="TITLE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
+              <input v-model="form.medidas_en" placeholder="TECHNIQUE (EX: OIL ON CANVAS)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS (Opcional)</h4>
+              <input v-model="form.titulo_fr" placeholder="TITRE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <input v-model="form.medidas_fr" placeholder="TECHNIQUE (EX: HUILE SUR TOILE)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語 (Opcional)</h4>
+              <input v-model="form.titulo_ja" placeholder="タイトル (TAITORU)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <input v-model="form.medidas_ja" placeholder="手法 (EX: キャンバスに油彩)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+            </div>
+
+          </div>
+
+          <div class="flex gap-4 mt-8">
+            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-xs uppercase tracking-widest transition-colors" :disabled="enviando">
               {{ enviando ? 'PROCESANDO...' : (obraEditandoId ? 'ACTUALIZAR OBRA' : 'PUBLICAR OBRA') }}
             </button>
-            <button @click="showForm = false" type="button" class="flex-1 bg-white/5 py-4 rounded-xl text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">CANCELAR</button>
+            <button @click="showForm = false" type="button" class="w-1/3 bg-red-500/10 py-4 rounded-xl text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
           </div>
         </form>
       </div>
@@ -151,34 +241,42 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { supabase, searchQuery } from '../lib/supabase'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const pestañaActiva = ref('inventario') // Controla qué vista mostrar
+const pestañaActiva = ref('inventario') 
 
-// Estado de Obras
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
 const enviando = ref(false)
-const videoFile = ref(null)
 const obraEditandoId = ref(null)
-const form = ref({ titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas_en: '', medidas: '', tipo: '' })
 
-// Estado de Mensajes
+const imgFiles = reactive({ 1: null, 2: null, 3: null })
+
+const form = ref({ 
+  titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '', 
+  autor: '', precio: '', 
+  tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '', 
+  medidas: '', tipo: '', 
+  imagen_1: null, imagen_2: null, imagen_3: null 
+})
+
 const mensajes = ref([])
 const cargandoMensajes = ref(false)
+const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
+const logsActividad = ref([])
 
 const fetchObras = async () => {
   cargando.value = true
   const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false })
   todasLasObras.value = data || []
   cargando.value = false
+  calcularEstadisticas()
 }
 
-// Nueva función para traer mensajes
 const fetchMensajes = async () => {
   cargandoMensajes.value = true
   const { data } = await supabase.from('mensajes_contacto').select('*').order('creado_en', { ascending: false })
@@ -186,7 +284,121 @@ const fetchMensajes = async () => {
   cargandoMensajes.value = false
 }
 
+const calcularEstadisticas = () => {
+  stats.total = todasLasObras.value.length
+  stats.pinturas = todasLasObras.value.filter(o => o.tipo === 'Pintura').length
+  stats.esculturas = todasLasObras.value.filter(o => o.tipo === 'Escultura').length
+
+  const ultimas = [...todasLasObras.value].slice(0, 5)
+  logsActividad.value = ultimas.map(obra => {
+    const fecha = new Date(obra.created_at)
+    return {
+      accion: 'Creación',
+      titulo: obra.titulo,
+      fechaFormateada: fecha.toLocaleDateString(),
+      horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  })
+}
+
 const mensajesNoLeidos = computed(() => mensajes.value.filter(m => !m.leido).length)
+
+const obrasFiltradas = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim()
+  if (!query) return todasLasObras.value
+  return todasLasObras.value.filter(o => 
+    o.titulo.toLowerCase().includes(query) || 
+    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || 
+    o.autor.toLowerCase().includes(query)
+  )
+})
+
+const handleImageChange = (e, index) => {
+  const file = e.target.files[0]
+  if (file) imgFiles[index] = file
+}
+
+const openForm = (obra = null) => {
+  imgFiles[1] = null; imgFiles[2] = null; imgFiles[3] = null;
+
+  if (obra) {
+    obraEditandoId.value = obra.id
+    form.value = { 
+      ...obra,
+      titulo_fr: obra.titulo_fr || '',
+      titulo_ja: obra.titulo_ja || '',
+      medidas_fr: obra.medidas_fr || '',
+      medidas_ja: obra.medidas_ja || ''
+    }
+  } else {
+    obraEditandoId.value = null
+    form.value = { 
+      titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '', 
+      autor: '', precio: '', 
+      tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '', 
+      medidas: '', tipo: '', 
+      imagen_1: null, imagen_2: null, imagen_3: null 
+    }
+  }
+  showForm.value = true
+}
+
+const uploadImageAndGetUrl = async (file) => {
+  if (!file) return null
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+  
+  const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, file)
+  if (uploadError) throw uploadError
+  
+  const { data: { publicUrl } } = supabase.storage.from('obras-imagenes').getPublicUrl(fileName)
+  return publicUrl
+}
+
+const guardarObra = async () => {
+  enviando.value = true
+  try {
+    let url1 = imgFiles[1] ? await uploadImageAndGetUrl(imgFiles[1]) : form.value.imagen_1
+    let url2 = imgFiles[2] ? await uploadImageAndGetUrl(imgFiles[2]) : form.value.imagen_2
+    let url3 = imgFiles[3] ? await uploadImageAndGetUrl(imgFiles[3]) : form.value.imagen_3
+
+    const payload = { 
+      ...form.value, 
+      imagen_1: url1, 
+      imagen_2: url2, 
+      imagen_3: url3 
+    }
+    
+    delete payload.id 
+    delete payload.created_at
+
+    if (obraEditandoId.value) {
+      const { error } = await supabase.from('obras').update(payload).eq('id', obraEditandoId.value)
+      if (error) throw error
+    } else {
+      if (!url1) throw new Error("Debes subir al menos la Foto Principal (Foto 1).")
+      const { error } = await supabase.from('obras').insert([payload])
+      if (error) throw error
+    }
+    
+    alert("¡Obra procesada con éxito!")
+    showForm.value = false
+    fetchObras()
+
+  } catch (err) {
+    alert("Error de subida: " + err.message)
+    console.error(err)
+  } finally {
+    enviando.value = false
+  }
+}
+
+const deleteObra = async (obra) => {
+  if (confirm(`¿Peligro: Eliminar definitivamente la obra "${obra.titulo}"?`)) {
+    await supabase.from('obras').delete().eq('id', obra.id)
+    fetchObras()
+  }
+}
 
 const marcarLeido = async (msj) => {
   const { error } = await supabase.from('mensajes_contacto').update({ leido: true }).eq('id', msj.id)
@@ -200,81 +412,13 @@ const eliminarMensaje = async (id) => {
   }
 }
 
-onMounted(() => {
-  fetchObras()
-  fetchMensajes() // Cargamos los mensajes en background al iniciar
-})
-
-const obrasFiltradas = computed(() => {
-  const query = searchQuery.value.toLowerCase().trim()
-  if (!query) return todasLasObras.value
-  return todasLasObras.value.filter(o => 
-    o.titulo.toLowerCase().includes(query) || 
-    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || 
-    o.autor.toLowerCase().includes(query) ||
-    o.tecnica.toLowerCase().includes(query) ||
-    (o.medidas_en && o.medidas_en.toLowerCase().includes(query)) || 
-    (o.tipo && o.tipo.toLowerCase().includes(query))
-  )
-})
-
-const handleFileChange = (e) => {
-  const file = e.target.files[0]
-  if (file) videoFile.value = file
-}
-
-const openForm = (obra = null) => {
-  if (obra) {
-    obraEditandoId.value = obra.id
-    form.value = { ...obra }
-  } else {
-    obraEditandoId.value = null
-    form.value = { titulo: '', titulo_en: '', autor: '', precio: '', tecnica: '', medidas_en: '', medidas: '', tipo: '' }
-  }
-  videoFile.value = null
-  showForm.value = true
-}
-
-const guardarObra = async () => {
-  enviando.value = true
-  try {
-    let finalVideoUrl = form.value.video_url
-    if (videoFile.value) {
-      const fileName = `${Date.now()}_${videoFile.value.name}`
-      const { error: uploadError } = await supabase.storage.from('videos-obras').upload(fileName, videoFile.value)
-      if (uploadError) throw uploadError
-      const { data: { publicUrl } } = supabase.storage.from('videos-obras').getPublicUrl(fileName)
-      finalVideoUrl = publicUrl
-    }
-    const payload = { ...form.value, video_url: finalVideoUrl }
-    delete payload.id 
-    delete payload.created_at
-
-    if (obraEditandoId.value) {
-      const { error } = await supabase.from('obras').update(payload).eq('id', obraEditandoId.value)
-      if (error) throw error
-    } else {
-      if (!videoFile.value) throw new Error("Debes subir un video para la nueva obra")
-      const { error } = await supabase.from('obras').insert([payload])
-      if (error) throw error
-    }
-    alert("¡Éxito!"); showForm.value = false; fetchObras()
-  } catch (err) {
-    alert("Error: " + err.message)
-  } finally {
-    enviando.value = false
-  }
-}
-
-const deleteObra = async (obra) => {
-  if (confirm(`¿Eliminar ${obra.titulo}?`)) {
-    await supabase.from('obras').delete().eq('id', obra.id)
-    fetchObras()
-  }
-}
-
 const handleLogout = async () => {
   await supabase.auth.signOut()
   router.push('/login-privado')
 }
+
+onMounted(() => {
+  fetchObras()
+  fetchMensajes()
+})
 </script>

@@ -1,101 +1,105 @@
 <template>
-  <div class="min-h-screen bg-neutral-950 text-white pt-28 px-6 pb-20">
+  <div class="min-h-screen bg-neutral-950 text-white pt-24 px-6 pb-20 overflow-x-hidden">
     
-    <div class="max-w-7xl mx-auto mb-12 flex flex-wrap justify-center gap-4">
+    <Navbar />
+
+    <div class="max-w-7xl mx-auto mb-8 flex flex-wrap justify-center gap-4 mt-4">
       <button 
         @click="cambiarFiltro('Todos')" 
-        :class="filtroTipo === 'Todos' ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20' : 'bg-transparent border border-white/20 text-white hover:border-yellow-500/50'"
-        class="px-6 py-3 rounded-full transition-all duration-300 flex flex-col items-center group"
+        :class="filtroTipo === 'Todos' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
       >
-        <span class="text-xs font-bold uppercase tracking-widest mb-1">Todas</span>
-        <span class="text-[9px] uppercase tracking-widest opacity-60">All Artworks</span>
+        <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterAll }}</span>
       </button>
 
       <button 
         @click="cambiarFiltro('Pintura')" 
-        :class="filtroTipo === 'Pintura' ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20' : 'bg-transparent border border-white/20 text-white hover:border-yellow-500/50'"
-        class="px-6 py-3 rounded-full transition-all duration-300 flex flex-col items-center group"
+        :class="filtroTipo === 'Pintura' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
       >
-        <span class="text-xs font-bold uppercase tracking-widest mb-1">Pinturas</span>
-        <span class="text-[9px] uppercase tracking-widest opacity-60">Paintings</span>
+        <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterPaintings }}</span>
       </button>
 
       <button 
         @click="cambiarFiltro('Escultura')" 
-        :class="filtroTipo === 'Escultura' ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20' : 'bg-transparent border border-white/20 text-white hover:border-yellow-500/50'"
-        class="px-6 py-3 rounded-full transition-all duration-300 flex flex-col items-center group"
+        :class="filtroTipo === 'Escultura' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
       >
-        <span class="text-xs font-bold uppercase tracking-widest mb-1">Esculturas</span>
-        <span class="text-[9px] uppercase tracking-widest opacity-60">Sculptures</span>
+        <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterSculptures }}</span>
       </button>
+    </div>
+
+    <div class="w-full flex justify-center mb-12">
+      <img src="@/assets/logon.png" alt="Palacio Logo" class="w-40 md:w-56 object-contain opacity-90 drop-shadow-[0_0_15px_rgba(212,175,55,0.2)]" />
     </div>
 
     <div v-if="searchQuery" class="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5 gap-4">
       <p class="text-sm text-neutral-400">
-        Filtrando por <span class="text-[10px] uppercase tracking-widest opacity-60 mx-1">/ Filtering by:</span>
+        {{ t.filteringBy }}
         <span class="text-white font-bold text-base ml-1">"{{ searchQuery }}"</span>
       </p>
-      <button @click="limpiarBusqueda" class="flex flex-col items-center text-yellow-600 hover:text-yellow-500 transition-colors">
-        <span class="text-xs uppercase tracking-widest font-bold">✕ Quitar Filtro</span>
-        <span class="text-[9px] uppercase tracking-widest opacity-70">Clear Filter</span>
+      <button @click="limpiarBusqueda" class="text-[#D4AF37] hover:text-white transition-colors text-xs uppercase tracking-widest font-bold">
+        {{ t.clearFilter }}
       </button>
     </div>
 
-    <div v-if="cargandoInicial" class="flex flex-col items-center justify-center py-20 space-y-2 text-neutral-500">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-yellow-500 mb-4"></div>
-      <span class="uppercase tracking-widest text-xs">Sincronizando galería...</span>
-      <span class="uppercase tracking-widest text-[10px] opacity-60">Syncing gallery...</span>
+    <div v-if="cargandoInicial" class="flex flex-col items-center justify-center py-20 space-y-4 text-neutral-500">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4AF37]"></div>
+      <span class="uppercase tracking-widest text-xs">{{ t.syncing }}</span>
     </div>
 
     <div v-else-if="obrasFiltradas.length > 0" class="max-w-7xl mx-auto flex flex-col">
-      
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
-        <div 
-          v-for="obra in obrasFiltradas" 
-          :key="obra.id"
-          class="group bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-yellow-500/40 transition-all duration-500 flex flex-col relative"
-        >
+        
+        <div v-for="obra in obrasFiltradas" :key="obra.id" class="group bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-[#D4AF37]/40 transition-all duration-500 flex flex-col relative">
+          
           <div class="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[9px] text-white font-bold uppercase tracking-widest">
-            {{ obra.tipo === 'Escultura' ? 'Escultura / Sculpture' : 'Pintura / Painting' }}
+            {{ obra.tipo === 'Escultura' ? t.sculptureLabel : t.paintingLabel }}
           </div>
 
           <div class="relative aspect-square overflow-hidden bg-black">
-            <video :src="obra.video_url" autoplay loop muted playsinline preload="none" class="w-full h-full object-cover"></video>
-            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80"></div>
+            <swiper
+              :modules="modules"
+              :slides-per-view="1"
+              :loop="true"
+              :autoplay="{ delay: 3500, disableOnInteraction: false }"
+              effect="fade"
+              class="w-full h-full"
+            >
+              <swiper-slide v-if="obra.imagen_1"><img :src="obra.imagen_1" class="w-full h-full object-cover"></swiper-slide>
+              <swiper-slide v-if="obra.imagen_2"><img :src="obra.imagen_2" class="w-full h-full object-cover"></swiper-slide>
+              <swiper-slide v-if="obra.imagen_3"><img :src="obra.imagen_3" class="w-full h-full object-cover"></swiper-slide>
+              
+              <swiper-slide v-if="!obra.imagen_1 && !obra.imagen_2 && !obra.imagen_3">
+                <div class="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-500">Sin Imagen</div>
+              </swiper-slide>
+            </swiper>
+            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80 pointer-events-none z-10"></div>
           </div>
 
           <div class="p-6 flex-1 flex flex-col">
             <div class="text-center mb-4">
-              <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-yellow-500 transition-colors lowercase capitalize">
-                {{ obra.titulo }}
+              <h3 class="text-2xl font-serif text-white mb-1 group-hover:text-[#D4AF37] transition-colors lowercase capitalize">
+                {{ obtenerTitulo(obra) }}
               </h3>
-              <p v-if="obra.titulo_en" class="text-neutral-500 text-xs italic lowercase capitalize mb-1">
-                {{ obra.titulo_en }}
-              </p>
-              <p class="text-neutral-400 text-xs italic lowercase capitalize">By {{ obra.autor }} <span class="opacity-50 mx-1">/</span> Por {{ obra.autor }}</p>
+              <p class="text-neutral-400 text-xs italic lowercase capitalize">{{ t.by }} {{ obra.autor }}</p>
             </div>
 
-            <div class="space-y-4 py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
-              <div class="grid grid-cols-2 gap-3 items-center">
-                <div class="text-right border-r border-white/10 pr-3">
-                  <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Technique</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.medidas_en }}</p>
+            <div class="py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
+              <div class="grid grid-cols-2 gap-4 items-start">
+                
+                <div class="text-left pr-2">
+                  <span class="text-[8px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.techniqueLabel }}</span>
+                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight capitalize">
+                    {{ obtenerTecnica(obra) }}
+                  </p>
                 </div>
-                <div class="text-left pl-3">
-                  <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Técnica</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase capitalize">{{ obra.tecnica }}</p>
+                
+                <div class="text-left border-l border-white/10 pl-4">
+                  <span class="text-[8px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.dimensionsLabel }}</span>
+                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
                 </div>
-              </div>
 
-              <div class="grid grid-cols-2 gap-3 items-center">
-                <div class="text-right border-r border-white/10 pr-3">
-                  <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Dimensions</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
-                </div>
-                <div class="text-left pl-3">
-                  <span class="text-[8px] uppercase text-yellow-600/70 tracking-widest block mb-0.5">Medidas</span>
-                  <p class="text-[11px] text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
-                </div>
               </div>
             </div>
 
@@ -106,11 +110,10 @@
               </span>
 
               <router-link 
-                :to="'/DetalleObra/' + obra.id"
-                class="flex flex-col items-center justify-center px-4 py-2 bg-white text-black rounded-full hover:bg-yellow-500 hover:scale-105 transition-all duration-300 group-hover:bg-yellow-500 shadow-xl"
+                :to="'/DetalleObra/' + obra.id" 
+                class="flex items-center justify-center px-5 py-3 bg-white text-black rounded-full hover:bg-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-xl"
               >
-                <span class="text-[10px] md:text-xs font-bold uppercase tracking-widest leading-none mb-1">Ver detalles</span>
-                <span class="text-[7px] md:text-[8.5px] font-bold uppercase tracking-widest opacity-60 leading-none">View details</span>
+                <span class="text-[10px] md:text-xs font-bold uppercase tracking-widest leading-none">{{ t.detailsBtn }}</span>
               </router-link>
             </div>
           </div>
@@ -118,27 +121,20 @@
       </div>
 
       <div v-if="hayMasObras" class="w-full flex justify-center pb-8">
-        <button 
-          @click="cargarMasObras" 
-          :disabled="cargandoMas"
-          class="flex flex-col items-center justify-center px-8 py-3 bg-transparent border border-yellow-600/50 text-yellow-500 hover:bg-yellow-600/10 hover:border-yellow-500 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <button @click="cargarMasObras" :disabled="cargandoMas" class="flex flex-col items-center justify-center px-8 py-3 bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
           <span v-if="cargandoMas" class="flex items-center gap-2">
-            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-yellow-500"></div>
-            <span class="text-xs uppercase tracking-widest">Cargando...</span>
+            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-[#D4AF37]"></div>
+            <span class="text-xs uppercase tracking-widest">{{ t.loading }}</span>
           </span>
-          <span v-else class="flex flex-col items-center">
-            <span class="text-xs font-bold uppercase tracking-widest mb-1">Descubrir más obras</span>
-            <span class="text-[9px] uppercase tracking-widest opacity-60">Discover more artworks</span>
+          <span v-else class="text-xs font-bold uppercase tracking-widest">
+            {{ t.loadMore }}
           </span>
         </button>
       </div>
-
     </div>
 
     <div v-else class="max-w-7xl mx-auto text-center py-24 space-y-2">
-      <p class="text-neutral-500 italic text-lg">No encontramos obras con estos parámetros.</p>
-      <p class="text-neutral-500/50 italic text-sm">No artworks found matching these parameters.</p>
+      <p class="text-neutral-500 italic text-lg">{{ t.noResults }}</p>
     </div>
 
   </div>
@@ -146,20 +142,52 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { supabase, searchQuery } from '../lib/supabase'
+// IMPORTAMOS EL NAVBAR GLOBAL
+import Navbar from '../components/Navbar.vue' 
+import { supabase, searchQuery, idiomaGlobal } from '../lib/supabase'
 
-// Variables de estado
+// IMPORTAMOS SWIPER PARA LAS IMÁGENES
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, EffectFade } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+const modules = [Autoplay, EffectFade];
+
+
+// DICCIONARIO DE 4 IDIOMAS
+const traducciones = {
+  es: { filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: '✕ Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
+  en: { filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: '✕ Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.' },
+  fr: { filterAll: 'Toutes', filterPaintings: 'Peintures', filterSculptures: 'Sculptures', filteringBy: 'Filtrage par:', clearFilter: '✕ Effacer le filtre', syncing: 'Synchronisation...', paintingLabel: 'Peinture', sculptureLabel: 'Sculpture', by: 'Par', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'Voir les détails', loadMore: 'Découvrir plus d\'œuvres', loading: 'Chargement...', noResults: 'Aucune œuvre trouvée.' },
+  ja: { filterAll: 'すべて', filterPaintings: '絵画', filterSculptures: '彫刻', filteringBy: 'フィルター:', clearFilter: '✕ フィルター解除', syncing: 'ギャラリーを同期中...', paintingLabel: '絵画', sculptureLabel: '彫刻', by: '作', techniqueLabel: '手法', dimensionsLabel: '寸法', detailsBtn: '詳細を見る', loadMore: 'もっと作品を見る', loading: '読み込み中...', noResults: '条件に一致する作品はありません。' }
+}
+
+const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
+
+// Lógica de Traducción Dinámica para las Tarjetas
+const obtenerTitulo = (obra) => {
+  if (idiomaGlobal.value === 'en' && obra.titulo_en) return obra.titulo_en;
+  if (idiomaGlobal.value === 'fr' && obra.titulo_fr) return obra.titulo_fr;
+  if (idiomaGlobal.value === 'ja' && obra.titulo_ja) return obra.titulo_ja;
+  return obra.titulo; // Fallback a Español
+}
+
+const obtenerTecnica = (obra) => {
+  if (idiomaGlobal.value === 'en' && obra.medidas_en) return obra.medidas_en;
+  if (idiomaGlobal.value === 'fr' && obra.medidas_fr) return obra.medidas_fr;
+  if (idiomaGlobal.value === 'ja' && obra.medidas_ja) return obra.medidas_ja;
+  return obra.tecnica; // Fallback a Español
+}
+
 const todasLasObras = ref([])
 const cargandoInicial = ref(true)
 const cargandoMas = ref(false)
 const filtroTipo = ref('Todos')
 
-// Configuración de Paginación
 const limitePorPagina = 12
 const paginaActual = ref(0)
 const hayMasObras = ref(true)
 
-// Función principal para buscar obras
 const fetchObras = async (esCargaInicial = true) => {
   try {
     if (esCargaInicial) {
@@ -176,19 +204,16 @@ const fetchObras = async (esCargaInicial = true) => {
     let query = supabase
       .from('obras')
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }) 
       .range(inicio, fin)
 
-    // Aplicar filtros en la base de datos (MUCHO MÁS EFICIENTE)
     if (filtroTipo.value !== 'Todos') {
       query = query.eq('tipo', filtroTipo.value)
     }
 
-    // Nota: La búsqueda por texto global en Supabase es mejor hacerla con 'ilike'
-    // Aquí implementamos una búsqueda básica combinada si hay algo en el buscador
     if (searchQuery.value && searchQuery.value.trim() !== '') {
       const termino = `%${searchQuery.value.trim()}%`
-      query = query.or(`titulo.ilike.${termino},autor.ilike.${termino}`)
+      query = query.or(`titulo.ilike.${termino},autor.ilike.${termino},titulo_en.ilike.${termino}`)
     }
 
     const { data, count, error } = await query
@@ -201,8 +226,6 @@ const fetchObras = async (esCargaInicial = true) => {
       } else {
         todasLasObras.value = [...todasLasObras.value, ...data]
       }
-      
-      // Verificar si hay más obras por cargar basándose en el conteo total
       hayMasObras.value = todasLasObras.value.length < count
     }
 
@@ -214,7 +237,6 @@ const fetchObras = async (esCargaInicial = true) => {
   }
 }
 
-// Controladores de UI
 const cargarMasObras = () => {
   paginaActual.value += 1
   fetchObras(false)
@@ -227,19 +249,14 @@ const cambiarFiltro = (nuevoTipo) => {
 
 const limpiarBusqueda = () => {
   searchQuery.value = ''
-  // El watcher se encargará de hacer el fetch
 }
 
-// Vigilar cambios en la barra de búsqueda global
 watch(searchQuery, () => {
-  // Al buscar, reiniciamos desde la página 0
   fetchObras(true)
 })
 
-// Carga inicial
 onMounted(() => fetchObras(true))
 
-// Computada simplificada (la base de datos ya hace el trabajo pesado)
 const obrasFiltradas = computed(() => todasLasObras.value)
 </script>
 
