@@ -1,9 +1,10 @@
 <template>
-  <nav class="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 px-4 md:px-12 py-3">
+  <nav :class="['fixed top-0 left-0 w-full z-50 backdrop-blur-xl border-b border-white/10 px-4 md:px-12 py-3', fondoTranslucido ? 'bg-black/20' : 'bg-black/80']">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 md:grid md:grid-cols-3 md:gap-0">
       
       <div class="flex-shrink-0 flex items-center md:justify-start">
         <button 
+          v-if="!ocultarBotonVolver"
           @click="router.push(rutaVolver)" 
           class="group flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 bg-black/40 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest text-[10px] font-bold shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]"
         >
@@ -70,9 +71,17 @@ defineProps({
     type: Boolean,
     default: false
   },
+  ocultarBotonVolver: { 
+    type: Boolean,
+    default: false
+  },
   rutaVolver: {
     type: String,
     default: '/'
+  },
+  fondoTranslucido: { // NUEVA PROP: Controla si el navbar es muy transparente
+    type: Boolean,
+    default: false
   }
 })
 
@@ -88,8 +97,6 @@ const nombreIdiomaActual = computed(() => {
   const nombres = { es: 'Español', en: 'English', fr: 'Français', ja: '日本語' }
   return nombres[idiomaGlobal.value] || 'Español'
 })
-
-// Nota: Puedes eliminar la función 'idiomaCortoMayusculas' de tu script si quieres, ya no se usa.
 
 const traducciones = {
   es: { back: 'Volver', search: 'Buscar obras, autores...' },
