@@ -52,6 +52,12 @@ const routes = [
     path: '/homegastro',
     name: 'HomeGastro',
     component: () => import('../views/gastronimia/homegastro.vue')
+  },
+  // NUEVA RUTA: Chao Cafe
+  {
+    path: '/gastronomia/chao-cafe',
+    name: 'ChaoCafe',
+    component: () => import('../views/gastronimia/chaocafe.vue')
   }
 ]
 
