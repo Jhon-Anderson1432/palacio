@@ -13,8 +13,30 @@
           </svg>
         </button>
 
-        <div class="absolute top-6 right-6 p-2 text-white/70 flex items-center gap-1 cursor-pointer hover:text-white">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+        <div class="absolute top-6 right-6 z-50">
+          <button 
+            @click="toggleDropdown"
+            class="flex items-center gap-2 p-2 text-white/70 hover:text-white transition-all bg-white/5 border border-white/10 rounded-full"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-xs font-medium tracking-wider uppercase">{{ idiomaGlobal }}</span>
+          </button>
+
+          <transition name="fade-down">
+            <div v-if="dropdownOpen" class="absolute right-0 top-full mt-2 w-36 bg-[#0a0a0a]/95 backdrop-blur-xl border border-[#D4AF37]/20 rounded-xl shadow-2xl overflow-hidden">
+              <button 
+                v-for="lang in idiomas" 
+                :key="lang.code"
+                @click="seleccionarIdioma(lang.code)"
+                class="w-full text-left px-4 py-3 text-xs text-gray-400 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors duration-200 border-b border-white/5 last:border-none uppercase tracking-widest"
+                :class="{ 'text-[#D4AF37] bg-[#D4AF37]/5': idiomaGlobal === lang.code }"
+              >
+                {{ lang.label }}
+              </button>
+            </div>
+          </transition>
         </div>
 
         <div class="w-48 md:w-56 mb-12 flex flex-col items-center">
@@ -28,11 +50,11 @@
             @click="mostrarMenu = true"
             class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm"
           >
-            Menú
+            {{ t.btnMenu }}
           </button>
           
           <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
-            Reservas
+            {{ t.btnReservas }}
           </button>
           
           <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
@@ -40,11 +62,11 @@
           </button>
           
           <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
-            Danos tu opinión
+            {{ t.btnOpinion }}
           </button>
           
           <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
-            Encuéntranos
+            {{ t.btnUbicacion }}
           </button>
 
         </div>
@@ -59,7 +81,7 @@
         <div class="flex justify-between items-center">
           <button @click="mostrarMenu = false" class="text-white/70 hover:text-[#D4AF37] flex items-center gap-1 text-xs uppercase tracking-widest transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            Volver
+            {{ t.btnVolver }}
           </button>
           <span class="text-[#D4AF37] font-serif tracking-[0.2em] uppercase text-sm md:text-base pr-8">Chao Cafe</span>
           <div></div> 
@@ -67,7 +89,7 @@
 
         <nav class="flex overflow-x-auto gap-3 hide-scrollbar pb-2">
           <button 
-            v-for="cat in categorias" 
+            v-for="cat in categoriasTraducidas" 
             :key="cat.id" 
             @click="categoriaActiva = cat.id"
             :class="[
@@ -84,7 +106,7 @@
 
       <section class="p-4 w-full max-w-4xl mx-auto mt-4">
         <h2 class="text-white/50 text-xs tracking-[0.2em] uppercase mb-4 px-1">
-          {{ categorias.find(c => c.id === categoriaActiva)?.nombre }}
+          {{ categoriasTraducidas.find(c => c.id === categoriaActiva)?.nombre }}
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -125,24 +147,99 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { idiomaGlobal } from '../../lib/supabase'
 
 // Logos
-import logoCafe from '@/assets/logons.png'
+import logoCafe from '@/assets/logonc.png'
 
 const router = useRouter()
 
 // Controla si se ve la pantalla de inicio o el catálogo
 const mostrarMenu = ref(false)
-
-const categorias = [
-  { id: 'cafes', nombre: 'Cafés' },
-  { id: 'especialidades', nombre: 'Especialidades' },
-  { id: 'reposteria', nombre: 'Repostería' },
-  { id: 'bebidas', nombre: 'Bebidas Frías' }
-]
-
 const categoriaActiva = ref('cafes')
 
+// =====================================
+// Lógica de Traducción
+// =====================================
+const dropdownOpen = ref(false)
+
+const toggleDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value
+}
+
+const seleccionarIdioma = (codigo) => {
+  idiomaGlobal.value = codigo
+  dropdownOpen.value = false
+}
+
+const idiomas = [
+  { code: 'es', label: 'ESP' },
+  { code: 'en', label: 'ENG' },
+  { code: 'fr', label: 'FRA' },
+  { code: 'ja', label: 'JPN' }
+]
+
+const traducciones = {
+  es: {
+    btnMenu: 'Menú',
+    btnReservas: 'Reservas',
+    btnOpinion: 'Danos tu opinión',
+    btnUbicacion: 'Encuéntranos',
+    btnVolver: 'Volver',
+    catCafes: 'Cafés',
+    catEspecialidades: 'Especialidades',
+    catReposteria: 'Repostería',
+    catBebidas: 'Bebidas Frías'
+  },
+  en: {
+    btnMenu: 'Menu',
+    btnReservas: 'Reservations',
+    btnOpinion: 'Give us feedback',
+    btnUbicacion: 'Find us',
+    btnVolver: 'Back',
+    catCafes: 'Coffees',
+    catEspecialidades: 'Specialties',
+    catReposteria: 'Pastries',
+    catBebidas: 'Cold Drinks'
+  },
+  fr: {
+    btnMenu: 'Menu',
+    btnReservas: 'Réservations',
+    btnOpinion: 'Donnez votre avis',
+    btnUbicacion: 'Nous trouver',
+    btnVolver: 'Retour',
+    catCafes: 'Cafés',
+    catEspecialidades: 'Spécialités',
+    catReposteria: 'Pâtisseries',
+    catBebidas: 'Boissons Froides'
+  },
+  ja: {
+    btnMenu: 'メニュー',
+    btnReservas: '予約',
+    btnOpinion: 'フィードバック',
+    btnUbicacion: 'アクセス',
+    btnVolver: '戻る',
+    catCafes: 'コーヒー',
+    catEspecialidades: '特産品',
+    catReposteria: 'ペストリー',
+    catBebidas: '冷たい飲み物'
+  }
+}
+
+const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
+
+// Categorías Computadas según idioma
+const categoriasTraducidas = computed(() => [
+  { id: 'cafes', nombre: t.value.catCafes },
+  { id: 'especialidades', nombre: t.value.catEspecialidades },
+  { id: 'reposteria', nombre: t.value.catReposteria },
+  { id: 'bebidas', nombre: t.value.catBebidas }
+])
+
+// =====================================
+// Base de Datos del Menú (Ejemplo)
+// =====================================
+// Nota: Puedes agregar campos de descripción en inglés/francés si lo necesitas en el futuro
 const menu = [
   { 
     id: 1, 
@@ -178,7 +275,6 @@ const menuFiltrado = computed(() => {
 </script>
 
 <style scoped>
-/* Transiciones suaves para la pantalla de inicio */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
@@ -197,7 +293,16 @@ const menuFiltrado = computed(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Ocultar barra de desplazamiento del menú de categorías */
+.fade-down-enter-active,
+.fade-down-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-down-enter-from,
+.fade-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
