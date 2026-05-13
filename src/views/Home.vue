@@ -29,6 +29,11 @@
         <button @click="navegarA('exposiciones')" class="min-w-[200px] px-6 py-4 border border-[#D4AF37] bg-black/40 text-[#D4AF37] backdrop-blur-md hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest font-medium shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] flex items-center justify-center">
           <span class="text-sm">{{ t.btnGallery }}</span>
         </button>
+        
+        <button @click="navegarA('homegastro')" class="min-w-[200px] px-6 py-4 border border-[#D4AF37] bg-black/40 text-[#D4AF37] backdrop-blur-md hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest font-medium shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] flex items-center justify-center">
+          <span class="text-sm">{{ t.btnGastro }}</span>
+        </button>
+
         <button @click="navegarA('historia')" class="min-w-[200px] px-6 py-4 border border-[#D4AF37] bg-black/40 text-[#D4AF37] backdrop-blur-md hover:bg-[#D4AF37] hover:text-black transition-all duration-500 uppercase tracking-widest font-medium shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] flex items-center justify-center">
           <span class="text-sm">{{ t.btnHistory }}</span>
         </button>
@@ -59,11 +64,12 @@ const navegarA = (ruta) => {
   router.push(`/${ruta}`)
 }
 
-// Diccionario de traducciones simplificado
+// Diccionario de traducciones actualizado con el botón de Gastronomía
 const traducciones = {
   es: {
     mainTitle: 'El arte en movimiento',
     btnGallery: 'Galería',
+    btnGastro: 'Gastronomía',
     btnHistory: 'Nuestra Historia',
     btnLocations: 'Otras Sedes',
     btnContacts: 'Contactos'
@@ -71,6 +77,7 @@ const traducciones = {
   en: {
     mainTitle: 'Art in motion',
     btnGallery: 'Gallery',
+    btnGastro: 'Gastronomy',
     btnHistory: 'Our History',
     btnLocations: 'Other Locations',
     btnContacts: 'Contacts'
@@ -78,6 +85,7 @@ const traducciones = {
   fr: {
     mainTitle: 'L\'art en mouvement',
     btnGallery: 'Galerie',
+    btnGastro: 'Gastronomie',
     btnHistory: 'Notre Histoire',
     btnLocations: 'Autres Sites',
     btnContacts: 'Contacts'
@@ -85,6 +93,7 @@ const traducciones = {
   ja: {
     mainTitle: '動く芸術',
     btnGallery: 'ギャラリー',
+    btnGastro: 'ガストロノミー',
     btnHistory: '私たちの歴史',
     btnLocations: 'その他の場所',
     btnContacts: '連絡先'

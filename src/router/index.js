@@ -4,7 +4,7 @@ import Home from '../views/Home.vue'
 import Exposiciones from '../views/Exposiciones.vue'
 import DetalleObra from '../views/DetalleObra.vue'
 import Contactos from '../views/contactos.vue'
-import historia from '@/views/historia.vue' // Cambiado a plural para coincidir con el archivo
+import historia from '@/views/historia.vue'
 
 // Vistas de administración
 import LoginAdmin from '../views/LoginAdmin.vue'
@@ -38,7 +38,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/contactos', // CORREGIDO: Ahora coincide con el botón del Home
+    path: '/contactos',
     name: 'Contactos',
     component: Contactos
   },
@@ -46,6 +46,12 @@ const routes = [
     path: '/historia',
     name: 'Historia',
     component: historia
+  },
+  // NUEVA RUTA: Menú principal de Gastronomía (Rooftop)
+  {
+    path: '/homegastro',
+    name: 'HomeGastro',
+    component: () => import('../views/gastronimia/homegastro.vue')
   }
 ]
 
