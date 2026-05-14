@@ -53,11 +53,11 @@ const routes = [
     name: 'HomeGastro',
     component: () => import('../views/gastronimia/homegastro.vue')
   },
-  // NUEVA RUTA: Chao Cafe
+  // En tu arreglo de routes, reemplaza la de chao-cafe por esta:
   {
-    path: '/gastronomia/chao-cafe',
-    name: 'ChaoCafe',
-    component: () => import('../views/gastronimia/chaocafe.vue')
+  path: '/gastronomia/:local', 
+  name: 'MenuGastro',
+  component: () => import('../views/gastronimia/MenuGastro.vue')
   }
 ]
 
