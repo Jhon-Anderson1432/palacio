@@ -1,22 +1,28 @@
 <template>
   <div class="fixed inset-0 z-[999] bg-[#0a0a0a] overflow-y-auto text-white font-sans flex">
     
-    <aside class="w-64 bg-black border-r border-white/10 p-8 hidden md:flex flex-col">
-      <div class="flex items-center gap-3 mb-10 text-[#D4AF37]">
+    <div v-if="menuAbierto" @click="menuAbierto = false" class="fixed inset-0 bg-black/80 z-40 md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <aside :class="['w-64 bg-black border-r border-white/10 p-6 md:p-8 flex flex-col fixed top-0 left-0 bottom-0 md:relative z-50 transition-transform duration-300', menuAbierto ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+      
+      <div class="flex items-center justify-between gap-3 mb-10 text-[#D4AF37]">
         <span class="font-serif text-xl tracking-tighter uppercase">Palacio Admin</span>
+        <button @click="menuAbierto = false" class="md:hidden text-white/50 hover:text-white p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
       
-      <nav class="space-y-4 flex-1">
+      <nav class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
         <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
           <button
-            @click="pestañaActiva = 'inventario'"
+            @click="pestañaActiva = 'inventario'; menuAbierto = false"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
           >
              <span class="font-medium text-sm uppercase tracking-widest">Inventario</span>
           </button>
 
           <button
-            @click="pestañaActiva = 'mensajes'; fetchMensajes()"
+            @click="pestañaActiva = 'mensajes'; fetchMensajes(); menuAbierto = false"
             :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
           >
              <span class="font-medium text-sm uppercase tracking-widest">Buzón</span>
@@ -24,7 +30,7 @@
           </button>
 
           <button
-            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas()"
+            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
           >
              <span class="font-medium text-sm uppercase tracking-widest">Métricas</span>
@@ -33,7 +39,7 @@
 
         <div v-if="rolUsuario === 'admin_gastro' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
           <button
-            @click="pestañaActiva = 'gastronomia'; fetchGastronomia()"
+            @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
           >
              <span class="font-medium text-sm uppercase tracking-widest">Menú Piso 5</span>
@@ -41,7 +47,7 @@
         </div>
       </nav>
       
-      <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all text-[10px] font-bold uppercase tracking-widest">
+      <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all text-[10px] font-bold uppercase tracking-widest mt-4">
         CERRAR SESIÓN
       </button>
 
@@ -50,42 +56,47 @@
       </router-link>
     </aside>
 
-    <main class="flex-1 flex flex-col">
-      <nav class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-6 flex items-center justify-between gap-6">
+    <main class="flex-1 flex flex-col relative">
+      <nav class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-4 md:p-6 flex items-center justify-between gap-3 md:gap-6">
+        
+        <button @click="menuAbierto = true" class="md:hidden text-[#D4AF37] p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
         <div v-if="pestañaActiva === 'inventario' || pestañaActiva === 'gastronomia'" class="flex-1 max-w-xl relative group">
           <input
             v-model="searchQuery"
             type="text"
-            :placeholder="pestañaActiva === 'inventario' ? 'Buscar obra...' : 'Buscar plato o bebida...'"
-            class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-[#D4AF37]/50 transition-all text-white"
+            :placeholder="pestañaActiva === 'inventario' ? 'Buscar obra...' : 'Buscar plato...'"
+            class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 md:py-3 md:pl-12 pr-4 text-xs md:text-sm outline-none focus:border-[#D4AF37]/50 transition-all text-white"
           />
-          <span class="absolute left-5 top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37]">🔍</span>
+          <span class="absolute left-4 top-3 md:left-5 md:top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37]">🔍</span>
         </div>
         <div v-else class="flex-1">
-          <h2 class="text-xl font-serif text-white">
-            {{ pestañaActiva === 'mensajes' ? 'Mensajes de Contacto' : 'Tablero de Estadísticas' }}
+          <h2 class="text-lg md:text-xl font-serif text-white truncate">
+            {{ pestañaActiva === 'mensajes' ? 'Buzón' : 'Estadísticas' }}
           </h2>
         </div>
         
-        <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
-          <span>+</span> AGREGAR OBRA
+        <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+          <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> OBRA
         </button>
 
-        <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
-          <span>+</span> AGREGAR PLATO
+        <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+          <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> PLATO
         </button>
       </nav>
 
-      <div class="p-8 md:p-12 overflow-y-auto">
+      <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
         
         <div v-if="pestañaActiva === 'inventario'">
-          <header class="mb-12">
-            <h1 class="text-4xl font-serif text-white">Gestión de Catálogo</h1>
-            <p class="text-neutral-500 text-xs mt-2 uppercase tracking-[0.2em]">Sincronizado con Supabase Cloud</p>
+          <header class="mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
+            <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Sincronizado con Supabase Cloud</p>
           </header>
 
-          <div v-if="!cargando" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-[#D4AF37]/20 transition-all relative">
+          <div v-if="!cargando" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all relative">
               <div class="relative mb-5 overflow-hidden rounded-2xl aspect-square bg-black shadow-inner">
                 <img v-if="obra.imagen_1" :src="obra.imagen_1" class="w-full h-full object-cover" />
                 <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">Sin Imagen</div>
@@ -108,25 +119,25 @@
         </div>
 
         <div v-if="pestañaActiva === 'gastronomia'">
-          <header class="mb-12">
-            <h1 class="text-4xl font-serif text-white">Gestión Gastronómica</h1>
-            <p class="text-neutral-500 text-xs mt-2 uppercase tracking-[0.2em]">Menú Piso 5</p>
+          <header class="mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
+            <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Menú Piso 5</p>
           </header>
 
-          <div v-if="!cargandoGastro" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div v-for="item in gastroFiltrados" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-[#D4AF37]/20 transition-all relative flex flex-col justify-between">
+          <div v-if="!cargandoGastro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div v-for="item in gastroFiltrados" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all relative flex flex-col justify-between">
               <div>
                 <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
-                  <div>
-                    <h3 class="text-white font-serif text-xl leading-tight">{{ capitalizarInicial(item.nombre) }}</h3>
+                  <div class="pr-2">
+                    <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ capitalizarInicial(item.nombre) }}</h3>
                     <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ capitalizarInicial(item.nombre_en) }}</p>
                   </div>
-                  <span class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter">${{ item.precio }}</span>
+                  <span class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap">${{ item.precio }}</span>
                 </div>
                 
                 <div class="space-y-2 mb-6">
-                  <p v-if="item.descripcion" class="text-gray-400 text-xs line-clamp-2">{{ capitalizarInicial(item.descripcion) }}</p>
-                  <div class="flex gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
+                  <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ capitalizarInicial(item.descripcion) }}</p>
+                  <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
                     <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace('-', ' ') }}</span>
                     <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
                     <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
@@ -148,21 +159,21 @@
           <div v-else-if="mensajes.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
             No hay mensajes en la bandeja de entrada.
           </div>
-          <div v-else class="space-y-4 max-w-4xl">
-            <div v-for="msj in mensajes" :key="msj.id" :class="['p-6 rounded-2xl border transition-all', msj.leido ? 'bg-white/5 border-white/5 opacity-70' : 'bg-neutral-900 border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]']">
-              <div class="flex justify-between items-start mb-4">
+          <div v-else class="space-y-4 max-w-4xl mx-auto">
+            <div v-for="msj in mensajes" :key="msj.id" :class="['p-5 md:p-6 rounded-2xl border transition-all', msj.leido ? 'bg-white/5 border-white/5 opacity-70' : 'bg-neutral-900 border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]']">
+              <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
                 <div>
-                  <h4 class="text-white font-bold text-lg flex items-center gap-2">
+                  <h4 class="text-white font-bold text-base md:text-lg flex items-center gap-2">
                     {{ capitalizarInicial(msj.nombre) }}
                     <span v-if="!msj.leido" class="bg-[#D4AF37] w-2 h-2 rounded-full inline-block"></span>
                   </h4>
-                  <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline">{{ msj.email }}</a>
+                  <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline break-all">{{ msj.email }}</a>
                 </div>
-                <span class="text-neutral-500 text-xs">{{ new Date(msj.creado_en).toLocaleDateString() }}</span>
+                <span class="text-neutral-500 text-[10px] md:text-xs">{{ new Date(msj.creado_en).toLocaleDateString() }}</span>
               </div>
-              <p class="text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">{{ msj.mensaje }}</p>
-              <div class="mt-6 flex gap-3 border-t border-white/5 pt-4">
-                <button @click="marcarLeido(msj)" v-if="!msj.leido" class="text-[10px] uppercase tracking-widest font-bold text-white hover:text-[#D4AF37] transition-colors">✔ Marcar como leído</button>
+              <p class="text-neutral-300 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{{ msj.mensaje }}</p>
+              <div class="mt-6 flex flex-wrap gap-3 border-t border-white/5 pt-4">
+                <button @click="marcarLeido(msj)" v-if="!msj.leido" class="flex-1 md:flex-none text-[10px] uppercase tracking-widest font-bold text-white hover:text-[#D4AF37] transition-colors text-left">✔ Marcar leído</button>
                 <button @click="eliminarMensaje(msj.id)" class="text-[10px] uppercase tracking-widest font-bold text-red-500 hover:text-red-400 transition-colors">🗑 Eliminar</button>
               </div>
             </div>
@@ -171,39 +182,39 @@
 
         <div v-if="pestañaActiva === 'estadisticas'">
           <div class="max-w-5xl mx-auto space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="bg-neutral-900 p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-40">
-                <span class="text-xs text-neutral-400 uppercase tracking-widest font-bold">Total en Catálogo</span>
-                <span class="text-5xl font-serif text-white">{{ stats.total }}</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Catálogo</span>
+                <span class="text-4xl md:text-5xl font-serif text-white">{{ stats.total }}</span>
               </div>
-              <div class="bg-neutral-900 p-6 rounded-3xl border border-[#D4AF37]/20 flex flex-col justify-between h-40">
-                <span class="text-xs text-[#D4AF37]/70 uppercase tracking-widest font-bold">Total Pinturas</span>
-                <span class="text-5xl font-serif text-[#D4AF37]">{{ stats.pinturas }}</span>
+              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/20 flex flex-col justify-between h-32 md:h-40">
+                <span class="text-[10px] md:text-xs text-[#D4AF37]/70 uppercase tracking-widest font-bold">Total Pinturas</span>
+                <span class="text-4xl md:text-5xl font-serif text-[#D4AF37]">{{ stats.pinturas }}</span>
               </div>
-              <div class="bg-neutral-900 p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-40">
-                <span class="text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Esculturas</span>
-                <span class="text-5xl font-serif text-white">{{ stats.esculturas }}</span>
+              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Esculturas</span>
+                <span class="text-4xl md:text-5xl font-serif text-white">{{ stats.esculturas }}</span>
               </div>
             </div>
 
-            <div class="bg-neutral-900 border border-white/5 rounded-3xl p-8">
-              <h3 class="text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Registro de Modificaciones</h3>
+            <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8">
+              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Registro de Modificaciones</h3>
               <div v-if="logsActividad.length > 0" class="space-y-4">
-                <div v-for="(log, index) in logsActividad" :key="index" class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
+                <div v-for="(log, index) in logsActividad" :key="index" class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-white/5 rounded-xl border border-white/5 gap-4">
                   <div class="flex items-center gap-4">
                     <span class="text-xl">{{ log.accion === 'Creación' ? '✨' : '📝' }}</span>
                     <div>
-                      <p class="text-sm text-white font-bold">{{ log.accion }} de Obra</p>
-                      <p class="text-xs text-neutral-400">{{ capitalizarInicial(log.titulo) }}</p>
+                      <p class="text-xs md:text-sm text-white font-bold">{{ log.accion }} de Obra</p>
+                      <p class="text-[10px] md:text-xs text-neutral-400">{{ capitalizarInicial(log.titulo) }}</p>
                     </div>
                   </div>
-                  <div class="text-right">
+                  <div class="sm:text-right flex sm:block justify-between items-center border-t border-white/5 sm:border-0 pt-2 sm:pt-0">
                     <p class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">{{ log.fechaFormateada }}</p>
                     <p class="text-[10px] text-neutral-500 uppercase">{{ log.horaFormateada }}</p>
                   </div>
                 </div>
               </div>
-              <div v-else class="text-center text-neutral-500 text-sm py-4">
+              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-4">
                 Aún no hay registros de actividad.
               </div>
             </div>
@@ -213,22 +224,22 @@
       </div>
     </main>
 
-    <div v-if="showForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
-      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <h2 class="text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
+    <div v-if="showForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg">
+      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
+        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
         <form @submit.prevent="guardarObra" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px]">
               <input type="file" @change="(e) => handleImageChange(e, 1)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
               <span class="text-lg mb-1">{{ imgFiles[1] ? '✅' : '📷' }}</span>
               <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[1] ? imgFiles[1].name : (form.imagen_1 ? 'Cambiar Foto 1' : 'Foto Principal') }}</p>
             </div>
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px]">
               <input type="file" @change="(e) => handleImageChange(e, 2)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
               <span class="text-lg mb-1">{{ imgFiles[2] ? '✅' : '📷' }}</span>
               <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[2] ? imgFiles[2].name : (form.imagen_2 ? 'Cambiar Foto 2' : 'Foto Detalle A') }}</p>
             </div>
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
+            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px]">
               <input type="file" @change="(e) => handleImageChange(e, 3)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
               <span class="text-lg mb-1">{{ imgFiles[3] ? '✅' : '📷' }}</span>
               <p class="text-[8px] uppercase tracking-widest text-neutral-400">{{ imgFiles[3] ? imgFiles[3].name : (form.imagen_3 ? 'Cambiar Foto 3' : 'Foto Detalle B') }}</p>
@@ -236,111 +247,111 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">TIPO DE OBRA...</option>
               <option value="Pintura" class="bg-neutral-900">PINTURA</option>
               <option value="Escultura" class="bg-neutral-900">ESCULTURA</option>
             </select>
-            <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
-            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+            <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
           </div>
           
-          <input v-model="form.medidas" placeholder="DIMENSIONES UNIVERSALES (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+          <input v-model="form.medidas" placeholder="DIMENSIONES (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/10 pt-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
             
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL (Obligatorio)</h4>
-              <input v-model="form.titulo" placeholder="TÍTULO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
-              <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO SOBRE LIENZO)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
+              <input v-model="form.titulo" placeholder="TÍTULO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+              <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH (Obligatorio)</h4>
-              <input v-model="form.titulo_en" placeholder="TITLE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
-              <input v-model="form.medidas_en" placeholder="TECHNIQUE (EX: OIL ON CANVAS)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH</h4>
+              <input v-model="form.titulo_en" placeholder="TITLE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
+              <input v-model="form.medidas_en" placeholder="TECHNIQUE (OIL)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic" required>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS (Opcional)</h4>
-              <input v-model="form.titulo_fr" placeholder="TITRE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
-              <input v-model="form.medidas_fr" placeholder="TECHNIQUE (EX: HUILE SUR TOILE)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS</h4>
+              <input v-model="form.titulo_fr" placeholder="TITRE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <input v-model="form.medidas_fr" placeholder="TECHNIQUE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語 (Opcional)</h4>
-              <input v-model="form.titulo_ja" placeholder="タイトル (TAITORU)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
-              <input v-model="form.medidas_ja" placeholder="手法 (EX: キャンバスに油彩)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
+              <input v-model="form.titulo_ja" placeholder="タイトル" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <input v-model="form.medidas_ja" placeholder="手法" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
             </div>
 
           </div>
 
-          <div class="flex gap-4 mt-8">
-            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-xs uppercase tracking-widest transition-colors" :disabled="enviando">
-              {{ enviando ? 'PROCESANDO...' : (obraEditandoId ? 'ACTUALIZAR OBRA' : 'PUBLICAR OBRA') }}
+          <div class="flex gap-3 md:gap-4 mt-8">
+            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-colors" :disabled="enviando">
+              {{ enviando ? 'PROCESANDO...' : (obraEditandoId ? 'ACTUALIZAR' : 'PUBLICAR') }}
             </button>
-            <button @click="showForm = false" type="button" class="w-1/3 bg-red-500/10 py-4 rounded-xl text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
+            <button @click="showForm = false" type="button" class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div v-if="showGastroForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
-      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <h2 class="text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
+    <div v-if="showGastroForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg">
+      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
+        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
         
         <form @submit.prevent="guardarGastro" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <select v-model="formGastro.local" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+            <select v-model="formGastro.local" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">ESTABLECIMIENTO...</option>
               <option value="chao-cafe" class="bg-neutral-900">CHAO CAFE</option>
               <option value="chao-pescado" class="bg-neutral-900">CHAO PESCAO</option>
               <option value="sky-bar" class="bg-neutral-900">SKY BAR</option>
             </select>
             
-            <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+            <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
               <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{ cat.nombre }}</option>
             </select>
             
-            <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (SOLO NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+            <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
           </div>
           
-          <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+          <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/10 pt-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
             
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL (Obligatorio)</h4>
-              <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO/BEBIDA" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
-              <textarea v-model="formGastro.descripcion" placeholder="DESCRIPCIÓN (INGREDIENTES)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
+              <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+              <textarea v-model="formGastro.descripcion" placeholder="DESCRIPCIÓN" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH (Opcional)</h4>
-              <input v-model="formGastro.nombre_en" placeholder="DISH/DRINK NAME" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic">
-              <textarea v-model="formGastro.descripcion_en" placeholder="DESCRIPTION (INGREDIENTS)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic resize-none"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH</h4>
+              <input v-model="formGastro.nombre_en" placeholder="DISH NAME" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic">
+              <textarea v-model="formGastro.descripcion_en" placeholder="DESCRIPTION" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic resize-none"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS (Opcional)</h4>
-              <input v-model="formGastro.nombre_fr" placeholder="NOM DU PLAT/BOISSON" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
-              <textarea v-model="formGastro.descripcion_fr" placeholder="DESCRIPTION (INGRÉDIENTS)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS</h4>
+              <input v-model="formGastro.nombre_fr" placeholder="NOM DU PLAT" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <textarea v-model="formGastro.descripcion_fr" placeholder="DESCRIPTION" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語 (Opcional)</h4>
-              <input v-model="formGastro.nombre_ja" placeholder="料理・飲み物の名前" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
-              <textarea v-model="formGastro.descripcion_ja" placeholder="説明 (材料)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
+              <input v-model="formGastro.nombre_ja" placeholder="料理の名前" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <textarea v-model="formGastro.descripcion_ja" placeholder="説明" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
             </div>
 
           </div>
 
-          <div class="flex gap-4 mt-8">
-            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-xs uppercase tracking-widest transition-colors" :disabled="enviandoGastro">
+          <div class="flex gap-3 md:gap-4 mt-8">
+            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-colors" :disabled="enviandoGastro">
               {{ enviandoGastro ? 'PROCESANDO...' : (gastroEditandoId ? 'ACTUALIZAR PLATO' : 'PUBLICAR PLATO') }}
             </button>
-            <button @click="showGastroForm = false" type="button" class="w-1/3 bg-red-500/10 py-4 rounded-xl text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
+            <button @click="showGastroForm = false" type="button" class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
           </div>
         </form>
       </div>
@@ -354,12 +365,8 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { supabase, searchQuery } from '../lib/supabase'
 import { useRouter } from 'vue-router'
 
-// ==========================================
-// FUNCIÓN MEJORADA: FUERZA A MINÚSCULAS EL RESTO
-// ==========================================
 const capitalizarInicial = (texto) => {
   if (typeof texto !== 'string' || !texto) return texto
-  // Convierte todo a minúsculas, y luego capitaliza solo la primera letra
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
 }
 
@@ -367,6 +374,7 @@ const router = useRouter()
 const pestañaActiva = ref('inventario')
 
 const rolUsuario = ref('superadmin') 
+const menuAbierto = ref(false) // ESTADO PARA CONTROLAR EL MENÚ MÓVIL
 
 // ==========================================
 // 1. LÓGICA DE GALERÍA DE ARTE 
