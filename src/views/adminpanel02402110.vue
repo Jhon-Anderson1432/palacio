@@ -7,27 +7,38 @@
       </div>
       
       <nav class="space-y-4 flex-1">
-        <button 
-          @click="pestañaActiva = 'inventario'"
-          :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-        >
-           <span class="font-medium text-sm uppercase tracking-widest">Inventario</span>
-        </button>
+        <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
+          <button
+            @click="pestañaActiva = 'inventario'"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          >
+             <span class="font-medium text-sm uppercase tracking-widest">Inventario</span>
+          </button>
 
-        <button 
-          @click="pestañaActiva = 'mensajes'; fetchMensajes()"
-          :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-        >
-           <span class="font-medium text-sm uppercase tracking-widest">Buzón</span>
-           <span v-if="mensajesNoLeidos > 0" class="bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
-        </button>
+          <button
+            @click="pestañaActiva = 'mensajes'; fetchMensajes()"
+            :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          >
+             <span class="font-medium text-sm uppercase tracking-widest">Buzón</span>
+             <span v-if="mensajesNoLeidos > 0" class="bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
+          </button>
 
-        <button 
-          @click="pestañaActiva = 'estadisticas'; calcularEstadisticas()"
-          :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-        >
-           <span class="font-medium text-sm uppercase tracking-widest">Métricas</span>
-        </button>
+          <button
+            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas()"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          >
+             <span class="font-medium text-sm uppercase tracking-widest">Métricas</span>
+          </button>
+        </div>
+
+        <div v-if="rolUsuario === 'admin_gastro' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
+          <button
+            @click="pestañaActiva = 'gastronomia'; fetchGastronomia()"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
+          >
+             <span class="font-medium text-sm uppercase tracking-widest">Menú Piso 5</span>
+          </button>
+        </div>
       </nav>
       
       <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all text-[10px] font-bold uppercase tracking-widest">
@@ -41,11 +52,11 @@
 
     <main class="flex-1 flex flex-col">
       <nav class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-6 flex items-center justify-between gap-6">
-        <div v-if="pestañaActiva === 'inventario'" class="flex-1 max-w-xl relative group">
-          <input 
+        <div v-if="pestañaActiva === 'inventario' || pestañaActiva === 'gastronomia'" class="flex-1 max-w-xl relative group">
+          <input
             v-model="searchQuery"
-            type="text" 
-            placeholder="Buscar obra..." 
+            type="text"
+            :placeholder="pestañaActiva === 'inventario' ? 'Buscar obra...' : 'Buscar plato o bebida...'"
             class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-[#D4AF37]/50 transition-all text-white"
           />
           <span class="absolute left-5 top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37]">🔍</span>
@@ -58,6 +69,10 @@
         
         <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
           <span>+</span> AGREGAR OBRA
+        </button>
+
+        <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
+          <span>+</span> AGREGAR PLATO
         </button>
       </nav>
 
@@ -79,9 +94,9 @@
                 <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest">{{ obra.tipo || 'Pintura' }}</div>
               </div>
               <div class="space-y-3">
-                <h3 class="text-white font-serif text-xl leading-tight">{{ obra.titulo }}</h3>
-                <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ obra.titulo_en }}</p>
-                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ obra.autor }}</p>
+                <h3 class="text-white font-serif text-xl leading-tight">{{ capitalizarInicial(obra.titulo) }}</h3>
+                <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ capitalizarInicial(obra.titulo_en) }}</p>
+                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ capitalizarInicial(obra.autor) }}</p>
               </div>
               <div class="flex gap-2 mt-6 pt-4 border-t border-white/5">
                 <button @click="openForm(obra)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
@@ -90,6 +105,42 @@
             </div>
           </div>
           <div v-if="cargando" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Conectando...</div>
+        </div>
+
+        <div v-if="pestañaActiva === 'gastronomia'">
+          <header class="mb-12">
+            <h1 class="text-4xl font-serif text-white">Gestión Gastronómica</h1>
+            <p class="text-neutral-500 text-xs mt-2 uppercase tracking-[0.2em]">Menú Piso 5</p>
+          </header>
+
+          <div v-if="!cargandoGastro" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-for="item in gastroFiltrados" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-5 hover:border-[#D4AF37]/20 transition-all relative flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
+                  <div>
+                    <h3 class="text-white font-serif text-xl leading-tight">{{ capitalizarInicial(item.nombre) }}</h3>
+                    <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ capitalizarInicial(item.nombre_en) }}</p>
+                  </div>
+                  <span class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter">${{ item.precio }}</span>
+                </div>
+                
+                <div class="space-y-2 mb-6">
+                  <p v-if="item.descripcion" class="text-gray-400 text-xs line-clamp-2">{{ capitalizarInicial(item.descripcion) }}</p>
+                  <div class="flex gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
+                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace('-', ' ') }}</span>
+                    <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
+                    <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-2 mt-auto pt-4 border-t border-white/5">
+                <button @click="openGastroForm(item)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
+                <button @click="deleteProductoGastro(item)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all">Eliminar</button>
+              </div>
+            </div>
+          </div>
+          <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
         </div>
 
         <div v-if="pestañaActiva === 'mensajes'">
@@ -102,7 +153,7 @@
               <div class="flex justify-between items-start mb-4">
                 <div>
                   <h4 class="text-white font-bold text-lg flex items-center gap-2">
-                    {{ msj.nombre }} 
+                    {{ capitalizarInicial(msj.nombre) }}
                     <span v-if="!msj.leido" class="bg-[#D4AF37] w-2 h-2 rounded-full inline-block"></span>
                   </h4>
                   <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline">{{ msj.email }}</a>
@@ -120,7 +171,6 @@
 
         <div v-if="pestañaActiva === 'estadisticas'">
           <div class="max-w-5xl mx-auto space-y-8">
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="bg-neutral-900 p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-40">
                 <span class="text-xs text-neutral-400 uppercase tracking-widest font-bold">Total en Catálogo</span>
@@ -144,7 +194,7 @@
                     <span class="text-xl">{{ log.accion === 'Creación' ? '✨' : '📝' }}</span>
                     <div>
                       <p class="text-sm text-white font-bold">{{ log.accion }} de Obra</p>
-                      <p class="text-xs text-neutral-400">{{ log.titulo }}</p>
+                      <p class="text-xs text-neutral-400">{{ capitalizarInicial(log.titulo) }}</p>
                     </div>
                   </div>
                   <div class="text-right">
@@ -157,7 +207,6 @@
                 Aún no hay registros de actividad.
               </div>
             </div>
-
           </div>
         </div>
 
@@ -167,9 +216,7 @@
     <div v-if="showForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
       <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
         <h2 class="text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
-        
         <form @submit.prevent="guardarObra" class="space-y-6">
-          
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/30 flex flex-col items-center justify-center min-h-[100px]">
               <input type="file" @change="(e) => handleImageChange(e, 1)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -237,6 +284,68 @@
         </form>
       </div>
     </div>
+
+    <div v-if="showGastroForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
+      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <h2 class="text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
+        
+        <form @submit.prevent="guardarGastro" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <select v-model="formGastro.local" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">ESTABLECIMIENTO...</option>
+              <option value="chao-cafe" class="bg-neutral-900">CHAO CAFE</option>
+              <option value="chao-pescado" class="bg-neutral-900">CHAO PESCAO</option>
+              <option value="sky-bar" class="bg-neutral-900">SKY BAR</option>
+            </select>
+            
+            <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
+              <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{ cat.nombre }}</option>
+            </select>
+            
+            <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (SOLO NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+          </div>
+          
+          <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/10 pt-6">
+            
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL (Obligatorio)</h4>
+              <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO/BEBIDA" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
+              <textarea v-model="formGastro.descripcion" placeholder="DESCRIPCIÓN (INGREDIENTES)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH (Opcional)</h4>
+              <input v-model="formGastro.nombre_en" placeholder="DISH/DRINK NAME" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic">
+              <textarea v-model="formGastro.descripcion_en" placeholder="DESCRIPTION (INGREDIENTS)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 uppercase italic resize-none"></textarea>
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS (Opcional)</h4>
+              <input v-model="formGastro.nombre_fr" placeholder="NOM DU PLAT/BOISSON" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <textarea v-model="formGastro.descripcion_fr" placeholder="DESCRIPTION (INGRÉDIENTS)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+            </div>
+
+            <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語 (Opcional)</h4>
+              <input v-model="formGastro.nombre_ja" placeholder="料理・飲み物の名前" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase">
+              <textarea v-model="formGastro.descripcion_ja" placeholder="説明 (材料)" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
+            </div>
+
+          </div>
+
+          <div class="flex gap-4 mt-8">
+            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:bg-neutral-700 text-xs uppercase tracking-widest transition-colors" :disabled="enviandoGastro">
+              {{ enviandoGastro ? 'PROCESANDO...' : (gastroEditandoId ? 'ACTUALIZAR PLATO' : 'PUBLICAR PLATO') }}
+            </button>
+            <button @click="showGastroForm = false" type="button" class="w-1/3 bg-red-500/10 py-4 rounded-xl text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-colors">CANCELAR</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -245,9 +354,23 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { supabase, searchQuery } from '../lib/supabase'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
-const pestañaActiva = ref('inventario') 
+// ==========================================
+// FUNCIÓN MEJORADA: FUERZA A MINÚSCULAS EL RESTO
+// ==========================================
+const capitalizarInicial = (texto) => {
+  if (typeof texto !== 'string' || !texto) return texto
+  // Convierte todo a minúsculas, y luego capitaliza solo la primera letra
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
+}
 
+const router = useRouter()
+const pestañaActiva = ref('inventario')
+
+const rolUsuario = ref('superadmin') 
+
+// ==========================================
+// 1. LÓGICA DE GALERÍA DE ARTE 
+// ==========================================
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
@@ -256,12 +379,12 @@ const obraEditandoId = ref(null)
 
 const imgFiles = reactive({ 1: null, 2: null, 3: null })
 
-const form = ref({ 
-  titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '', 
-  autor: '', precio: '', 
-  tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '', 
-  medidas: '', tipo: '', 
-  imagen_1: null, imagen_2: null, imagen_3: null 
+const form = ref({
+  titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '',
+  autor: '', precio: '',
+  tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
+  medidas: '', tipo: '',
+  imagen_1: null, imagen_2: null, imagen_3: null
 })
 
 const mensajes = ref([])
@@ -304,11 +427,11 @@ const calcularEstadisticas = () => {
 const mensajesNoLeidos = computed(() => mensajes.value.filter(m => !m.leido).length)
 
 const obrasFiltradas = computed(() => {
-  const query = searchQuery.value.toLowerCase().trim()
+  const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
   if (!query) return todasLasObras.value
-  return todasLasObras.value.filter(o => 
-    o.titulo.toLowerCase().includes(query) || 
-    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || 
+  return todasLasObras.value.filter(o =>
+    o.titulo.toLowerCase().includes(query) ||
+    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) ||
     o.autor.toLowerCase().includes(query)
   )
 })
@@ -323,7 +446,7 @@ const openForm = (obra = null) => {
 
   if (obra) {
     obraEditandoId.value = obra.id
-    form.value = { 
+    form.value = {
       ...obra,
       titulo_fr: obra.titulo_fr || '',
       titulo_ja: obra.titulo_ja || '',
@@ -332,12 +455,12 @@ const openForm = (obra = null) => {
     }
   } else {
     obraEditandoId.value = null
-    form.value = { 
-      titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '', 
-      autor: '', precio: '', 
-      tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '', 
-      medidas: '', tipo: '', 
-      imagen_1: null, imagen_2: null, imagen_3: null 
+    form.value = {
+      titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '',
+      autor: '', precio: '',
+      tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
+      medidas: '', tipo: '',
+      imagen_1: null, imagen_2: null, imagen_3: null
     }
   }
   showForm.value = true
@@ -347,10 +470,10 @@ const uploadImageAndGetUrl = async (file) => {
   if (!file) return null
   const fileExt = file.name.split('.').pop()
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-  
+ 
   const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, file)
   if (uploadError) throw uploadError
-  
+ 
   const { data: { publicUrl } } = supabase.storage.from('obras-imagenes').getPublicUrl(fileName)
   return publicUrl
 }
@@ -362,14 +485,21 @@ const guardarObra = async () => {
     let url2 = imgFiles[2] ? await uploadImageAndGetUrl(imgFiles[2]) : form.value.imagen_2
     let url3 = imgFiles[3] ? await uploadImageAndGetUrl(imgFiles[3]) : form.value.imagen_3
 
-    const payload = { 
-      ...form.value, 
-      imagen_1: url1, 
-      imagen_2: url2, 
-      imagen_3: url3 
+    const payload = {
+      ...form.value,
+      imagen_1: url1,
+      imagen_2: url2,
+      imagen_3: url3
     }
-    
-    delete payload.id 
+   
+    payload.titulo = capitalizarInicial(payload.titulo)
+    payload.autor = capitalizarInicial(payload.autor)
+    payload.tecnica = capitalizarInicial(payload.tecnica)
+    if(payload.titulo_en) payload.titulo_en = capitalizarInicial(payload.titulo_en)
+    if(payload.titulo_fr) payload.titulo_fr = capitalizarInicial(payload.titulo_fr)
+    if(payload.titulo_ja) payload.titulo_ja = capitalizarInicial(payload.titulo_ja)
+
+    delete payload.id
     delete payload.created_at
 
     if (obraEditandoId.value) {
@@ -380,7 +510,7 @@ const guardarObra = async () => {
       const { error } = await supabase.from('obras').insert([payload])
       if (error) throw error
     }
-    
+   
     alert("¡Obra procesada con éxito!")
     showForm.value = false
     fetchObras()
@@ -412,6 +542,119 @@ const eliminarMensaje = async (id) => {
   }
 }
 
+// ==========================================
+// 2. LÓGICA DE GASTRONOMÍA 
+// ==========================================
+const todosLosPlatos = ref([])
+const cargandoGastro = ref(false)
+const showGastroForm = ref(false)
+const enviandoGastro = ref(false)
+const gastroEditandoId = ref(null)
+
+const categoriasDisponibles = [
+  { id: 'botellas', nombre: 'BOTELLAS' }, { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'tragos', nombre: 'TRAGOS' },
+  { id: 'bebidas_refrescantes', nombre: 'BEBIDAS REFRESCANTES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
+  { id: 'bebidas_calientes_y_frias', nombre: 'CALIENTES Y FRÍAS' }, { id: 'jugos_pulpa', nombre: 'JUGOS DE PULPA' },
+  { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'platos_fuertes', nombre: 'PLATOS FUERTES' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' },
+  { id: 'cremas', nombre: 'CREMAS' }, { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida', nombre: 'COMIDA' }, { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
+]
+
+const formGastro = ref({
+  local: '', categoria: '', precio: null, etiqueta: '',
+  nombre: '', descripcion: '',
+  nombre_en: '', descripcion_en: '',
+  nombre_fr: '', descripcion_fr: '',
+  nombre_ja: '', descripcion_ja: ''
+})
+
+const fetchGastronomia = async () => {
+  cargandoGastro.value = true
+  const { data } = await supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
+  todosLosPlatos.value = data || []
+  cargandoGastro.value = false
+}
+
+const gastroFiltrados = computed(() => {
+  const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
+  if (!query) return todosLosPlatos.value
+  return todosLosPlatos.value.filter(o =>
+    o.nombre.toLowerCase().includes(query) ||
+    (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) ||
+    o.categoria.toLowerCase().includes(query)
+  )
+})
+
+const obtenerNombreCategoria = (id) => {
+  const cat = categoriasDisponibles.find(c => c.id === id)
+  return cat ? cat.nombre : id
+}
+
+const openGastroForm = (item = null) => {
+  if (item) {
+    gastroEditandoId.value = item.id
+    formGastro.value = { 
+      ...item,
+      nombre_en: item.nombre_en || '', descripcion_en: item.descripcion_en || '',
+      nombre_fr: item.nombre_fr || '', descripcion_fr: item.descripcion_fr || '',
+      nombre_ja: item.nombre_ja || '', descripcion_ja: item.descripcion_ja || ''
+    }
+  } else {
+    gastroEditandoId.value = null
+    formGastro.value = {
+      local: '', categoria: '', precio: null, etiqueta: '',
+      nombre: '', descripcion: '',
+      nombre_en: '', descripcion_en: '',
+      nombre_fr: '', descripcion_fr: '',
+      nombre_ja: '', descripcion_ja: ''
+    }
+  }
+  showGastroForm.value = true
+}
+
+const guardarGastro = async () => {
+  enviandoGastro.value = true
+  try {
+    const payload = { ...formGastro.value }
+    
+    payload.nombre = capitalizarInicial(payload.nombre)
+    payload.descripcion = capitalizarInicial(payload.descripcion)
+    payload.nombre_en = capitalizarInicial(payload.nombre_en)
+    payload.descripcion_en = capitalizarInicial(payload.descripcion_en)
+    payload.nombre_fr = capitalizarInicial(payload.nombre_fr)
+    payload.descripcion_fr = capitalizarInicial(payload.descripcion_fr)
+    payload.nombre_ja = capitalizarInicial(payload.nombre_ja)
+    payload.descripcion_ja = capitalizarInicial(payload.descripcion_ja)
+    payload.etiqueta = capitalizarInicial(payload.etiqueta)
+
+    delete payload.id; delete payload.created_at;
+
+    if (gastroEditandoId.value) {
+      const { error } = await supabase.from('menu_gastronomia').update(payload).eq('id', gastroEditandoId.value)
+      if (error) throw error
+    } else {
+      const { error } = await supabase.from('menu_gastronomia').insert([payload])
+      if (error) throw error
+    }
+   
+    alert("¡Plato procesado con éxito!")
+    showGastroForm.value = false
+    fetchGastronomia()
+
+  } catch (err) {
+    alert("Error de subida: " + err.message)
+    console.error(err)
+  } finally {
+    enviandoGastro.value = false
+  }
+}
+
+const deleteProductoGastro = async (item) => {
+  if (confirm(`¿Peligro: Eliminar definitivamente "${item.nombre}"?`)) {
+    await supabase.from('menu_gastronomia').delete().eq('id', item.id)
+    fetchGastronomia()
+  }
+}
+
 const handleLogout = async () => {
   await supabase.auth.signOut()
   router.push('/login-privado')
@@ -420,5 +663,6 @@ const handleLogout = async () => {
 onMounted(() => {
   fetchObras()
   fetchMensajes()
+  fetchGastronomia()
 })
 </script>
