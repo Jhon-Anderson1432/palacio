@@ -1,7 +1,7 @@
 <template>
   <div id="app-root">
     
-    <Navbar v-if="$route.name !== 'Home' && $route.name !== 'DetalleObra' && $route.name !== 'HomeGastro' && $route.name !== 'MenuGastro'" />    
+    <Navbar v-if="$route.name !== 'Home' && $route.name !== 'DetalleObra' && $route.name !== 'HomeGastro' && $route.name !== 'MenuGastro' && $route.name !== 'Login'" />    
     
     <main>
       <router-view />
