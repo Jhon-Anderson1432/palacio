@@ -183,7 +183,7 @@ const cargarMenu = async () => {
     const { data, error } = await supabase
       .from('menu_gastronomia')
       .select('*')
-      .eq('local', localActual) // FILTRO POR CAFETERÍA
+      .ilike('local', `%${localActual}%`)
       .order('nombre', { ascending: true })
       
     if (error) throw error

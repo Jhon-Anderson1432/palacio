@@ -138,7 +138,7 @@
                 <div class="space-y-2 mb-6">
                   <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ capitalizarInicial(item.descripcion) }}</p>
                   <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
-                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace('-', ' ') }}</span>
+                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace(/-/g, ' ').replace(/,/g, ' | ') }}</span>
                     <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
                     <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
                   </div>
@@ -302,12 +302,21 @@
         
         <form @submit.prevent="guardarGastro" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <select v-model="formGastro.local" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
-              <option value="" disabled class="bg-neutral-900 text-neutral-500">ESTABLECIMIENTO...</option>
-              <option value="chao-cafe" class="bg-neutral-900">CHAO CAFE</option>
-              <option value="chao-pescado" class="bg-neutral-900">CHAO PESCAO</option>
-              <option value="sky-bar" class="bg-neutral-900">SKY BAR</option>
-            </select>
+            
+            <div class="w-full bg-white/5 border border-white/10 p-3 rounded-xl flex flex-col justify-center gap-2">
+              <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
+              <div class="flex flex-wrap gap-3">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                  <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-3 h-3"> CHAO CAFE
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                  <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-3 h-3"> CHAO PESCAO
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                  <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
+                </label>
+              </div>
+            </div>
             
             <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
@@ -374,7 +383,7 @@ const router = useRouter()
 const pestañaActiva = ref('inventario')
 
 const rolUsuario = ref('superadmin') 
-const menuAbierto = ref(false) // ESTADO PARA CONTROLAR EL MENÚ MÓVIL
+const menuAbierto = ref(false) 
 
 // ==========================================
 // 1. LÓGICA DE GALERÍA DE ARTE 
@@ -568,7 +577,8 @@ const categoriasDisponibles = [
 ]
 
 const formGastro = ref({
-  local: '', categoria: '', precio: null, etiqueta: '',
+  locales: [], // Cambiado a array para manejar múltiples selecciones
+  categoria: '', precio: null, etiqueta: '',
   nombre: '', descripcion: '',
   nombre_en: '', descripcion_en: '',
   nombre_fr: '', descripcion_fr: '',
@@ -602,6 +612,7 @@ const openGastroForm = (item = null) => {
     gastroEditandoId.value = item.id
     formGastro.value = { 
       ...item,
+      locales: item.local ? item.local.split(',').map(l => l.trim()) : [], // Convierte el string guardado a array
       nombre_en: item.nombre_en || '', descripcion_en: item.descripcion_en || '',
       nombre_fr: item.nombre_fr || '', descripcion_fr: item.descripcion_fr || '',
       nombre_ja: item.nombre_ja || '', descripcion_ja: item.descripcion_ja || ''
@@ -609,7 +620,8 @@ const openGastroForm = (item = null) => {
   } else {
     gastroEditandoId.value = null
     formGastro.value = {
-      local: '', categoria: '', precio: null, etiqueta: '',
+      locales: [], // Inicia vacío
+      categoria: '', precio: null, etiqueta: '',
       nombre: '', descripcion: '',
       nombre_en: '', descripcion_en: '',
       nombre_fr: '', descripcion_fr: '',
@@ -623,6 +635,17 @@ const guardarGastro = async () => {
   enviandoGastro.value = true
   try {
     const payload = { ...formGastro.value }
+    
+    // Validar que seleccionó al menos un local
+    if (!payload.locales || payload.locales.length === 0) {
+      alert("Por favor, selecciona al menos un establecimiento.")
+      enviandoGastro.value = false
+      return
+    }
+
+    // Convierte el array de locales de vuelta a un texto separado por comas
+    payload.local = payload.locales.join(',')
+    delete payload.locales // Limpiamos la variable temporal que no existe en Supabase
     
     payload.nombre = capitalizarInicial(payload.nombre)
     payload.descripcion = capitalizarInicial(payload.descripcion)
