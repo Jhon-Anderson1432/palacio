@@ -121,7 +121,7 @@
             <div class="flex justify-between items-start mb-2">
               <div class="flex-1 pr-4">
                 <h3 class="text-white font-serif text-lg md:text-xl leading-tight group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all">
-                  {{ capitalizarPrimeraLetra(obtenerTraduccion(item, 'nombre')) }}
+                  {{ formatoTitulo(obtenerTraduccion(item, 'nombre')) }}
                 </h3>
                 <div v-if="item.etiqueta" class="inline-block mt-2 px-2 py-0.5 border border-[#D4AF37] text-[#D4AF37] rounded text-[9px] uppercase tracking-widest">
                   {{ item.etiqueta }}
@@ -131,8 +131,8 @@
                 ${{ formatPrecio(item.precio) }}
               </span>
             </div>
-            <p v-if="obtenerTraduccion(item, 'descripcion')" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-1">
-              {{ capitalizarPrimeraLetra(obtenerTraduccion(item, 'descripcion')) }}
+            <p v-if="obtenerTraduccion(item, 'descripcion')" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-1 whitespace-pre-wrap">
+              {{ formatoParrafo(obtenerTraduccion(item, 'descripcion')) }}
             </p>
           </div>
         </div>
@@ -191,7 +191,6 @@ const cargarMenu = async () => {
     if (data && data.length > 0) {
       menuData.value = data
       
-      // Extrae las categorías únicas de los productos devueltos
       const unicas = [...new Set(data.map(item => item.categoria))]
       categoriasBase.value = unicas
       categoriaActiva.value = unicas[0]
@@ -217,42 +216,45 @@ const menuFiltrado = computed(() => {
 })
 
 // =====================================
-// Funciones de Traducción y Formato
+// Funciones Avanzadas de Formato
 // =====================================
-const obtenerTraduccion = (item, campoBase) => {
-  const idioma = idiomaGlobal.value
-  // Si el idioma es español, retornamos el campo original (ej. 'nombre')
-  if (idioma === 'es') return item[campoBase]
-  
-  // Construimos el nombre del campo traducido (ej. 'nombre_en')
-  const campoTraducido = `${campoBase}_${idioma}`
-  
-  // Si existe traducción y no está vacía, la usamos. Si no, usamos español por defecto.
-  return item[campoTraducido] ? item[campoTraducido] : item[campoBase]
+
+// Capitaliza cada palabra, ignorando conectores (Ej: "Pollo con Papas y Queso")
+const formatoTitulo = (texto) => {
+  if (typeof texto !== 'string' || !texto) return '';
+  const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
+  return texto.trim().toLowerCase().split(/\s+/).map((word, index) => {
+    if (index > 0 && menores.includes(word)) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
 }
 
-const capitalizarPrimeraLetra = (texto) => {
-  if (!texto) return ''
-  return texto.charAt(0).toUpperCase() + texto.slice(1)
+// Capitaliza solo la primera letra y respeta siglas internas (Ej: "Salsa BBQ casera.")
+const formatoParrafo = (texto) => {
+  if (typeof texto !== 'string' || !texto) return '';
+  const t = texto.trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+const obtenerTraduccion = (item, campoBase) => {
+  const idioma = idiomaGlobal.value
+  if (idioma === 'es') return item[campoBase]
+  const campoTraducido = `${campoBase}_${idioma}`
+  return item[campoTraducido] ? item[campoTraducido] : item[campoBase]
 }
 
 // =====================================
 // Funcionalidad de WhatsApp (Reservas)
 // =====================================
 const abrirWhatsApp = () => {
-  // Diccionario con los números de cada local
   const telefonos = {
-    'chao-pescado': '573001111111', // <-- REEMPLAZA CON EL NÚMERO DE CHAO PESCAO
-    'sky-bar': '573002222222',      // <-- REEMPLAZA CON EL NÚMERO DE SKY BAR
-    'chao-cafe': '573003333333'       // <-- REEMPLAZA CON EL NÚMERO DE CHAO CAFE
+    'chao-pescado': '573001111111', 
+    'sky-bar': '573002222222',      
+    'chao-cafe': '573003333333'       
   }
-
-  // Busca el número basado en la URL (localActual). Si por algún motivo no coincide, usa un número por defecto.
   const numeroTelefono = telefonos[localActual] || '573000000000'
-
   const mensaje = `Hola, me gustaría hacer una reserva en ${configLocal.value.titulo} en el Palacio Nacional.`
   const urlWhatsApp = `https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`
-  
   window.open(urlWhatsApp, '_blank')
 }
 

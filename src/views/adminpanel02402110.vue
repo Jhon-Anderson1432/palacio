@@ -105,9 +105,9 @@
                 <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest">{{ obra.tipo || 'Pintura' }}</div>
               </div>
               <div class="space-y-3">
-                <h3 class="text-white font-serif text-xl leading-tight">{{ capitalizarInicial(obra.titulo) }}</h3>
-                <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ capitalizarInicial(obra.titulo_en) }}</p>
-                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ capitalizarInicial(obra.autor) }}</p>
+                <h3 class="text-white font-serif text-xl leading-tight">{{ formatoTitulo(obra.titulo) }}</h3>
+                <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ formatoTitulo(obra.titulo_en) }}</p>
+                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ formatoTitulo(obra.autor) }}</p>
               </div>
               <div class="flex gap-2 mt-6 pt-4 border-t border-white/5">
                 <button @click="openForm(obra)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
@@ -129,14 +129,14 @@
               <div>
                 <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                   <div class="pr-2">
-                    <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ capitalizarInicial(item.nombre) }}</h3>
-                    <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ capitalizarInicial(item.nombre_en) }}</p>
+                    <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ formatoTitulo(item.nombre) }}</h3>
+                    <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ formatoTitulo(item.nombre_en) }}</p>
                   </div>
                   <span class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap">${{ item.precio }}</span>
                 </div>
                 
                 <div class="space-y-2 mb-6">
-                  <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ capitalizarInicial(item.descripcion) }}</p>
+                  <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ formatoParrafo(item.descripcion) }}</p>
                   <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
                     <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace(/-/g, ' ').replace(/,/g, ' | ') }}</span>
                     <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
@@ -164,7 +164,7 @@
               <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
                 <div>
                   <h4 class="text-white font-bold text-base md:text-lg flex items-center gap-2">
-                    {{ capitalizarInicial(msj.nombre) }}
+                    {{ formatoTitulo(msj.nombre) }}
                     <span v-if="!msj.leido" class="bg-[#D4AF37] w-2 h-2 rounded-full inline-block"></span>
                   </h4>
                   <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline break-all">{{ msj.email }}</a>
@@ -205,7 +205,7 @@
                     <span class="text-xl">{{ log.accion === 'Creación' ? '✨' : '📝' }}</span>
                     <div>
                       <p class="text-xs md:text-sm text-white font-bold">{{ log.accion }} de Obra</p>
-                      <p class="text-[10px] md:text-xs text-neutral-400">{{ capitalizarInicial(log.titulo) }}</p>
+                      <p class="text-[10px] md:text-xs text-neutral-400">{{ formatoTitulo(log.titulo) }}</p>
                     </div>
                   </div>
                   <div class="sm:text-right flex sm:block justify-between items-center border-t border-white/5 sm:border-0 pt-2 sm:pt-0">
@@ -374,11 +374,6 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { supabase, searchQuery } from '../lib/supabase'
 import { useRouter } from 'vue-router'
 
-const capitalizarInicial = (texto) => {
-  if (typeof texto !== 'string' || !texto) return texto
-  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
-}
-
 const router = useRouter()
 const pestañaActiva = ref('inventario')
 
@@ -495,6 +490,27 @@ const uploadImageAndGetUrl = async (file) => {
   return publicUrl
 }
 
+// =====================================
+// Funciones Avanzadas de Formato
+// =====================================
+
+// Capitaliza cada palabra, ignorando conectores menores (Para Títulos y Nombres)
+const formatoTitulo = (texto) => {
+  if (typeof texto !== 'string' || !texto) return '';
+  const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
+  return texto.trim().toLowerCase().split(/\s+/).map((word, index) => {
+    if (index > 0 && menores.includes(word)) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
+}
+
+// Capitaliza solo la primera letra y respeta mayúsculas intermedias (Para Descripciones)
+const formatoParrafo = (texto) => {
+  if (typeof texto !== 'string' || !texto) return '';
+  const t = texto.trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 const guardarObra = async () => {
   enviando.value = true
   try {
@@ -509,12 +525,13 @@ const guardarObra = async () => {
       imagen_3: url3
     }
    
-    payload.titulo = capitalizarInicial(payload.titulo)
-    payload.autor = capitalizarInicial(payload.autor)
-    payload.tecnica = capitalizarInicial(payload.tecnica)
-    if(payload.titulo_en) payload.titulo_en = capitalizarInicial(payload.titulo_en)
-    if(payload.titulo_fr) payload.titulo_fr = capitalizarInicial(payload.titulo_fr)
-    if(payload.titulo_ja) payload.titulo_ja = capitalizarInicial(payload.titulo_ja)
+    // APLICACIÓN DEL NUEVO FORMATO A OBRAS
+    payload.titulo = formatoTitulo(payload.titulo)
+    payload.autor = formatoTitulo(payload.autor)
+    payload.tecnica = formatoTitulo(payload.tecnica)
+    if(payload.titulo_en) payload.titulo_en = formatoTitulo(payload.titulo_en)
+    if(payload.titulo_fr) payload.titulo_fr = formatoTitulo(payload.titulo_fr)
+    if(payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim() // El japonés no usa mayúsculas
 
     delete payload.id
     delete payload.created_at
@@ -577,7 +594,7 @@ const categoriasDisponibles = [
 ]
 
 const formGastro = ref({
-  locales: [], // Cambiado a array para manejar múltiples selecciones
+  locales: [], 
   categoria: '', precio: null, etiqueta: '',
   nombre: '', descripcion: '',
   nombre_en: '', descripcion_en: '',
@@ -612,7 +629,7 @@ const openGastroForm = (item = null) => {
     gastroEditandoId.value = item.id
     formGastro.value = { 
       ...item,
-      locales: item.local ? item.local.split(',').map(l => l.trim()) : [], // Convierte el string guardado a array
+      locales: item.local ? item.local.split(',').map(l => l.trim()) : [], 
       nombre_en: item.nombre_en || '', descripcion_en: item.descripcion_en || '',
       nombre_fr: item.nombre_fr || '', descripcion_fr: item.descripcion_fr || '',
       nombre_ja: item.nombre_ja || '', descripcion_ja: item.descripcion_ja || ''
@@ -620,7 +637,7 @@ const openGastroForm = (item = null) => {
   } else {
     gastroEditandoId.value = null
     formGastro.value = {
-      locales: [], // Inicia vacío
+      locales: [], 
       categoria: '', precio: null, etiqueta: '',
       nombre: '', descripcion: '',
       nombre_en: '', descripcion_en: '',
@@ -636,26 +653,29 @@ const guardarGastro = async () => {
   try {
     const payload = { ...formGastro.value }
     
-    // Validar que seleccionó al menos un local
     if (!payload.locales || payload.locales.length === 0) {
       alert("Por favor, selecciona al menos un establecimiento.")
       enviandoGastro.value = false
       return
     }
 
-    // Convierte el array de locales de vuelta a un texto separado por comas
     payload.local = payload.locales.join(',')
-    delete payload.locales // Limpiamos la variable temporal que no existe en Supabase
+    delete payload.locales 
     
-    payload.nombre = capitalizarInicial(payload.nombre)
-    payload.descripcion = capitalizarInicial(payload.descripcion)
-    payload.nombre_en = capitalizarInicial(payload.nombre_en)
-    payload.descripcion_en = capitalizarInicial(payload.descripcion_en)
-    payload.nombre_fr = capitalizarInicial(payload.nombre_fr)
-    payload.descripcion_fr = capitalizarInicial(payload.descripcion_fr)
-    payload.nombre_ja = capitalizarInicial(payload.nombre_ja)
-    payload.descripcion_ja = capitalizarInicial(payload.descripcion_ja)
-    payload.etiqueta = capitalizarInicial(payload.etiqueta)
+    // APLICACIÓN DEL NUEVO FORMATO A MENÚ GASTRO
+    payload.nombre = formatoTitulo(payload.nombre)
+    payload.descripcion = formatoParrafo(payload.descripcion)
+    
+    if(payload.nombre_en) payload.nombre_en = formatoTitulo(payload.nombre_en)
+    if(payload.descripcion_en) payload.descripcion_en = formatoParrafo(payload.descripcion_en)
+    
+    if(payload.nombre_fr) payload.nombre_fr = formatoTitulo(payload.nombre_fr)
+    if(payload.descripcion_fr) payload.descripcion_fr = formatoParrafo(payload.descripcion_fr)
+    
+    if(payload.nombre_ja) payload.nombre_ja = payload.nombre_ja.trim()
+    if(payload.descripcion_ja) payload.descripcion_ja = payload.descripcion_ja.trim()
+    
+    if(payload.etiqueta) payload.etiqueta = formatoTitulo(payload.etiqueta)
 
     delete payload.id; delete payload.created_at;
 
