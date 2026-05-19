@@ -69,7 +69,6 @@
       </div>
     </transition>
 
-
     <div v-if="mostrarMenu" class="pb-24 animate-fade-in bg-[#0a0a0a] min-h-screen">
       
       <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/10 pt-6 pb-2 px-4 flex flex-col gap-4">
@@ -113,7 +112,7 @@
         </div>
 
         <div v-else>
-          <div v-if="categoriaActiva === 'restaurante'" class="space-y-10">
+          <div v-if="tieneSubcategorias" class="space-y-10">
             <div v-for="(items, subcat) in menuAgrupado" :key="subcat">
               <h3 class="text-[#D4AF37] font-serif text-xl mb-4 border-b border-[#D4AF37]/20 pb-2 pl-2 tracking-wide uppercase">
                 {{ traducirSubcategoria(subcat) }}
@@ -171,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase, idiomaGlobal } from '../../lib/supabase'
 
@@ -184,13 +183,13 @@ const router = useRouter()
 const route = useRoute()
 
 // =====================================
-// Lógica Dinámica de Local
+// Lógica Dinámica de Local (Con reactividad)
 // =====================================
-const localActual = route.params.local
+const localActual = computed(() => route.params.local || 'chao-cafe')
 
 const configLocal = computed(() => {
-  if (localActual === 'chao-pescado') return { titulo: 'Chao Pescao', logo: logoPescado }
-  if (localActual === 'sky-bar') return { titulo: 'Sky Bar', logo: logoSky }
+  if (localActual.value === 'chao-pescado') return { titulo: 'Chao Pescao', logo: logoPescado }
+  if (localActual.value === 'sky-bar') return { titulo: 'Sky Bar', logo: logoSky }
   return { titulo: 'Chao Cafe', logo: logoCafe }
 })
 
@@ -209,7 +208,7 @@ const cargarMenu = async () => {
     const { data, error } = await supabase
       .from('menu_gastronomia')
       .select('*')
-      .ilike('local', `%${localActual}%`)
+      .ilike('local', `%${localActual.value}%`)
       .order('nombre', { ascending: true })
       
     if (error) throw error
@@ -217,9 +216,24 @@ const cargarMenu = async () => {
     if (data && data.length > 0) {
       menuData.value = data
       
-      const unicas = [...new Set(data.map(item => item.categoria))]
+      let unicas = [...new Set(data.map(item => item.categoria))]
+      
+      // Orden estricto de las tarjetas solicitado
+      const ordenTarjetas = ['bebidas', 'restaurante', 'postres', 'licores']
+      
+      unicas.sort((a, b) => {
+        let indexA = ordenTarjetas.indexOf(a)
+        let indexB = ordenTarjetas.indexOf(b)
+        if (indexA === -1) indexA = 999
+        if (indexB === -1) indexB = 999
+        return indexA - indexB
+      })
+      
       categoriasBase.value = unicas
-      categoriaActiva.value = unicas[0]
+      categoriaActiva.value = unicas.length > 0 ? unicas[0] : ''
+    } else {
+      menuData.value = []
+      categoriasBase.value = []
     }
   } catch (error) {
     console.error('Error al cargar la carta:', error)
@@ -230,8 +244,14 @@ const cargarMenu = async () => {
 
 const formatPrecio = (precio) => {
   if (!precio) return '0'
-  return Number(precio).toLocaleString('es-CO')
+  const num = Number(precio)
+  return isNaN(num) ? '0' : num.toLocaleString('es-CO')
 }
+
+// Escuchar cambios en la ruta dinámicamente
+watch(localActual, () => {
+  cargarMenu()
+})
 
 onMounted(() => {
   cargarMenu()
@@ -241,16 +261,33 @@ const menuFiltrado = computed(() => {
   return menuData.value.filter(item => item.categoria === categoriaActiva.value)
 })
 
-// AGRUPACIÓN POR SUBCATEGORÍA (Solo se usa si está en la pestaña Restaurante)
+const tieneSubcategorias = computed(() => {
+  return menuFiltrado.value.some(item => item.subcategoria && item.subcategoria.trim() !== '')
+})
+
+// AGRUPACIÓN DINÁMICA CON ORDEN ESTRICTO
 const menuAgrupado = computed(() => {
-  if (categoriaActiva.value === 'restaurante') {
+  if (tieneSubcategorias.value) {
     const grupos = {}
     menuFiltrado.value.forEach(item => {
-      const sub = item.subcategoria || 'otros'
+      const sub = item.subcategoria?.trim() || 'otros'
       if(!grupos[sub]) grupos[sub] = []
       grupos[sub].push(item)
     })
-    return grupos
+
+    // Orden Estricto completo combinando todos los requerimientos
+    const ordenEstricto = [
+      'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'adiciones', // Restaurante
+      'cocteles', 'cervezas', 'tragos', 'botellas', // Licores
+      'refrescantes', 'calientes', 'jugos', // Bebidas
+      'otros' // Fallback
+    ]
+
+    const gruposOrdenados = {}
+    ordenEstricto.forEach(subcat => { if (grupos[subcat]) gruposOrdenados[subcat] = grupos[subcat] })
+    Object.keys(grupos).forEach(subcat => { if (!gruposOrdenados[subcat]) gruposOrdenados[subcat] = grupos[subcat] })
+
+    return gruposOrdenados
   }
   return {}
 })
@@ -277,26 +314,23 @@ const obtenerTraduccion = (item, campoBase) => {
   const idioma = idiomaGlobal.value
   if (idioma === 'es') return item[campoBase]
   const campoTraducido = `${campoBase}_${idioma}`
-  return item[campoTraducido] ? item[campoTraducido] : item[campoBase]
+  return (item[campoTraducido] && item[campoTraducido].trim() !== '') ? item[campoTraducido] : item[campoBase]
 }
 
-// =====================================
-// Funcionalidad de WhatsApp (Reservas)
-// =====================================
 const abrirWhatsApp = () => {
   const telefonos = {
     'chao-pescado': '573001111111', 
     'sky-bar': '573002222222',      
-    'chao-cafe': '573003333333'       
+    'chao-cafe': '573003333333'        
   }
-  const numeroTelefono = telefonos[localActual] || '573000000000'
+  const numeroTelefono = telefonos[localActual.value] || '573000000000'
   const mensaje = `Hola, me gustaría hacer una reserva en ${configLocal.value.titulo} en el Palacio Nacional.`
   const urlWhatsApp = `https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`
   window.open(urlWhatsApp, '_blank')
 }
 
 // =====================================
-// Idiomas y Traducción (Botones y Categorías)
+// Idiomas y Traducción
 // =====================================
 const dropdownOpen = ref(false)
 const toggleDropdown = () => dropdownOpen.value = !dropdownOpen.value
@@ -317,39 +351,19 @@ const traducciones = {
 }
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
 
+// Diccionarios combinados y expandidos
 const dictCategorias = {
-  es: {
-    'botellas': 'Botellas', 'cocteles': 'Cócteles', 'tragos': 'Tragos', 
-    'bebidas_refrescantes': 'Bebidas Refrescantes', 'cervezas': 'Cervezas', 
-    'bebidas_calientes': 'Bebidas Calientes', 'restaurante': 'Restaurante',
-    'comida': 'Comidas', 'comida_dulce': 'Postres y Dulces'
-  },
-  en: {
-    'botellas': 'Bottles', 'cocteles': 'Cocktails', 'tragos': 'Shots', 
-    'bebidas_refrescantes': 'Refreshments', 'cervezas': 'Beers', 
-    'bebidas_calientes': 'Hot Drinks', 'restaurante': 'Restaurant',
-    'comida': 'Food', 'comida_dulce': 'Sweet Treats'
-  },
-  fr: {
-    'botellas': 'Bouteilles', 'cocteles': 'Cocktails', 'tragos': 'Shots', 
-    'bebidas_refrescantes': 'Rafraîchissements', 'cervezas': 'Bières', 
-    'bebidas_calientes': 'Boissons Chaudes', 'restaurante': 'Restaurant',
-    'comida': 'Nourriture', 'comida_dulce': 'Douceurs'
-  },
-  ja: {
-    'botellas': 'ボトル', 'cocteles': 'カクテル', 'tragos': 'ショット', 
-    'bebidas_refrescantes': '冷たい飲み物', 'cervezas': 'ビール', 
-    'bebidas_calientes': 'ホットドリンク', 'restaurante': 'レストラン',
-    'comida': '食べ物', 'comida_dulce': '甘いもの'
-  }
+  es: { 'restaurante': 'Restaurante', 'licores': 'Licores', 'bebidas': 'Bebidas', 'postres': 'Postres', 'comida': 'Comidas', 'comida_dulce': 'Postres y Dulces', 'bebidas_refrescantes': 'Bebidas Refrescantes', 'bebidas_calientes': 'Bebidas Calientes', 'cervezas': 'Cervezas', 'tragos': 'Tragos', 'cocteles': 'Cócteles', 'botellas': 'Botellas' },
+  en: { 'restaurante': 'Restaurant', 'licores': 'Liquors', 'bebidas': 'Drinks', 'postres': 'Desserts', 'comida': 'Food', 'comida_dulce': 'Desserts & Sweets', 'bebidas_refrescantes': 'Refreshing Drinks', 'bebidas_calientes': 'Hot Drinks', 'cervezas': 'Beers', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bottles' },
+  fr: { 'restaurante': 'Restaurant', 'licores': 'Liqueurs', 'bebidas': 'Boissons', 'postres': 'Desserts', 'comida': 'Repas', 'comida_dulce': 'Desserts et Douceurs', 'bebidas_refrescantes': 'Boissons Rafraîchissantes', 'bebidas_calientes': 'Boissons Chaudes', 'cervezas': 'Bières', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bouteilles' },
+  ja: { 'restaurante': 'レストラン', 'licores': 'お酒', 'bebidas': '飲み物', 'postres': 'デザート', 'comida': '食事', 'comida_dulce': 'デザートとスイーツ', 'bebidas_refrescantes': '冷たい飲み物', 'bebidas_calientes': '温かい飲み物', 'cervezas': 'ビール', 'tragos': 'ショット', 'cocteles': 'カクテル', 'botellas': 'ボトル' }
 }
 
-// NUEVO DICCIONARIO DE SUBCATEGORÍAS PARA RESTAURANTE
 const dictSubcategorias = {
-  es: { 'entradas': 'Entradas', 'cremas': 'Cremas', 'ensaladas': 'Ensaladas', 'ceviche': 'Ceviche', 'comida_rapida': 'Comida Rápida', 'carnes': 'Carnes', 'pollo': 'Pollo', 'pescados': 'Pescados', 'menu_ejecutivo': 'Menú Ejecutivo', 'adiciones': 'Adiciones', 'otros': 'Otros' },
-  en: { 'entradas': 'Starters', 'cremas': 'Soups', 'ensaladas': 'Salads', 'ceviche': 'Ceviche', 'comida_rapida': 'Fast Food', 'carnes': 'Meats', 'pollo': 'Chicken', 'pescados': 'Fish', 'menu_ejecutivo': 'Executive Menu', 'adiciones': 'Sides', 'otros': 'Others' },
-  fr: { 'entradas': 'Entrées', 'cremas': 'Crèmes', 'ensaladas': 'Salades', 'ceviche': 'Ceviche', 'comida_rapida': 'Restauration Rapide', 'carnes': 'Viandes', 'pollo': 'Poulet', 'pescados': 'Poissons', 'menu_ejecutivo': 'Menu Exécutif', 'adiciones': 'Accompagnements', 'otros': 'Autres' },
-  ja: { 'entradas': '前菜', 'cremas': 'スープ', 'ensaladas': 'サラダ', 'ceviche': 'セビチェ', 'comida_rapida': 'ファストフード', 'carnes': '肉料理', 'pollo': '鶏肉', 'pescados': '魚料理', 'menu_ejecutivo': 'エグゼクティブメニュー', 'adiciones': 'サイドメニュー', 'otros': 'その他' }
+  es: { 'entradas': 'Entradas', 'cremas': 'Cremas', 'ensaladas': 'Ensaladas', 'ceviche': 'Ceviche', 'comida_rapida': 'Comida Rápida', 'carnes': 'Carnes', 'pollo': 'Pollo', 'pescados': 'Pescados', 'menu_ejecutivo': 'Menú Ejecutivo', 'adiciones': 'Adiciones', 'cocteles': 'Cócteles', 'cervezas': 'Cervezas', 'tragos': 'Tragos', 'botellas': 'Botellas', 'refrescantes': 'Refrescantes', 'calientes': 'Calientes', 'jugos': 'Jugos', 'otros': 'Otros', 'aguardiente': 'Aguardiente', 'ron': 'Ron', 'tequila': 'Tequila', 'mezcal': 'Mezcal', 'whisky': 'Whisky', 'ginebra': 'Ginebra', 'vodka': 'Vodka', 'vinos': 'Vinos', 'espumosos': 'Champagne / Espumosos', 'licores_varios': 'Licores Varios' },
+  en: { 'entradas': 'Starters', 'cremas': 'Soups', 'ensaladas': 'Salads', 'ceviche': 'Ceviche', 'comida_rapida': 'Fast Food', 'carnes': 'Meats', 'pollo': 'Chicken', 'pescados': 'Fish', 'menu_ejecutivo': 'Executive Menu', 'adiciones': 'Sides', 'cocteles': 'Cocktails', 'cervezas': 'Beers', 'tragos': 'Shots', 'botellas': 'Bottles', 'refrescantes': 'Refreshments', 'calientes': 'Hot Drinks', 'jugos': 'Juices', 'otros': 'Others', 'aguardiente': 'Aguardiente', 'ron': 'Rum', 'tequila': 'Tequila', 'mezcal': 'Mezcal', 'whisky': 'Whisky', 'ginebra': 'Gin', 'vodka': 'Vodka', 'vinos': 'Wines', 'espumosos': 'Champagne / Sparkling', 'licores_varios': 'Various Liquors' },
+  fr: { 'entradas': 'Entrées', 'cremas': 'Crèmes', 'ensaladas': 'Salades', 'ceviche': 'Ceviche', 'comida_rapida': 'Restauration Rapide', 'carnes': 'Viandes', 'pollo': 'Poulet', 'pescados': 'Poissons', 'menu_ejecutivo': 'Menu Exécutif', 'adiciones': 'Accompagnements', 'cocteles': 'Cocktails', 'cervezas': 'Bières', 'tragos': 'Shots', 'botellas': 'Bouteilles', 'refrescantes': 'Rafraîchissements', 'calientes': 'Boissons Chaudes', 'jugos': 'Jus', 'otros': 'Autres', 'aguardiente': 'Aguardiente', 'ron': 'Rhum', 'tequila': 'Tequila', 'mezcal': 'Mezcal', 'whisky': 'Whisky', 'ginebra': 'Gin', 'vodka': 'Vodka', 'vinos': 'Vins', 'espumosos': 'Champagne / Pétillants', 'licores_varios': 'Liqueurs Diverses' },
+  ja: { 'entradas': '前菜', 'cremas': 'スープ', 'ensaladas': 'サラダ', 'ceviche': 'セビチェ', 'comida_rapida': 'ファストフード', 'carnes': '肉料理', 'pollo': '鶏肉', 'pescados': '魚料理', 'menu_ejecutivo': 'エグゼクティブメニュー', 'adiciones': 'サイドメニュー', 'cocteles': 'カクテル', 'cervezas': 'ビール', 'tragos': 'ショット', 'botellas': 'ボトル', 'refrescantes': '冷たい飲み物', 'calientes': 'ホットドリンク', 'jugos': 'ジュース', 'otros': 'その他', 'aguardiente': 'アグアルディエンテ', 'ron': 'ラム', 'tequila': 'テキーラ', 'mezcal': 'メスカル', 'whisky': 'ウイスキー', 'ginebra': 'ジン', 'vodka': 'ウォッカ', 'vinos': 'ワイン', 'espumosos': 'シャンパン / スパークリング', 'licores_varios': '各種リキュール' }
 }
 
 const categoriasTraducidas = computed(() => {

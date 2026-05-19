@@ -356,7 +356,7 @@
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯ப்புகள்</span> 日本語</h4>
               <input v-model="formGastro.nombre_ja" placeholder="料理の名前" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
               <textarea v-model="formGastro.descripcion_ja" placeholder="説明" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase resize-none"></textarea>
             </div>
@@ -547,10 +547,8 @@ const gastroEditandoId = ref(null)
 const categoriasDisponibles = [
   { id: 'restaurante', nombre: 'RESTAURANTE' },
   { id: 'licores', nombre: 'LICORES' },
-  { id: 'bebidas_refrescantes', nombre: 'BEBIDAS REFRESCANTES' },
-  { id: 'bebidas_calientes', nombre: 'BEBIDAS CALIENTES' },
-  { id: 'comida', nombre: 'COMIDAS' },
-  { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
+  { id: 'bebidas', nombre: 'BEBIDAS' },
+  { id: 'postres', nombre: 'POSTRES' }
 ]
 
 const subcategoriasDisponibles = computed(() => {
@@ -565,6 +563,12 @@ const subcategoriasDisponibles = computed(() => {
     return [
       { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
       { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
+    ]
+  } else if (formGastro.value.categoria === 'bebidas') {
+    return [
+      { id: 'refrescantes', nombre: 'REFRESCANTES' },
+      { id: 'calientes', nombre: 'CALIENTES' },
+      { id: 'jugos', nombre: 'JUGOS' }
     ]
   }
   return []
@@ -602,7 +606,8 @@ const obtenerNombreSubcategoria = (id) => {
     { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
     { id: 'adiciones', nombre: 'ADICIONES' },
     { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
-    { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
+    { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' },
+    { id: 'refrescantes', nombre: 'REFRESCANTES' }, { id: 'calientes', nombre: 'CALIENTES' }, { id: 'jugos', nombre: 'JUGOS' }
   ]
   const sub = todasSubcategorias.find(s => s.id === id)
   return sub ? sub.nombre : id
