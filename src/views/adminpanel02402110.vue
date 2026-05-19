@@ -140,6 +140,7 @@
                   <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
                     <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace(/-/g, ' ').replace(/,/g, ' | ') }}</span>
                     <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
+                    <span v-if="item.subcategoria" class="bg-white/20 text-white px-2 py-1 rounded-sm">{{ obtenerNombreSubcategoria(item.subcategoria) }}</span>
                     <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
                   </div>
                 </div>
@@ -301,35 +302,40 @@
         <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
         
         <form @submit.prevent="guardarGastro" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            
-            <div class="w-full bg-white/5 border border-white/10 p-3 rounded-xl flex flex-col justify-center gap-2">
-              <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
-              <div class="flex flex-wrap gap-3">
-                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                  <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-3 h-3"> CHAO CAFE
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                  <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-3 h-3"> CHAO PESCAO
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                  <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
-                </label>
-              </div>
+          
+          <div class="w-full bg-white/5 border border-white/10 p-3 rounded-xl flex flex-col justify-center gap-2 mb-3">
+            <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
+            <div class="flex flex-wrap gap-3">
+              <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-3 h-3"> CHAO CAFE
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-3 h-3"> CHAO PESCAO
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
+                <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
+              </label>
             </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             
             <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
               <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{ cat.nombre }}</option>
             </select>
             
+            <select v-if="formGastro.categoria === 'restaurante'" v-model="formGastro.subcategoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">SUBCATEGORÍA...</option>
+              <option v-for="sub in subcategoriasRestaurante" :key="sub.id" :value="sub.id" class="bg-neutral-900">{{ sub.nombre }}</option>
+            </select>
+
             <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
           </div>
           
           <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
-            
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
               <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
               <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
@@ -383,6 +389,7 @@ const menuAbierto = ref(false)
 // ==========================================
 // 1. LÓGICA DE GALERÍA DE ARTE 
 // ==========================================
+// (El código de la galería se mantiene intacto)
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
@@ -393,10 +400,8 @@ const imgFiles = reactive({ 1: null, 2: null, 3: null })
 
 const form = ref({
   titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '',
-  autor: '', precio: '',
-  tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
-  medidas: '', tipo: '',
-  imagen_1: null, imagen_2: null, imagen_3: null
+  autor: '', precio: '', tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
+  medidas: '', tipo: '', imagen_1: null, imagen_2: null, imagen_3: null
 })
 
 const mensajes = ref([])
@@ -427,12 +432,7 @@ const calcularEstadisticas = () => {
   const ultimas = [...todasLasObras.value].slice(0, 5)
   logsActividad.value = ultimas.map(obra => {
     const fecha = new Date(obra.created_at)
-    return {
-      accion: 'Creación',
-      titulo: obra.titulo,
-      fechaFormateada: fecha.toLocaleDateString(),
-      horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
+    return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   })
 }
 
@@ -441,11 +441,7 @@ const mensajesNoLeidos = computed(() => mensajes.value.filter(m => !m.leido).len
 const obrasFiltradas = computed(() => {
   const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
   if (!query) return todasLasObras.value
-  return todasLasObras.value.filter(o =>
-    o.titulo.toLowerCase().includes(query) ||
-    (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) ||
-    o.autor.toLowerCase().includes(query)
-  )
+  return todasLasObras.value.filter(o => o.titulo.toLowerCase().includes(query) || (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || o.autor.toLowerCase().includes(query))
 })
 
 const handleImageChange = (e, index) => {
@@ -455,25 +451,12 @@ const handleImageChange = (e, index) => {
 
 const openForm = (obra = null) => {
   imgFiles[1] = null; imgFiles[2] = null; imgFiles[3] = null;
-
   if (obra) {
     obraEditandoId.value = obra.id
-    form.value = {
-      ...obra,
-      titulo_fr: obra.titulo_fr || '',
-      titulo_ja: obra.titulo_ja || '',
-      medidas_fr: obra.medidas_fr || '',
-      medidas_ja: obra.medidas_ja || ''
-    }
+    form.value = { ...obra, titulo_fr: obra.titulo_fr || '', titulo_ja: obra.titulo_ja || '', medidas_fr: obra.medidas_fr || '', medidas_ja: obra.medidas_ja || '' }
   } else {
     obraEditandoId.value = null
-    form.value = {
-      titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '',
-      autor: '', precio: '',
-      tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
-      medidas: '', tipo: '',
-      imagen_1: null, imagen_2: null, imagen_3: null
-    }
+    form.value = { titulo: '', titulo_en: '', titulo_fr: '', titulo_ja: '', autor: '', precio: '', tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '', medidas: '', tipo: '', imagen_1: null, imagen_2: null, imagen_3: null }
   }
   showForm.value = true
 }
@@ -482,19 +465,12 @@ const uploadImageAndGetUrl = async (file) => {
   if (!file) return null
   const fileExt = file.name.split('.').pop()
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
- 
   const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, file)
   if (uploadError) throw uploadError
- 
   const { data: { publicUrl } } = supabase.storage.from('obras-imagenes').getPublicUrl(fileName)
   return publicUrl
 }
 
-// =====================================
-// Funciones Avanzadas de Formato
-// =====================================
-
-// Capitaliza cada palabra, ignorando conectores menores (Para Títulos y Nombres)
 const formatoTitulo = (texto) => {
   if (typeof texto !== 'string' || !texto) return '';
   const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
@@ -504,7 +480,6 @@ const formatoTitulo = (texto) => {
   }).join(' ');
 }
 
-// Capitaliza solo la primera letra y respeta mayúsculas intermedias (Para Descripciones)
 const formatoParrafo = (texto) => {
   if (typeof texto !== 'string' || !texto) return '';
   const t = texto.trim();
@@ -518,23 +493,16 @@ const guardarObra = async () => {
     let url2 = imgFiles[2] ? await uploadImageAndGetUrl(imgFiles[2]) : form.value.imagen_2
     let url3 = imgFiles[3] ? await uploadImageAndGetUrl(imgFiles[3]) : form.value.imagen_3
 
-    const payload = {
-      ...form.value,
-      imagen_1: url1,
-      imagen_2: url2,
-      imagen_3: url3
-    }
+    const payload = { ...form.value, imagen_1: url1, imagen_2: url2, imagen_3: url3 }
    
-    // APLICACIÓN DEL NUEVO FORMATO A OBRAS
     payload.titulo = formatoTitulo(payload.titulo)
     payload.autor = formatoTitulo(payload.autor)
     payload.tecnica = formatoTitulo(payload.tecnica)
     if(payload.titulo_en) payload.titulo_en = formatoTitulo(payload.titulo_en)
     if(payload.titulo_fr) payload.titulo_fr = formatoTitulo(payload.titulo_fr)
-    if(payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim() // El japonés no usa mayúsculas
+    if(payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim()
 
-    delete payload.id
-    delete payload.created_at
+    delete payload.id; delete payload.created_at;
 
     if (obraEditandoId.value) {
       const { error } = await supabase.from('obras').update(payload).eq('id', obraEditandoId.value)
@@ -548,13 +516,7 @@ const guardarObra = async () => {
     alert("¡Obra procesada con éxito!")
     showForm.value = false
     fetchObras()
-
-  } catch (err) {
-    alert("Error de subida: " + err.message)
-    console.error(err)
-  } finally {
-    enviando.value = false
-  }
+  } catch (err) { alert("Error de subida: " + err.message); console.error(err) } finally { enviando.value = false }
 }
 
 const deleteObra = async (obra) => {
@@ -570,14 +532,11 @@ const marcarLeido = async (msj) => {
 }
 
 const eliminarMensaje = async (id) => {
-  if(confirm("¿Eliminar este mensaje permanentemente?")) {
-    await supabase.from('mensajes_contacto').delete().eq('id', id)
-    fetchMensajes()
-  }
+  if(confirm("¿Eliminar este mensaje permanentemente?")) { await supabase.from('mensajes_contacto').delete().eq('id', id); fetchMensajes() }
 }
 
 // ==========================================
-// 2. LÓGICA DE GASTRONOMÍA 
+// 2. LÓGICA DE GASTRONOMÍA (NUEVA ESTRUCTURA)
 // ==========================================
 const todosLosPlatos = ref([])
 const cargandoGastro = ref(false)
@@ -588,18 +547,23 @@ const gastroEditandoId = ref(null)
 const categoriasDisponibles = [
   { id: 'botellas', nombre: 'BOTELLAS' }, { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'tragos', nombre: 'TRAGOS' },
   { id: 'bebidas_refrescantes', nombre: 'BEBIDAS REFRESCANTES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
-  { id: 'bebidas_calientes_y_frias', nombre: 'CALIENTES Y FRÍAS' }, { id: 'jugos_pulpa', nombre: 'JUGOS DE PULPA' },
-  { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'platos_fuertes', nombre: 'PLATOS FUERTES' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' },
-  { id: 'cremas', nombre: 'CREMAS' }, { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida', nombre: 'COMIDA' }, { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
+  { id: 'bebidas_calientes', nombre: 'BEBIDAS CALIENTES' },
+  { id: 'restaurante', nombre: 'RESTAURANTE' },
+  { id: 'comida', nombre: 'COMIDAS' }, { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
+]
+
+const subcategoriasRestaurante = [
+  { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
+  { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
+  { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
+  { id: 'adiciones', nombre: 'ADICIONES' }
 ]
 
 const formGastro = ref({
   locales: [], 
-  categoria: '', precio: null, etiqueta: '',
-  nombre: '', descripcion: '',
-  nombre_en: '', descripcion_en: '',
-  nombre_fr: '', descripcion_fr: '',
-  nombre_ja: '', descripcion_ja: ''
+  categoria: '', subcategoria: '', precio: null, etiqueta: '',
+  nombre: '', descripcion: '', nombre_en: '', descripcion_en: '',
+  nombre_fr: '', descripcion_fr: '', nombre_ja: '', descripcion_ja: ''
 })
 
 const fetchGastronomia = async () => {
@@ -612,16 +576,17 @@ const fetchGastronomia = async () => {
 const gastroFiltrados = computed(() => {
   const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
   if (!query) return todosLosPlatos.value
-  return todosLosPlatos.value.filter(o =>
-    o.nombre.toLowerCase().includes(query) ||
-    (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) ||
-    o.categoria.toLowerCase().includes(query)
-  )
+  return todosLosPlatos.value.filter(o => o.nombre.toLowerCase().includes(query) || (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) || o.categoria.toLowerCase().includes(query))
 })
 
 const obtenerNombreCategoria = (id) => {
   const cat = categoriasDisponibles.find(c => c.id === id)
   return cat ? cat.nombre : id
+}
+
+const obtenerNombreSubcategoria = (id) => {
+  const sub = subcategoriasRestaurante.find(s => s.id === id)
+  return sub ? sub.nombre : id
 }
 
 const openGastroForm = (item = null) => {
@@ -630,6 +595,7 @@ const openGastroForm = (item = null) => {
     formGastro.value = { 
       ...item,
       locales: item.local ? item.local.split(',').map(l => l.trim()) : [], 
+      subcategoria: item.subcategoria || '',
       nombre_en: item.nombre_en || '', descripcion_en: item.descripcion_en || '',
       nombre_fr: item.nombre_fr || '', descripcion_fr: item.descripcion_fr || '',
       nombre_ja: item.nombre_ja || '', descripcion_ja: item.descripcion_ja || ''
@@ -637,12 +603,9 @@ const openGastroForm = (item = null) => {
   } else {
     gastroEditandoId.value = null
     formGastro.value = {
-      locales: [], 
-      categoria: '', precio: null, etiqueta: '',
-      nombre: '', descripcion: '',
-      nombre_en: '', descripcion_en: '',
-      nombre_fr: '', descripcion_fr: '',
-      nombre_ja: '', descripcion_ja: ''
+      locales: [], categoria: '', subcategoria: '', precio: null, etiqueta: '',
+      nombre: '', descripcion: '', nombre_en: '', descripcion_en: '',
+      nombre_fr: '', descripcion_fr: '', nombre_ja: '', descripcion_ja: ''
     }
   }
   showGastroForm.value = true
@@ -662,19 +625,23 @@ const guardarGastro = async () => {
     payload.local = payload.locales.join(',')
     delete payload.locales 
     
-    // APLICACIÓN DEL NUEVO FORMATO A MENÚ GASTRO
+    // Si no es restaurante, la subcategoría queda nula para mantener limpia la BD
+    if (payload.categoria !== 'restaurante') {
+      payload.subcategoria = null
+    } else if (!payload.subcategoria) {
+      alert("Debes seleccionar una subcategoría para el menú Restaurante.");
+      enviandoGastro.value = false;
+      return;
+    }
+    
     payload.nombre = formatoTitulo(payload.nombre)
     payload.descripcion = formatoParrafo(payload.descripcion)
-    
     if(payload.nombre_en) payload.nombre_en = formatoTitulo(payload.nombre_en)
     if(payload.descripcion_en) payload.descripcion_en = formatoParrafo(payload.descripcion_en)
-    
     if(payload.nombre_fr) payload.nombre_fr = formatoTitulo(payload.nombre_fr)
     if(payload.descripcion_fr) payload.descripcion_fr = formatoParrafo(payload.descripcion_fr)
-    
     if(payload.nombre_ja) payload.nombre_ja = payload.nombre_ja.trim()
     if(payload.descripcion_ja) payload.descripcion_ja = payload.descripcion_ja.trim()
-    
     if(payload.etiqueta) payload.etiqueta = formatoTitulo(payload.etiqueta)
 
     delete payload.id; delete payload.created_at;
@@ -690,13 +657,7 @@ const guardarGastro = async () => {
     alert("¡Plato procesado con éxito!")
     showGastroForm.value = false
     fetchGastronomia()
-
-  } catch (err) {
-    alert("Error de subida: " + err.message)
-    console.error(err)
-  } finally {
-    enviandoGastro.value = false
-  }
+  } catch (err) { alert("Error de subida: " + err.message); console.error(err) } finally { enviandoGastro.value = false }
 }
 
 const deleteProductoGastro = async (item) => {
@@ -711,9 +672,5 @@ const handleLogout = async () => {
   router.push('/login-privado')
 }
 
-onMounted(() => {
-  fetchObras()
-  fetchMensajes()
-  fetchGastronomia()
-})
+onMounted(() => { fetchObras(); fetchMensajes(); fetchGastronomia() })
 </script>

@@ -100,7 +100,7 @@
       </header>
 
       <section class="p-4 w-full max-w-2xl mx-auto mt-4">
-        <h2 class="text-[#D4AF37] font-serif text-2xl text-center mb-6 drop-shadow-md">
+        <h2 class="text-[#D4AF37] font-serif text-2xl text-center mb-8 drop-shadow-md">
           {{ categoriasTraducidas.find(c => c.id === categoriaActiva)?.nombre }}
         </h2>
 
@@ -112,28 +112,54 @@
           Próximamente...
         </div>
 
-        <div v-else class="flex flex-col gap-4">
-          <div 
-            v-for="item in menuFiltrado" 
-            :key="item.id" 
-            class="bg-[#050505] border border-white/10 rounded-2xl p-5 hover:border-[#D4AF37]/40 hover:shadow-[0_4px_20px_rgba(212,175,55,0.05)] transition-all duration-300 flex flex-col justify-between group"
-          >
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex-1 pr-4">
-                <h3 class="text-white font-serif text-lg md:text-xl leading-tight group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all">
-                  {{ formatoTitulo(obtenerTraduccion(item, 'nombre')) }}
-                </h3>
-                <div v-if="item.etiqueta" class="inline-block mt-2 px-2 py-0.5 border border-[#D4AF37] text-[#D4AF37] rounded text-[9px] uppercase tracking-widest">
-                  {{ item.etiqueta }}
+        <div v-else>
+          <div v-if="categoriaActiva === 'restaurante'" class="space-y-10">
+            <div v-for="(items, subcat) in menuAgrupado" :key="subcat">
+              <h3 class="text-[#D4AF37] font-serif text-xl mb-4 border-b border-[#D4AF37]/20 pb-2 pl-2 tracking-wide uppercase">
+                {{ traducirSubcategoria(subcat) }}
+              </h3>
+              <div class="flex flex-col gap-4">
+                <div v-for="item in items" :key="item.id" class="bg-[#050505] border border-white/10 rounded-2xl p-5 hover:border-[#D4AF37]/40 hover:shadow-[0_4px_20px_rgba(212,175,55,0.05)] transition-all duration-300 flex flex-col justify-between group">
+                  <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1 pr-4">
+                      <h3 class="text-white font-serif text-lg md:text-xl leading-tight group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all">
+                        {{ formatoTitulo(obtenerTraduccion(item, 'nombre')) }}
+                      </h3>
+                      <div v-if="item.etiqueta" class="inline-block mt-2 px-2 py-0.5 border border-[#D4AF37] text-[#D4AF37] rounded text-[9px] uppercase tracking-widest">
+                        {{ item.etiqueta }}
+                      </div>
+                    </div>
+                    <span class="text-[#D4AF37] font-semibold tracking-wide whitespace-nowrap text-lg">
+                      ${{ formatPrecio(item.precio) }}
+                    </span>
+                  </div>
+                  <p v-if="obtenerTraduccion(item, 'descripcion')" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-1 whitespace-pre-wrap">
+                    {{ formatoParrafo(obtenerTraduccion(item, 'descripcion')) }}
+                  </p>
                 </div>
               </div>
-              <span class="text-[#D4AF37] font-semibold tracking-wide whitespace-nowrap text-lg">
-                ${{ formatPrecio(item.precio) }}
-              </span>
             </div>
-            <p v-if="obtenerTraduccion(item, 'descripcion')" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-1 whitespace-pre-wrap">
-              {{ formatoParrafo(obtenerTraduccion(item, 'descripcion')) }}
-            </p>
+          </div>
+
+          <div v-else class="flex flex-col gap-4">
+            <div v-for="item in menuFiltrado" :key="item.id" class="bg-[#050505] border border-white/10 rounded-2xl p-5 hover:border-[#D4AF37]/40 hover:shadow-[0_4px_20px_rgba(212,175,55,0.05)] transition-all duration-300 flex flex-col justify-between group">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex-1 pr-4">
+                  <h3 class="text-white font-serif text-lg md:text-xl leading-tight group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all">
+                    {{ formatoTitulo(obtenerTraduccion(item, 'nombre')) }}
+                  </h3>
+                  <div v-if="item.etiqueta" class="inline-block mt-2 px-2 py-0.5 border border-[#D4AF37] text-[#D4AF37] rounded text-[9px] uppercase tracking-widest">
+                    {{ item.etiqueta }}
+                  </div>
+                </div>
+                <span class="text-[#D4AF37] font-semibold tracking-wide whitespace-nowrap text-lg">
+                  ${{ formatPrecio(item.precio) }}
+                </span>
+              </div>
+              <p v-if="obtenerTraduccion(item, 'descripcion')" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-1 whitespace-pre-wrap">
+                {{ formatoParrafo(obtenerTraduccion(item, 'descripcion')) }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -215,11 +241,23 @@ const menuFiltrado = computed(() => {
   return menuData.value.filter(item => item.categoria === categoriaActiva.value)
 })
 
+// AGRUPACIÓN POR SUBCATEGORÍA (Solo se usa si está en la pestaña Restaurante)
+const menuAgrupado = computed(() => {
+  if (categoriaActiva.value === 'restaurante') {
+    const grupos = {}
+    menuFiltrado.value.forEach(item => {
+      const sub = item.subcategoria || 'otros'
+      if(!grupos[sub]) grupos[sub] = []
+      grupos[sub].push(item)
+    })
+    return grupos
+  }
+  return {}
+})
+
 // =====================================
 // Funciones Avanzadas de Formato
 // =====================================
-
-// Capitaliza cada palabra, ignorando conectores (Ej: "Pollo con Papas y Queso")
 const formatoTitulo = (texto) => {
   if (typeof texto !== 'string' || !texto) return '';
   const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
@@ -229,7 +267,6 @@ const formatoTitulo = (texto) => {
   }).join(' ');
 }
 
-// Capitaliza solo la primera letra y respeta siglas internas (Ej: "Salsa BBQ casera.")
 const formatoParrafo = (texto) => {
   if (typeof texto !== 'string' || !texto) return '';
   const t = texto.trim();
@@ -284,35 +321,35 @@ const dictCategorias = {
   es: {
     'botellas': 'Botellas', 'cocteles': 'Cócteles', 'tragos': 'Tragos', 
     'bebidas_refrescantes': 'Bebidas Refrescantes', 'cervezas': 'Cervezas', 
-    'bebidas_calientes_y_frias': 'Calientes y Frías', 'jugos_pulpa': 'Jugos de Pulpa',
-    'entradas': 'Entradas', 'platos_fuertes': 'Platos Fuertes', 
-    'comida_rapida': 'Comida Rápida', 'cremas': 'Cremas', 'ceviche': 'Ceviche',
-    'comida': 'Comidas', 'comida_dulce': 'Comida Dulce'
+    'bebidas_calientes': 'Bebidas Calientes', 'restaurante': 'Restaurante',
+    'comida': 'Comidas', 'comida_dulce': 'Postres y Dulces'
   },
   en: {
     'botellas': 'Bottles', 'cocteles': 'Cocktails', 'tragos': 'Shots', 
     'bebidas_refrescantes': 'Refreshments', 'cervezas': 'Beers', 
-    'bebidas_calientes_y_frias': 'Hot & Cold Drinks', 'jugos_pulpa': 'Fruit Juices',
-    'entradas': 'Starters', 'platos_fuertes': 'Main Courses', 
-    'comida_rapida': 'Fast Food', 'cremas': 'Soups', 'ceviche': 'Ceviche',
+    'bebidas_calientes': 'Hot Drinks', 'restaurante': 'Restaurant',
     'comida': 'Food', 'comida_dulce': 'Sweet Treats'
   },
   fr: {
     'botellas': 'Bouteilles', 'cocteles': 'Cocktails', 'tragos': 'Shots', 
     'bebidas_refrescantes': 'Rafraîchissements', 'cervezas': 'Bières', 
-    'bebidas_calientes_y_frias': 'Boissons Chaudes et Froides', 'jugos_pulpa': 'Jus de Fruits',
-    'entradas': 'Entrées', 'platos_fuertes': 'Plats Principaux', 
-    'comida_rapida': 'Restauration Rapide', 'cremas': 'Crèmes', 'ceviche': 'Ceviche',
+    'bebidas_calientes': 'Boissons Chaudes', 'restaurante': 'Restaurant',
     'comida': 'Nourriture', 'comida_dulce': 'Douceurs'
   },
   ja: {
     'botellas': 'ボトル', 'cocteles': 'カクテル', 'tragos': 'ショット', 
     'bebidas_refrescantes': '冷たい飲み物', 'cervezas': 'ビール', 
-    'bebidas_calientes_y_frias': 'ホット＆コールドドリンク', 'jugos_pulpa': 'フルーツジュース',
-    'entradas': '前菜', 'platos_fuertes': 'メインコース', 
-    'comida_rapida': 'ファストフード', 'cremas': 'スープ', 'ceviche': 'セビチェ',
+    'bebidas_calientes': 'ホットドリンク', 'restaurante': 'レストラン',
     'comida': '食べ物', 'comida_dulce': '甘いもの'
   }
+}
+
+// NUEVO DICCIONARIO DE SUBCATEGORÍAS PARA RESTAURANTE
+const dictSubcategorias = {
+  es: { 'entradas': 'Entradas', 'cremas': 'Cremas', 'ensaladas': 'Ensaladas', 'ceviche': 'Ceviche', 'comida_rapida': 'Comida Rápida', 'carnes': 'Carnes', 'pollo': 'Pollo', 'pescados': 'Pescados', 'menu_ejecutivo': 'Menú Ejecutivo', 'adiciones': 'Adiciones', 'otros': 'Otros' },
+  en: { 'entradas': 'Starters', 'cremas': 'Soups', 'ensaladas': 'Salads', 'ceviche': 'Ceviche', 'comida_rapida': 'Fast Food', 'carnes': 'Meats', 'pollo': 'Chicken', 'pescados': 'Fish', 'menu_ejecutivo': 'Executive Menu', 'adiciones': 'Sides', 'otros': 'Others' },
+  fr: { 'entradas': 'Entrées', 'cremas': 'Crèmes', 'ensaladas': 'Salades', 'ceviche': 'Ceviche', 'comida_rapida': 'Restauration Rapide', 'carnes': 'Viandes', 'pollo': 'Poulet', 'pescados': 'Poissons', 'menu_ejecutivo': 'Menu Exécutif', 'adiciones': 'Accompagnements', 'otros': 'Autres' },
+  ja: { 'entradas': '前菜', 'cremas': 'スープ', 'ensaladas': 'サラダ', 'ceviche': 'セビチェ', 'comida_rapida': 'ファストフード', 'carnes': '肉料理', 'pollo': '鶏肉', 'pescados': '魚料理', 'menu_ejecutivo': 'エグゼクティブメニュー', 'adiciones': 'サイドメニュー', 'otros': 'その他' }
 }
 
 const categoriasTraducidas = computed(() => {
@@ -322,6 +359,11 @@ const categoriasTraducidas = computed(() => {
     nombre: currentDict[catId] || catId.replace(/_/g, ' ').toUpperCase()
   }))
 })
+
+const traducirSubcategoria = (subcat) => {
+  const currentDict = dictSubcategorias[idiomaGlobal.value] || dictSubcategorias.es
+  return currentDict[subcat] || subcat.replace(/_/g, ' ').toUpperCase()
+}
 </script>
 
 <style scoped>
