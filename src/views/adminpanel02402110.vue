@@ -320,14 +320,14 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             
-            <select v-model="formGastro.categoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+            <select v-model="formGastro.categoria" @change="formGastro.subcategoria = ''" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
               <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{ cat.nombre }}</option>
             </select>
             
-            <select v-if="formGastro.categoria === 'restaurante'" v-model="formGastro.subcategoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
+            <select v-if="subcategoriasDisponibles.length > 0" v-model="formGastro.subcategoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 uppercase appearance-none text-white cursor-pointer" required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">SUBCATEGORÍA...</option>
-              <option v-for="sub in subcategoriasRestaurante" :key="sub.id" :value="sub.id" class="bg-neutral-900">{{ sub.nombre }}</option>
+              <option v-for="sub in subcategoriasDisponibles" :key="sub.id" :value="sub.id" class="bg-neutral-900">{{ sub.nombre }}</option>
             </select>
 
             <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
@@ -336,6 +336,7 @@
           <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
+            
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
               <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
               <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase" required>
@@ -389,7 +390,6 @@ const menuAbierto = ref(false)
 // ==========================================
 // 1. LÓGICA DE GALERÍA DE ARTE 
 // ==========================================
-// (El código de la galería se mantiene intacto)
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
@@ -545,19 +545,30 @@ const enviandoGastro = ref(false)
 const gastroEditandoId = ref(null)
 
 const categoriasDisponibles = [
-  { id: 'botellas', nombre: 'BOTELLAS' }, { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'tragos', nombre: 'TRAGOS' },
-  { id: 'bebidas_refrescantes', nombre: 'BEBIDAS REFRESCANTES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
-  { id: 'bebidas_calientes', nombre: 'BEBIDAS CALIENTES' },
   { id: 'restaurante', nombre: 'RESTAURANTE' },
-  { id: 'comida', nombre: 'COMIDAS' }, { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
+  { id: 'licores', nombre: 'LICORES' },
+  { id: 'bebidas_refrescantes', nombre: 'BEBIDAS REFRESCANTES' },
+  { id: 'bebidas_calientes', nombre: 'BEBIDAS CALIENTES' },
+  { id: 'comida', nombre: 'COMIDAS' },
+  { id: 'comida_dulce', nombre: 'POSTRES Y DULCES' }
 ]
 
-const subcategoriasRestaurante = [
-  { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
-  { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
-  { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
-  { id: 'adiciones', nombre: 'ADICIONES' }
-]
+const subcategoriasDisponibles = computed(() => {
+  if (formGastro.value.categoria === 'restaurante') {
+    return [
+      { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
+      { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
+      { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
+      { id: 'adiciones', nombre: 'ADICIONES' }
+    ]
+  } else if (formGastro.value.categoria === 'licores') {
+    return [
+      { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
+      { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
+    ]
+  }
+  return []
+})
 
 const formGastro = ref({
   locales: [], 
@@ -585,7 +596,15 @@ const obtenerNombreCategoria = (id) => {
 }
 
 const obtenerNombreSubcategoria = (id) => {
-  const sub = subcategoriasRestaurante.find(s => s.id === id)
+  const todasSubcategorias = [
+    { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
+    { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
+    { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
+    { id: 'adiciones', nombre: 'ADICIONES' },
+    { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
+    { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
+  ]
+  const sub = todasSubcategorias.find(s => s.id === id)
   return sub ? sub.nombre : id
 }
 
@@ -625,11 +644,11 @@ const guardarGastro = async () => {
     payload.local = payload.locales.join(',')
     delete payload.locales 
     
-    // Si no es restaurante, la subcategoría queda nula para mantener limpia la BD
-    if (payload.categoria !== 'restaurante') {
+    // Verificación inteligente: Si la categoría no tiene subcategorías disponibles, limpiamos el campo
+    if (subcategoriasDisponibles.value.length === 0) {
       payload.subcategoria = null
     } else if (!payload.subcategoria) {
-      alert("Debes seleccionar una subcategoría para el menú Restaurante.");
+      alert("Debes seleccionar una subcategoría para esta sección.");
       enviandoGastro.value = false;
       return;
     }
