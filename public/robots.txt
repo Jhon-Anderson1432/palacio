@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Bloquear acceso al panel administrativo y login
+Disallow: /login-privado
+Disallow: /adminpanel02402110
+
+# Evitar rastreo de rutas dinámicas internas si no son necesarias en Google
+Disallow: /DetalleObra/
+Disallow: /gastronomia/
