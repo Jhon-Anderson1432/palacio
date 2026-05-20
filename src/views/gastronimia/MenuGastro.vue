@@ -69,6 +69,7 @@
       </div>
     </transition>
 
+
     <div v-if="mostrarMenu" class="pb-24 animate-fade-in bg-[#0a0a0a] min-h-screen">
       
       <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/10 pt-6 pb-2 px-4 flex flex-col gap-4">
@@ -219,7 +220,7 @@ const cargarMenu = async () => {
       let unicas = [...new Set(data.map(item => item.categoria))]
       
       // Orden estricto de las tarjetas solicitado
-      const ordenTarjetas = ['bebidas', 'restaurante', 'postres', 'licores']
+      const ordenTarjetas = ['bebidas', 'entraditas', 'restaurante', 'postres', 'licores']
       
       unicas.sort((a, b) => {
         let indexA = ordenTarjetas.indexOf(a)
@@ -353,10 +354,10 @@ const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
 
 // Diccionarios combinados y expandidos
 const dictCategorias = {
-  es: { 'restaurante': 'Restaurante', 'licores': 'Licores', 'bebidas': 'Bebidas', 'postres': 'Postres', 'comida': 'Comidas', 'comida_dulce': 'Postres y Dulces', 'bebidas_refrescantes': 'Bebidas Refrescantes', 'bebidas_calientes': 'Bebidas Calientes', 'cervezas': 'Cervezas', 'tragos': 'Tragos', 'cocteles': 'Cócteles', 'botellas': 'Botellas' },
-  en: { 'restaurante': 'Restaurant', 'licores': 'Liquors', 'bebidas': 'Drinks', 'postres': 'Desserts', 'comida': 'Food', 'comida_dulce': 'Desserts & Sweets', 'bebidas_refrescantes': 'Refreshing Drinks', 'bebidas_calientes': 'Hot Drinks', 'cervezas': 'Beers', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bottles' },
-  fr: { 'restaurante': 'Restaurant', 'licores': 'Liqueurs', 'bebidas': 'Boissons', 'postres': 'Desserts', 'comida': 'Repas', 'comida_dulce': 'Desserts et Douceurs', 'bebidas_refrescantes': 'Boissons Rafraîchissantes', 'bebidas_calientes': 'Boissons Chaudes', 'cervezas': 'Bières', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bouteilles' },
-  ja: { 'restaurante': 'レストラン', 'licores': 'お酒', 'bebidas': '飲み物', 'postres': 'デザート', 'comida': '食事', 'comida_dulce': 'デザートとスイーツ', 'bebidas_refrescantes': '冷たい飲み物', 'bebidas_calientes': '温かい飲み物', 'cervezas': 'ビール', 'tragos': 'ショット', 'cocteles': 'カクテル', 'botellas': 'ボトル' }
+  es: { 'entraditas': 'Entradas', 'restaurante': 'Restaurante', 'licores': 'Licores', 'bebidas': 'Bebidas', 'postres': 'Postres', 'comida': 'Comidas', 'comida_dulce': 'Postres y Dulces', 'bebidas_refrescantes': 'Bebidas Refrescantes', 'bebidas_calientes': 'Bebidas Calientes', 'cervezas': 'Cervezas', 'tragos': 'Tragos', 'cocteles': 'Cócteles', 'botellas': 'Botellas' },
+  en: { 'entraditas': 'Starters', 'restaurante': 'Restaurant', 'licores': 'Liquors', 'bebidas': 'Drinks', 'postres': 'Desserts', 'comida': 'Food', 'comida_dulce': 'Desserts & Sweets', 'bebidas_refrescantes': 'Refreshing Drinks', 'bebidas_calientes': 'Hot Drinks', 'cervezas': 'Beers', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bottles' },
+  fr: { 'entraditas': 'Entrées', 'restaurante': 'Restaurant', 'licores': 'Liqueurs', 'bebidas': 'Boissons', 'postres': 'Desserts', 'comida': 'Repas', 'comida_dulce': 'Desserts et Douceurs', 'bebidas_refrescantes': 'Boissons Rafraîchissantes', 'bebidas_calientes': 'Boissons Chaudes', 'cervezas': 'Bières', 'tragos': 'Shots', 'cocteles': 'Cocktails', 'botellas': 'Bouteilles' },
+  ja: { 'entraditas': '前菜', 'restaurante': 'レストラン', 'licores': 'お酒', 'bebidas': '飲み物', 'postres': 'デザート', 'comida': '食事', 'comida_dulce': 'デザートとスイーツ', 'bebidas_refrescantes': '冷たい飲み物', 'bebidas_calientes': '温かい飲み物', 'cervezas': 'ビール', 'tragos': 'ショット', 'cocteles': 'カクテル', 'botellas': 'ボトル' }
 }
 
 const dictSubcategorias = {
