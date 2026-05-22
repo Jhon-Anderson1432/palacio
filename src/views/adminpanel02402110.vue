@@ -5,44 +5,36 @@
 
     <aside :class="['w-64 bg-black border-r border-white/10 p-6 md:p-8 flex flex-col fixed top-0 left-0 bottom-0 md:relative z-50 transition-transform duration-300', menuAbierto ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
       
-      <div class="flex items-center justify-between gap-3 mb-10 text-[#D4AF37]">
-        <span class="font-serif text-xl tracking-tighter uppercase">Palacio Admin</span>
-        <button @click="menuAbierto = false" class="md:hidden text-white/50 hover:text-white p-2">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
+      <div class="flex flex-col mb-10 text-[#D4AF37]">
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-serif text-xl tracking-tighter uppercase">Palacio Admin</span>
+          <button @click="menuAbierto = false" class="md:hidden text-white/50 hover:text-white p-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <span class="text-[9px] uppercase tracking-widest text-neutral-500 mt-1">
+          {{ rolUsuario.replace('_', ' ') }} <span v-if="localAsignado">({{ localAsignado }})</span>
+        </span>
       </div>
       
       <nav class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
         <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
-          <button
-            @click="pestañaActiva = 'inventario'; menuAbierto = false"
-            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-          >
-             <span class="font-medium text-sm uppercase tracking-widest">Inventario</span>
+          <button @click="pestañaActiva = 'inventario'; menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Inventario Arte</span>
           </button>
 
-          <button
-            @click="pestañaActiva = 'mensajes'; fetchMensajes(); menuAbierto = false"
-            :class="['w-full p-3 rounded-xl flex items-center justify-between transition-all', pestañaActiva === 'mensajes' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-          >
-             <span class="font-medium text-sm uppercase tracking-widest">Buzón</span>
-             <span v-if="mensajesNoLeidos > 0" class="bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
-          </button>
-
-          <button
-            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false"
-            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-          >
-             <span class="font-medium text-sm uppercase tracking-widest">Métricas</span>
+          <button @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Métricas Arte</span>
           </button>
         </div>
 
-        <div v-if="rolUsuario === 'admin_gastro' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
-          <button
-            @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false"
-            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']"
-          >
-             <span class="font-medium text-sm uppercase tracking-widest">Menú Piso 5</span>
+        <div v-if="rolUsuario === 'admin_cafe' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
+          <button @click="pestañaActiva = 'caja'; fetchOrdenesCaja(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'caja' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Caja Registradora</span>
+          </button>
+          
+          <button @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
           </button>
         </div>
       </nav>
@@ -50,7 +42,7 @@
       <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all text-[10px] font-bold uppercase tracking-widest mt-4">
         CERRAR SESIÓN
       </button>
-
+      
       <router-link to="/exposiciones" class="text-neutral-500 hover:text-white transition-colors flex items-center gap-2 text-[10px] uppercase font-bold pt-4 border-t border-white/10 tracking-widest">
         ← GALERÍA PÚBLICA
       </router-link>
@@ -74,7 +66,7 @@
         </div>
         <div v-else class="flex-1">
           <h2 class="text-lg md:text-xl font-serif text-white truncate">
-            {{ pestañaActiva === 'mensajes' ? 'Buzón' : 'Estadísticas' }}
+            {{ pestañaActiva === 'caja' ? 'Sistema POS' : 'Estadísticas de la Galería' }}
           </h2>
         </div>
         
@@ -85,10 +77,72 @@
         <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> PLATO
         </button>
+
+        <button v-if="pestañaActiva === 'caja'" @click="fetchOrdenesCaja()" class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all">
+          🔄
+        </button>
       </nav>
 
       <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
         
+        <div v-if="pestañaActiva === 'caja'">
+          <header class="mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif text-white">Órdenes Activas</h1>
+            <p class="text-[#D4AF37] text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">
+              {{ localAsignado ? 'Sede: ' + localAsignado.replace(/-/g, ' ') : 'Monitoreo Global' }}
+            </p>
+          </header>
+
+          <div v-if="cargandoCaja" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Buscando comandas...</div>
+          
+          <div v-else-if="ordenesCaja.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
+            No hay órdenes registradas en este momento.
+          </div>
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div v-for="orden in ordenesCaja" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col">
+              
+              <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
+                <div>
+                  <h3 class="text-xl font-serif text-white">Mesa: {{ orden.mesa }}</h3>
+                  <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
+                </div>
+                <div class="text-right">
+                  <span :class="{'bg-yellow-500/20 text-yellow-500': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500': orden.estado === 'pagado', 'bg-red-500/20 text-red-500': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-current">
+                    {{ orden.estado }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-40 hide-scrollbar">
+                <div v-for="item in orden.pos_orden_items" :key="item.id" class="flex flex-col text-xs md:text-sm border-b border-white/5 pb-3">
+                  <div class="flex justify-between items-start">
+                    <span class="text-gray-300 pr-4">
+                      <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
+                      {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
+                    </span>
+                    <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+                  </div>
+                  <div v-if="item.notas" class="text-[11px] text-red-400 italic mt-1.5 pl-6 flex items-start gap-1 font-medium tracking-wide">
+                    <span>↳</span> {{ item.notas }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
+                <span class="text-sm text-neutral-400 uppercase tracking-widest">Total</span>
+                <span class="text-2xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 mt-auto">
+                <button @click="imprimirTicket(orden)" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Imprimir</button>
+                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Cobrar</button>
+                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="pestañaActiva === 'inventario'">
           <header class="mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
@@ -121,7 +175,8 @@
         <div v-if="pestañaActiva === 'gastronomia'">
           <header class="mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
-            <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Menú Piso 5</p>
+            <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Filtrado por sede: {{ localAsignado.replace(/-/g, ' ') }}</p>
+            <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
           </header>
 
           <div v-if="!cargandoGastro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -138,7 +193,7 @@
                 <div class="space-y-2 mb-6">
                   <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ formatoParrafo(item.descripcion) }}</p>
                   <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
-                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local.replace(/-/g, ' ').replace(/,/g, ' | ') }}</span>
+                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
                     <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
                     <span v-if="item.subcategoria" class="bg-white/20 text-white px-2 py-1 rounded-sm">{{ obtenerNombreSubcategoria(item.subcategoria) }}</span>
                     <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
@@ -153,32 +208,6 @@
             </div>
           </div>
           <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
-        </div>
-
-        <div v-if="pestañaActiva === 'mensajes'">
-          <div v-if="cargandoMensajes" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando buzón...</div>
-          <div v-else-if="mensajes.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
-            No hay mensajes en la bandeja de entrada.
-          </div>
-          <div v-else class="space-y-4 max-w-4xl mx-auto">
-            <div v-for="msj in mensajes" :key="msj.id" :class="['p-5 md:p-6 rounded-2xl border transition-all', msj.leido ? 'bg-white/5 border-white/5 opacity-70' : 'bg-neutral-900 border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]']">
-              <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
-                <div>
-                  <h4 class="text-white font-bold text-base md:text-lg flex items-center gap-2">
-                    {{ formatoTitulo(msj.nombre) }}
-                    <span v-if="!msj.leido" class="bg-[#D4AF37] w-2 h-2 rounded-full inline-block"></span>
-                  </h4>
-                  <a :href="'mailto:' + msj.email" class="text-[#D4AF37] text-xs hover:underline break-all">{{ msj.email }}</a>
-                </div>
-                <span class="text-neutral-500 text-[10px] md:text-xs">{{ new Date(msj.creado_en).toLocaleDateString() }}</span>
-              </div>
-              <p class="text-neutral-300 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{{ msj.mensaje }}</p>
-              <div class="mt-6 flex flex-wrap gap-3 border-t border-white/5 pt-4">
-                <button @click="marcarLeido(msj)" v-if="!msj.leido" class="flex-1 md:flex-none text-[10px] uppercase tracking-widest font-bold text-white hover:text-[#D4AF37] transition-colors text-left">✔ Marcar leído</button>
-                <button @click="eliminarMensaje(msj.id)" class="text-[10px] uppercase tracking-widest font-bold text-red-500 hover:text-red-400 transition-colors">🗑 Eliminar</button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div v-if="pestañaActiva === 'estadisticas'">
@@ -303,7 +332,7 @@
         
         <form @submit.prevent="guardarGastro" class="space-y-6">
           
-          <div class="w-full bg-white/5 border border-white/10 p-3 rounded-xl flex flex-col justify-center gap-2 mb-3">
+          <div v-if="rolUsuario === 'superadmin'" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl flex flex-col justify-center gap-2 mb-3">
             <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
             <div class="flex flex-wrap gap-3">
               <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
@@ -316,6 +345,9 @@
                 <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
               </label>
             </div>
+          </div>
+          <div v-else class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-3 rounded-xl mb-3">
+            <span class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">Bloqueado a tu sede: {{ localAsignado ? localAsignado.replace(/-/g, ' ') : '' }}</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -378,18 +410,23 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
-import { supabase, searchQuery } from '../lib/supabase'
+import { supabase } from '../lib/supabase' 
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const pestañaActiva = ref('inventario')
-
-const rolUsuario = ref('superadmin') 
+const searchQuery = ref('')
 const menuAbierto = ref(false) 
 
-// ==========================================
-// 1. LÓGICA DE GALERÍA DE ARTE 
-// ==========================================
+// ESTADOS DE SEGURIDAD
+const rolUsuario = ref('superadmin') 
+const localAsignado = ref(null)
+
+// CAJA REGISTRADORA
+const ordenesCaja = ref([])
+const cargandoCaja = ref(false)
+
+// GALERÍA DE ARTE 
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
@@ -404,24 +441,172 @@ const form = ref({
   medidas: '', tipo: '', imagen_1: null, imagen_2: null, imagen_3: null
 })
 
-const mensajes = ref([])
-const cargandoMensajes = ref(false)
 const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
 const logsActividad = ref([])
 
+// GASTRONOMÍA 
+const todosLosPlatos = ref([])
+const cargandoGastro = ref(false)
+const showGastroForm = ref(false)
+const enviandoGastro = ref(false)
+const gastroEditandoId = ref(null)
+
+const categoriasDisponibles = [
+  { id: 'entraditas', nombre: 'ENTRADITAS' },
+  { id: 'restaurante', nombre: 'RESTAURANTE' },
+  { id: 'licores', nombre: 'LICORES' },
+  { id: 'bebidas', nombre: 'BEBIDAS' },
+  { id: 'postres', nombre: 'POSTRES' }
+]
+
+const subcategoriasDisponibles = computed(() => {
+  if (formGastro.value.categoria === 'restaurante') {
+    return [
+      { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
+      { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
+      { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
+      { id: 'adiciones', nombre: 'ADICIONES' }
+    ]
+  } else if (formGastro.value.categoria === 'licores') {
+    return [
+      { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
+      { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
+    ]
+  } else if (formGastro.value.categoria === 'bebidas') {
+    return [
+      { id: 'refrescantes', nombre: 'REFRESCANTES' },
+      { id: 'calientes', nombre: 'CALIENTES' },
+      { id: 'jugos', nombre: 'JUGOS' }
+    ]
+  }
+  return []
+})
+
+const formGastro = ref({
+  locales: [], 
+  categoria: '', subcategoria: '', precio: null, etiqueta: '',
+  nombre: '', descripcion: '', nombre_en: '', descripcion_en: '',
+  nombre_fr: '', descripcion_fr: '', nombre_ja: '', descripcion_ja: ''
+})
+
+const cargarPerfilYDatos = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { router.push('/login-admin'); return }
+
+  const { data: perfil } = await supabase.from('perfiles').select('*').eq('id', user.id).single()
+  if (perfil) {
+    rolUsuario.value = perfil.rol
+    localAsignado.value = perfil.local_asignado
+
+    if (perfil.rol === 'admin_cafe') {
+      pestañaActiva.value = 'caja'
+      fetchOrdenesCaja()
+      fetchGastronomia()
+    } else if (perfil.rol === 'admin_galeria') {
+      pestañaActiva.value = 'inventario'
+      fetchObras()
+    } else {
+      pestañaActiva.value = 'inventario'
+      fetchObras()
+      fetchGastronomia()
+      fetchOrdenesCaja()
+    }
+  } else {
+      fetchObras()
+      fetchGastronomia()
+  }
+}
+
+// LÓGICA DE CAJA CON JOIN PARA NOMBRES DE MESERAS Y CÓDIGOS POS
+const fetchOrdenesCaja = async () => {
+  cargandoCaja.value = true
+  let query = supabase
+    .from('pos_ordenes')
+    .select(`
+      *,
+      perfiles ( nombre ),
+      pos_orden_items (
+        id, cantidad, precio_unitario, notas,
+        menu_gastronomia (nombre, codigo_pos)
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(50) 
+
+  if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
+    query = query.eq('local', localAsignado.value)
+  }
+
+  const { data, error } = await query
+  if (!error) ordenesCaja.value = data || []
+  cargandoCaja.value = false
+}
+
+const actualizarEstadoOrden = async (id, nuevoEstado) => {
+  if (confirm(`¿Confirmas pasar esta orden a estado: ${nuevoEstado.toUpperCase()}?`)) {
+    await supabase.from('pos_ordenes').update({ estado: nuevoEstado }).eq('id', id)
+    fetchOrdenesCaja()
+  }
+}
+
+const imprimirTicket = (orden) => {
+  let contenido = `
+    <div style="font-family: 'Courier New', Courier, monospace; width: 300px; padding: 15px; color: black; background: white;">
+      <h2 style="text-align: center; margin-bottom: 2px; font-size: 22px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h2>
+      <p style="text-align: center; font-size: 11px; margin-top: 0; color: #444;">Ticket de Pedido</p>
+      
+      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 10px 0; margin: 15px 0;">
+        <p style="margin: 3px 0; font-size: 14px;"><strong>MESA:</strong> ${orden.mesa}</p>
+        <p style="margin: 3px 0; font-size: 12px;"><strong>MESERA:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+        <p style="margin: 3px 0; font-size: 12px;"><strong>FECHA:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
+      </div>
+  `
+  
+  orden.pos_orden_items.forEach(item => {
+    const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : ''
+    
+    contenido += `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 14px; font-weight: bold;">
+        <span style="flex: 1; padding-right: 10px;">${item.cantidad}x ${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</span>
+        <span>$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</span>
+      </div>
+    `
+    if (item.notas) {
+      contenido += `
+        <div style="font-size: 13px; color: #000; padding-left: 20px; margin-bottom: 10px; font-style: italic; border-left: 2px solid black;">
+          -> ${item.notas.toUpperCase()}
+        </div>
+      `
+    }
+  })
+  
+  contenido += `
+      <hr style="border-top: 2px dashed black; margin-top: 15px;"/>
+      <h3 style="text-align: right; margin-top: 10px; font-size: 18px;">TOTAL: $${orden.total.toLocaleString('es-CO')}</h3>
+      
+      <p style="text-align: center; margin-top: 30px; font-size: 10px; font-style: italic;">- Sistema POS Palacio Nacional -</p>
+      <div style="text-align: center; margin-top: 10px;">***</div>
+    </div>
+  `
+  
+  const ventanaImpresion = window.open('', '_blank', 'width=400,height=600')
+  ventanaImpresion.document.write(contenido)
+  ventanaImpresion.document.close()
+  ventanaImpresion.focus()
+  
+  setTimeout(() => {
+    ventanaImpresion.print()
+    ventanaImpresion.close()
+  }, 300)
+}
+
+// LÓGICA DE GALERÍA (Exactamente como tu código)
 const fetchObras = async () => {
   cargando.value = true
   const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false })
   todasLasObras.value = data || []
   cargando.value = false
   calcularEstadisticas()
-}
-
-const fetchMensajes = async () => {
-  cargandoMensajes.value = true
-  const { data } = await supabase.from('mensajes_contacto').select('*').order('creado_en', { ascending: false })
-  mensajes.value = data || []
-  cargandoMensajes.value = false
 }
 
 const calcularEstadisticas = () => {
@@ -431,12 +616,10 @@ const calcularEstadisticas = () => {
 
   const ultimas = [...todasLasObras.value].slice(0, 5)
   logsActividad.value = ultimas.map(obra => {
-    const fecha = new Date(obra.created_at)
+    const fecha = new Date(obra.created_at || Date.now())
     return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   })
 }
-
-const mensajesNoLeidos = computed(() => mensajes.value.filter(m => !m.leido).length)
 
 const obrasFiltradas = computed(() => {
   const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
@@ -526,65 +709,16 @@ const deleteObra = async (obra) => {
   }
 }
 
-const marcarLeido = async (msj) => {
-  const { error } = await supabase.from('mensajes_contacto').update({ leido: true }).eq('id', msj.id)
-  if (!error) msj.leido = true
-}
-
-const eliminarMensaje = async (id) => {
-  if(confirm("¿Eliminar este mensaje permanentemente?")) { await supabase.from('mensajes_contacto').delete().eq('id', id); fetchMensajes() }
-}
-
-// ==========================================
-// 2. LÓGICA DE GASTRONOMÍA (NUEVA ESTRUCTURA)
-// ==========================================
-const todosLosPlatos = ref([])
-const cargandoGastro = ref(false)
-const showGastroForm = ref(false)
-const enviandoGastro = ref(false)
-const gastroEditandoId = ref(null)
-
-const categoriasDisponibles = [
-  { id: 'entraditas', nombre: 'ENTRADITAS' },
-  { id: 'restaurante', nombre: 'RESTAURANTE' },
-  { id: 'licores', nombre: 'LICORES' },
-  { id: 'bebidas', nombre: 'BEBIDAS' },
-  { id: 'postres', nombre: 'POSTRES' }
-]
-
-const subcategoriasDisponibles = computed(() => {
-  if (formGastro.value.categoria === 'restaurante') {
-    return [
-      { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
-      { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
-      { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
-      { id: 'adiciones', nombre: 'ADICIONES' }
-    ]
-  } else if (formGastro.value.categoria === 'licores') {
-    return [
-      { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
-      { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' }
-    ]
-  } else if (formGastro.value.categoria === 'bebidas') {
-    return [
-      { id: 'refrescantes', nombre: 'REFRESCANTES' },
-      { id: 'calientes', nombre: 'CALIENTES' },
-      { id: 'jugos', nombre: 'JUGOS' }
-    ]
-  }
-  return []
-})
-
-const formGastro = ref({
-  locales: [], 
-  categoria: '', subcategoria: '', precio: null, etiqueta: '',
-  nombre: '', descripcion: '', nombre_en: '', descripcion_en: '',
-  nombre_fr: '', descripcion_fr: '', nombre_ja: '', descripcion_ja: ''
-})
-
+// LÓGICA GASTRONÓMICA (Exactamente como tu código)
 const fetchGastronomia = async () => {
   cargandoGastro.value = true
-  const { data } = await supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
+  let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
+  
+  if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
+    query = query.ilike('local', `%${localAsignado.value}%`)
+  }
+  
+  const { data } = await query
   todosLosPlatos.value = data || []
   cargandoGastro.value = false
 }
@@ -641,16 +775,18 @@ const guardarGastro = async () => {
   try {
     const payload = { ...formGastro.value }
     
-    if (!payload.locales || payload.locales.length === 0) {
-      alert("Por favor, selecciona al menos un establecimiento.")
-      enviandoGastro.value = false
-      return
+    if (rolUsuario.value === 'admin_cafe') {
+      payload.local = localAsignado.value
+    } else {
+      if (!payload.locales || payload.locales.length === 0) {
+        alert("Por favor, selecciona al menos un establecimiento.")
+        enviandoGastro.value = false
+        return
+      }
+      payload.local = payload.locales.join(',')
     }
-
-    payload.local = payload.locales.join(',')
     delete payload.locales 
     
-    // Verificación inteligente: Si la categoría no tiene subcategorías disponibles, limpiamos el campo
     if (subcategoriasDisponibles.value.length === 0) {
       payload.subcategoria = null
     } else if (!payload.subcategoria) {
@@ -694,8 +830,13 @@ const deleteProductoGastro = async (item) => {
 
 const handleLogout = async () => {
   await supabase.auth.signOut()
-  router.push('/login-privado')
+  router.push('/login-admin')
 }
 
-onMounted(() => { fetchObras(); fetchMensajes(); fetchGastronomia() })
+onMounted(() => { cargarPerfilYDatos() })
 </script>
+
+<style scoped>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

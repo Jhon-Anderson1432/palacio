@@ -10,6 +10,10 @@ import historia from '@/views/historia.vue'
 import LoginAdmin from '../views/LoginAdmin.vue'
 import Adminpanel02402110 from '../views/adminpanel02402110.vue'
 
+// Vistas POS (Nuevas)
+import LoginPos from '../views/gastronimia/LoginPos.vue'
+import TerminalPos from '../views/gastronimia/TerminalPos.vue'
+
 const routes = [
   {
     path: '/',
@@ -47,17 +51,28 @@ const routes = [
     name: 'Historia',
     component: historia
   },
-  // NUEVA RUTA: Menú principal de Gastronomía (Rooftop)
+  // NUEVAS RUTAS POS
+  {
+    path: '/login-pos',
+    name: 'LoginPos',
+    component: LoginPos
+  },
+  {
+    path: '/terminal-pos',
+    name: 'TerminalPos',
+    component: TerminalPos,
+    meta: { requiresAuth: true }
+  },
+  // Gastronomía
   {
     path: '/homegastro',
     name: 'HomeGastro',
     component: () => import('../views/gastronimia/homegastro.vue')
   },
-  // En tu arreglo de routes, reemplaza la de chao-cafe por esta:
   {
-  path: '/gastronomia/:local', 
-  name: 'MenuGastro',
-  component: () => import('../views/gastronimia/MenuGastro.vue')
+    path: '/gastronomia/:local', 
+    name: 'MenuGastro',
+    component: () => import('../views/gastronimia/MenuGastro.vue')
   }
 ]
 
@@ -72,7 +87,12 @@ router.beforeEach(async (to, from, next) => {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      next('/login-privado')
+      // Si intenta entrar a admin, va a login-privado. Si intenta entrar a POS, va a login-pos.
+      if (to.path.includes('terminal')) {
+        next('/login-pos')
+      } else {
+        next('/login-privado')
+      }
     } else {
       next()
     }
