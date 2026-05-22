@@ -830,7 +830,7 @@ const deleteProductoGastro = async (item) => {
 
 const handleLogout = async () => {
   await supabase.auth.signOut()
-  router.push('/login-admin')
+  router.push('/login-privado')
 }
 
 onMounted(() => { cargarPerfilYDatos() })
