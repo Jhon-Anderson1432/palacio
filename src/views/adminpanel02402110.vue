@@ -205,6 +205,7 @@
             </div>
           </div>
         </div>
+
         <div v-if="pestañaActiva === 'inventario'">
           <header class="mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
@@ -241,35 +242,53 @@
             <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
           </header>
 
-          <div v-if="!cargandoGastro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <div v-for="item in gastroFiltrados" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all relative flex flex-col justify-between">
-              <div>
-                <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
-                  <div class="pr-2">
-                    <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ formatoTitulo(item.nombre) }}</h3>
-                    <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ formatoTitulo(item.nombre_en) }}</p>
-                  </div>
-                  <span class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap">${{ item.precio }}</span>
-                </div>
+          <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
+          
+          <div v-else class="space-y-10">
+            <div v-if="gastroFiltrados.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
+              No se encontraron platos en el menú.
+            </div>
+            
+            <div v-for="(subcategorias, categoriaId) in menuAgrupado" :key="categoriaId" class="mb-10">
+              <h2 class="text-2xl md:text-3xl font-serif text-[#D4AF37] mb-6 border-b border-[#D4AF37]/20 pb-3">{{ obtenerNombreCategoria(categoriaId) }}</h2>
+              
+              <div v-for="(platos, subcategoriaId) in subcategorias" :key="subcategoriaId" class="mb-8 last:mb-0">
+                <h3 v-if="subcategoriaId !== 'general' && subcategoriaId !== 'null'" class="text-sm md:text-base text-white/80 font-bold uppercase tracking-[0.15em] mb-4 pl-2 border-l-2 border-[#D4AF37]">
+                  {{ obtenerNombreSubcategoria(subcategoriaId) }}
+                </h3>
                 
-                <div class="space-y-2 mb-6">
-                  <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ formatoParrafo(item.descripcion) }}</p>
-                  <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
-                    <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
-                    <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
-                    <span v-if="item.subcategoria" class="bg-white/20 text-white px-2 py-1 rounded-sm">{{ obtenerNombreSubcategoria(item.subcategoria) }}</span>
-                    <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                  <div v-for="item in platos" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all relative flex flex-col justify-between">
+                    <div>
+                      <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
+                        <div class="pr-2">
+                          <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ formatoTitulo(item.nombre) }}</h3>
+                          <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ formatoTitulo(item.nombre_en) }}</p>
+                        </div>
+                        <span class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap">${{ item.precio }}</span>
+                      </div>
+                      
+                      <div class="space-y-2 mb-6">
+                        <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ formatoParrafo(item.descripcion) }}</p>
+                        <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
+                          <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm">{{ item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
+                          <span class="bg-white/10 px-2 py-1 rounded-sm">{{ obtenerNombreCategoria(item.categoria) }}</span>
+                          <span v-if="item.subcategoria" class="bg-white/20 text-white px-2 py-1 rounded-sm">{{ obtenerNombreSubcategoria(item.subcategoria) }}</span>
+                          <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm">{{ item.etiqueta }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-auto pt-4 border-t border-white/5">
+                      <button @click="openGastroForm(item)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
+                      <button @click="deleteProductoGastro(item)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all">Eliminar</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="flex gap-2 mt-auto pt-4 border-t border-white/5">
-                <button @click="openGastroForm(item)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
-                <button @click="deleteProductoGastro(item)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all">Eliminar</button>
               </div>
             </div>
           </div>
-          <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
+
         </div>
 
         <div v-if="pestañaActiva === 'estadisticas'">
@@ -507,7 +526,7 @@ const form = ref({
 const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
 const logsActividad = ref([])
 
-// ESTADOS MÉTRICAS POS (NUEVO)
+// ESTADOS MÉTRICAS POS
 const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
 const cargandoStatsPos = ref(false)
 
@@ -639,7 +658,6 @@ const actualizarEstadoOrden = async (id, nuevoEstado) => {
   }
 }
 
-// LÓGICA DE ELIMINACIÓN FÍSICA (NUEVO)
 const eliminarOrdenFisica = async (id) => {
   if (confirm(`¿Peligro: Eliminar definitivamente esta orden de la base de datos? Esto no se puede deshacer.`)) {
     await supabase.from('pos_ordenes').delete().eq('id', id)
@@ -647,7 +665,6 @@ const eliminarOrdenFisica = async (id) => {
   }
 }
 
-// LÓGICA DE MÉTRICAS POS (NUEVO)
 const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = true
   
@@ -682,7 +699,6 @@ const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = false
 }
 
-// LÓGICA DE IMPRESIÓN DEL CIERRE DIARIO (NUEVO)
 const imprimirCierreCaja = () => {
   let contenido = `
     <div style="font-family: 'Courier New', Courier, monospace; width: 270px; padding: 5px; color: black; background: white;">
@@ -923,6 +939,7 @@ const deleteObra = async (obra) => {
   }
 }
 
+// LÓGICA GASTRONÓMICA 
 const fetchGastronomia = async () => {
   cargandoGastro.value = true
   let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
@@ -940,6 +957,21 @@ const gastroFiltrados = computed(() => {
   const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
   if (!query) return todosLosPlatos.value
   return todosLosPlatos.value.filter(o => o.nombre.toLowerCase().includes(query) || (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) || o.categoria.toLowerCase().includes(query))
+})
+
+// NUEVO: COMPUTADA PARA AGRUPAR EL MENÚ
+const menuAgrupado = computed(() => {
+  const agrupado = {}
+  gastroFiltrados.value.forEach(item => {
+    const cat = item.categoria || 'otros'
+    const sub = item.subcategoria || 'general'
+    
+    if (!agrupado[cat]) agrupado[cat] = {}
+    if (!agrupado[cat][sub]) agrupado[cat][sub] = []
+    
+    agrupado[cat][sub].push(item)
+  })
+  return agrupado
 })
 
 const obtenerNombreCategoria = (id) => {
