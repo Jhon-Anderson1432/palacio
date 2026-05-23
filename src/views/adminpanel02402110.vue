@@ -32,6 +32,10 @@
           <button @click="pestañaActiva = 'caja'; fetchOrdenesCaja(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'caja' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
              <span class="font-medium text-sm uppercase tracking-widest">Caja Registradora</span>
           </button>
+
+          <button @click="pestañaActiva = 'estadisticas_pos'; calcularEstadisticasPos(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas_pos' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Métricas POS</span>
+          </button>
           
           <button @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
              <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
@@ -66,7 +70,7 @@
         </div>
         <div v-else class="flex-1">
           <h2 class="text-lg md:text-xl font-serif text-white truncate">
-            {{ pestañaActiva === 'caja' ? 'Sistema POS' : 'Estadísticas de la Galería' }}
+            {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' : 'Estadísticas de la Galería') }}
           </h2>
         </div>
         
@@ -86,11 +90,19 @@
       <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
         
         <div v-if="pestañaActiva === 'caja'">
-          <header class="mb-8 md:mb-12">
-            <h1 class="text-3xl md:text-4xl font-serif text-white">Órdenes Activas</h1>
-            <p class="text-[#D4AF37] text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">
-              {{ localAsignado ? 'Sede: ' + localAsignado.replace(/-/g, ' ') : 'Monitoreo Global' }}
-            </p>
+          <header class="mb-8 md:mb-12 flex justify-between items-end">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-serif text-white flex items-center gap-3">
+                Órdenes Activas
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+              </h1>
+              <p class="text-[#D4AF37] text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">
+                {{ localAsignado ? 'Sede: ' + localAsignado.replace(/-/g, ' ') : 'Monitoreo Global' }}
+              </p>
+            </div>
           </header>
 
           <div v-if="cargandoCaja" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Buscando comandas...</div>
@@ -100,21 +112,22 @@
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div v-for="orden in ordenesCaja" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col">
+            <div v-for="orden in ordenesCaja" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
               
               <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                 <div>
-                  <h3 class="text-xl font-serif text-white">Mesa: {{ orden.mesa }}</h3>
-                  <p class="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
+                  <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37]">{{ orden.mesa }}</span></h3>
+                  <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
+                  <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
                 </div>
                 <div class="text-right">
-                  <span :class="{'bg-yellow-500/20 text-yellow-500': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500': orden.estado === 'pagado', 'bg-red-500/20 text-red-500': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-current">
+                  <span :class="{'bg-yellow-500/20 text-yellow-500': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500': orden.estado === 'pagado', 'bg-red-500/20 text-red-500': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-current shadow-sm">
                     {{ orden.estado }}
                   </span>
                 </div>
               </div>
 
-              <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-40 hide-scrollbar">
+              <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-48 hide-scrollbar pr-2">
                 <div v-for="item in orden.pos_orden_items" :key="item.id" class="flex flex-col text-xs md:text-sm border-b border-white/5 pb-3">
                   <div class="flex justify-between items-start">
                     <span class="text-gray-300 pr-4">
@@ -131,18 +144,67 @@
 
               <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
                 <span class="text-sm text-neutral-400 uppercase tracking-widest">Total</span>
-                <span class="text-2xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
+                <span class="text-3xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
               </div>
 
               <div class="grid grid-cols-3 gap-2 mt-auto">
-                <button @click="imprimirTicket(orden)" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Imprimir</button>
-                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Cobrar</button>
+                <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
+                  Imprimir {{ orden.estado === 'pagado' ? 'Factura' : 'Comanda' }}
+                </button>
+                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">Cobrar</button>
                 <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
+                <button @click="eliminarOrdenFisica(orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
+                  🗑️ Eliminar Orden Definitivamente
+                </button>
               </div>
             </div>
           </div>
         </div>
 
+        <div v-if="pestañaActiva === 'estadisticas_pos'">
+          <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-serif text-white">Cierre de Caja (Hoy)</h1>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Resumen de Ventas Pagadas</p>
+            </div>
+            <button @click="imprimirCierreCaja()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-all text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+              🖨️ Imprimir Cierre
+            </button>
+          </header>
+
+          <div v-if="cargandoStatsPos" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Calculando métricas...</div>
+
+          <div v-else class="max-w-5xl mx-auto space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/30 flex flex-col justify-between h-32 md:h-40 shadow-lg">
+                <span class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-widest font-bold">Ventas Totales (Hoy)</span>
+                <span class="text-4xl md:text-5xl font-serif text-white">${{ statsPos.totalVentasDia.toLocaleString('es-CO') }}</span>
+              </div>
+              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/10 flex flex-col justify-between h-32 md:h-40">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Mesas Atendidas (Hoy)</span>
+                <span class="text-4xl md:text-5xl font-serif text-white">{{ statsPos.totalMesasDia }}</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8">
+              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Desempeño por Mesera</h3>
+              <div v-if="statsPos.desgloseMeseras.length > 0" class="space-y-4">
+                <div v-for="mesera in statsPos.desgloseMeseras" :key="mesera.nombre" class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                  <div class="mb-2 sm:mb-0">
+                    <p class="text-sm md:text-base text-white font-bold">{{ mesera.nombre }}</p>
+                    <p class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest mt-1">{{ mesera.mesas }} mesas atendidas</p>
+                  </div>
+                  <div class="sm:text-right">
+                    <span class="text-2xl font-serif text-[#D4AF37]">${{ mesera.ventas.toLocaleString('es-CO') }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
+                Aún no hay ventas pagadas registradas en el día de hoy.
+              </div>
+            </div>
+          </div>
+        </div>
         <div v-if="pestañaActiva === 'inventario'">
           <header class="mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
@@ -425,6 +487,7 @@ const localAsignado = ref(null)
 // CAJA REGISTRADORA
 const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
+let subscripcionPos = null 
 
 // GALERÍA DE ARTE 
 const todasLasObras = ref([])
@@ -443,6 +506,10 @@ const form = ref({
 
 const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
 const logsActividad = ref([])
+
+// ESTADOS MÉTRICAS POS (NUEVO)
+const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
+const cargandoStatsPos = ref(false)
 
 // GASTRONOMÍA 
 const todosLosPlatos = ref([])
@@ -501,6 +568,7 @@ const cargarPerfilYDatos = async () => {
     if (perfil.rol === 'admin_cafe') {
       pestañaActiva.value = 'caja'
       fetchOrdenesCaja()
+      inicializarRealtime() 
       fetchGastronomia()
     } else if (perfil.rol === 'admin_galeria') {
       pestañaActiva.value = 'inventario'
@@ -510,6 +578,7 @@ const cargarPerfilYDatos = async () => {
       fetchObras()
       fetchGastronomia()
       fetchOrdenesCaja()
+      inicializarRealtime() 
     }
   } else {
       fetchObras()
@@ -517,9 +586,30 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
-// LÓGICA DE CAJA CON JOIN PARA NOMBRES DE MESERAS Y CÓDIGOS POS
-const fetchOrdenesCaja = async () => {
-  cargandoCaja.value = true
+const inicializarRealtime = () => {
+  if (subscripcionPos) return; 
+  subscripcionPos = supabase
+    .channel('pos_ordenes_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_ordenes' }, async (payload) => {
+      
+      if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
+
+      await fetchOrdenesCaja(false); 
+
+      if (payload.eventType === 'INSERT') {
+        setTimeout(() => {
+          const nuevaOrden = ordenesCaja.value.find(o => o.id === payload.new.id);
+          if (nuevaOrden) {
+            imprimirTicket(nuevaOrden, 'comanda');
+          }
+        }, 1500); 
+      }
+    })
+    .subscribe();
+}
+
+const fetchOrdenesCaja = async (mostrarLoader = true) => {
+  if (mostrarLoader) cargandoCaja.value = true
   let query = supabase
     .from('pos_ordenes')
     .select(`
@@ -539,7 +629,7 @@ const fetchOrdenesCaja = async () => {
 
   const { data, error } = await query
   if (!error) ordenesCaja.value = data || []
-  cargandoCaja.value = false
+  if (mostrarLoader) cargandoCaja.value = false
 }
 
 const actualizarEstadoOrden = async (id, nuevoEstado) => {
@@ -549,16 +639,124 @@ const actualizarEstadoOrden = async (id, nuevoEstado) => {
   }
 }
 
-const imprimirTicket = (orden) => {
+// LÓGICA DE ELIMINACIÓN FÍSICA (NUEVO)
+const eliminarOrdenFisica = async (id) => {
+  if (confirm(`¿Peligro: Eliminar definitivamente esta orden de la base de datos? Esto no se puede deshacer.`)) {
+    await supabase.from('pos_ordenes').delete().eq('id', id)
+    fetchOrdenesCaja()
+  }
+}
+
+// LÓGICA DE MÉTRICAS POS (NUEVO)
+const calcularEstadisticasPos = async () => {
+  cargandoStatsPos.value = true
+  
+  const hoy = new Date()
+  hoy.setHours(0,0,0,0)
+  const inicioDia = hoy.toISOString()
+
+  let query = supabase
+    .from('pos_ordenes')
+    .select(`*, perfiles(nombre)`)
+    .gte('created_at', inicioDia)
+    .eq('estado', 'pagado')
+
+  if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
+    query = query.eq('local', localAsignado.value)
+  }
+
+  const { data, error } = await query
+  if (!error && data) {
+    statsPos.totalVentasDia = data.reduce((acc, curr) => acc + curr.total, 0)
+    statsPos.totalMesasDia = data.length
+
+    const agrupado = {}
+    data.forEach(orden => {
+      const mesera = orden.perfiles?.nombre || 'Desconocida'
+      if(!agrupado[mesera]) agrupado[mesera] = { nombre: mesera, ventas: 0, mesas: 0 }
+      agrupado[mesera].ventas += orden.total
+      agrupado[mesera].mesas += 1
+    })
+    statsPos.desgloseMeseras = Object.values(agrupado).sort((a,b) => b.ventas - a.ventas)
+  }
+  cargandoStatsPos.value = false
+}
+
+// LÓGICA DE IMPRESIÓN DEL CIERRE DIARIO (NUEVO)
+const imprimirCierreCaja = () => {
   let contenido = `
-    <div style="font-family: 'Courier New', Courier, monospace; width: 300px; padding: 15px; color: black; background: white;">
-      <h2 style="text-align: center; margin-bottom: 2px; font-size: 22px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h2>
-      <p style="text-align: center; font-size: 11px; margin-top: 0; color: #444;">Ticket de Pedido</p>
+    <div style="font-family: 'Courier New', Courier, monospace; width: 270px; padding: 5px; color: black; background: white;">
+      <h2 style="text-align: center; margin-bottom: 2px; font-size: 18px;">CIERRE DE CAJA</h2>
+      <p style="text-align: center; font-size: 10px; margin-top: 0; font-weight: bold; text-transform: uppercase;">${localAsignado.value ? localAsignado.value.replace(/-/g, ' ') : 'GLOBAL'}</p>
       
-      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 10px 0; margin: 15px 0;">
-        <p style="margin: 3px 0; font-size: 14px;"><strong>MESA:</strong> ${orden.mesa}</p>
-        <p style="margin: 3px 0; font-size: 12px;"><strong>MESERA:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
-        <p style="margin: 3px 0; font-size: 12px;"><strong>FECHA:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
+      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; margin: 5px 0; font-size: 11px;">
+        <p style="margin: 2px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
+        <p style="margin: 2px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
+      </div>
+
+      <h3 style="font-size: 14px; margin-bottom: 5px;">DESGLOSE POR MESERA:</h3>
+  `
+
+  statsPos.desgloseMeseras.forEach(m => {
+    contenido += `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 12px;">
+        <span>${m.nombre} (${m.mesas} mesas)</span>
+        <span>$${m.ventas.toLocaleString('es-CO')}</span>
+      </div>
+    `
+  })
+
+  contenido += `
+      <hr style="border-top: 1px dashed black; margin-top: 10px;"/>
+      <h3 style="text-align: right; margin-top: 5px; font-size: 16px;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
+      
+      <p style="text-align: center; margin-top: 15px; font-size: 9px; font-style: italic;">- Fin del Reporte Diario -</p>
+      <div style="text-align: center; margin-top: 5px;">***</div>
+    </div>
+  `
+
+  let iframe = document.getElementById('impresora-oculta');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'impresora-oculta';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+  }
+
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(`
+    <html>
+      <head><title>Impresión Cierre</title></head>
+      <body>${contenido}</body>
+    </html>
+  `);
+  iframe.contentDocument.close();
+
+  setTimeout(() => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }, 300);
+}
+
+const imprimirTicket = (orden, tipo = 'comanda') => {
+  const esFactura = tipo === 'factura' || orden.estado === 'pagado';
+  const tituloDocumento = esFactura ? 'Factura de Venta' : 'Ticket de Cocina (Comanda)';
+  const footerDocumento = esFactura ? '- Copia de Cliente -' : '- Copia de Cocina -';
+
+  let contenido = `
+    <div style="font-family: 'Courier New', Courier, monospace; width: 270px; padding: 5px; color: black; background: white;">
+      <h2 style="text-align: center; margin-bottom: 2px; font-size: 18px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h2>
+      <p style="text-align: center; font-size: 10px; margin-top: 0; color: #444; font-weight: bold; text-transform: uppercase;">${tituloDocumento}</p>
+      
+      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; margin: 5px 0; font-size: 11px;">
+        <p style="margin: 2px 0;font-size: 14px;"><strong>MESA:</strong> ${orden.mesa}</p>
+        <p style="margin: 2px 0;font-size: 12px; "><strong>MESERA:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+        <p style="margin: 2px 0;font-size: 12px; "><strong>FECHA:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
       </div>
   `
   
@@ -582,25 +780,41 @@ const imprimirTicket = (orden) => {
   
   contenido += `
       <hr style="border-top: 2px dashed black; margin-top: 15px;"/>
-      <h3 style="text-align: right; margin-top: 10px; font-size: 18px;">TOTAL: $${orden.total.toLocaleString('es-CO')}</h3>
+      <h3 style="text-align: right; margin-top: 10px; font-size: ${esFactura ? '18px' : '16px'};">TOTAL: $${orden.total.toLocaleString('es-CO')}</h3>
       
-      <p style="text-align: center; margin-top: 30px; font-size: 10px; font-style: italic;">- Sistema POS Palacio Nacional -</p>
+      <p style="text-align: center; margin-top: 30px; font-size: 10px; font-style: italic;">${footerDocumento}</p>
       <div style="text-align: center; margin-top: 10px;">***</div>
     </div>
   `
   
-  const ventanaImpresion = window.open('', '_blank', 'width=400,height=600')
-  ventanaImpresion.document.write(contenido)
-  ventanaImpresion.document.close()
-  ventanaImpresion.focus()
-  
+  let iframe = document.getElementById('impresora-oculta');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'impresora-oculta';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+  }
+
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(`
+    <html>
+      <head><title>Impresión</title></head>
+      <body>${contenido}</body>
+    </html>
+  `);
+  iframe.contentDocument.close();
+
   setTimeout(() => {
-    ventanaImpresion.print()
-    ventanaImpresion.close()
-  }, 300)
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }, 300);
 }
 
-// LÓGICA DE GALERÍA (Exactamente como tu código)
 const fetchObras = async () => {
   cargando.value = true
   const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false })
@@ -709,7 +923,6 @@ const deleteObra = async (obra) => {
   }
 }
 
-// LÓGICA GASTRONÓMICA (Exactamente como tu código)
 const fetchGastronomia = async () => {
   cargandoGastro.value = true
   let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
@@ -787,7 +1000,7 @@ const guardarGastro = async () => {
     }
     delete payload.locales 
     
-    if (subcategoriasDisponibles.value.length === 0) {
+    if (subcategoriasDisponibles.length === 0) {
       payload.subcategoria = null
     } else if (!payload.subcategoria) {
       alert("Debes seleccionar una subcategoría para esta sección.");
