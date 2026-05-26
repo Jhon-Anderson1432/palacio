@@ -390,7 +390,7 @@
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯 পুলিশের</span> 日本語</h4>
               <input v-model="form.titulo_ja" placeholder="タイトル" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
               <input v-model="form.medidas_ja" placeholder="手法" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
             </div>
@@ -609,20 +609,23 @@ const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
     .channel('pos_ordenes_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_ordenes' }, async (payload) => {
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_ordenes' }, (payload) => {
       
       if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
 
-      await fetchOrdenesCaja(false); 
+      // Solución al problema de actualización y la impresión vacía:
+      // Se esperan 1.2 segundos para asegurar que la tablet guardó los "pos_orden_items" en la BD.
+      setTimeout(async () => {
+        await fetchOrdenesCaja(false); 
 
-      if (payload.eventType === 'INSERT') {
-        setTimeout(() => {
+        // Si es un pedido nuevo, disparamos la comanda automáticamente
+        if (payload.eventType === 'INSERT') {
           const nuevaOrden = ordenesCaja.value.find(o => o.id === payload.new.id);
           if (nuevaOrden) {
             imprimirTicket(nuevaOrden, 'comanda');
           }
-        }, 1500); 
-      }
+        }
+      }, 1200); 
     })
     .subscribe();
 }
@@ -765,7 +768,7 @@ const imprimirCierreCaja = () => {
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-  }, 300);
+  }, 800);
 }
 
 const imprimirTicket = (orden, tipo = 'comanda') => {
@@ -789,7 +792,10 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
       .footer-info p { font-size: 13px; margin-bottom: 4px; }
       .legal-text { font-size: 11px; text-align: center; margin-top: 30px; font-weight: 600 !important; line-height: 1.3; }
     </style>
-    
+  `;
+
+  if (esFactura) {
+    contenido += `
     <div class="header">
       <h2>HACIENDA EL PORTAL S.A.S</h2>
       <p>NIT. 800.145.761-1</p>
@@ -810,13 +816,32 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     </div>
 
     <div class="divider"></div>
+    `;
+  } else {
+    // ES COMANDA: Diseño limpio para la cocina
+    contenido += `
+    <div class="header">
+      <h2 style="font-size: 24px;">MESA: ${orden.mesa}</h2>
+      <h3 style="font-size: 16px; margin-top: 5px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
+      <p style="font-size: 14px; margin-top: 5px; text-decoration: underline;">${tituloDocumento}</p>
+    </div>
 
+    <div class="info-client">
+      <p><strong>Mesera:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+      <p><strong>Hora de pedido:</strong> ${new Date(orden.created_at).toLocaleTimeString()}</p>
+    </div>
+
+    <div class="divider"></div>
+    `;
+  }
+
+  contenido += `
     <table>
       <thead>
         <tr>
           <th style="width: 15%;">Cant.</th>
-          <th style="width: 50%;">Descripción</th>
-          <th style="width: 35%;" class="text-right">Valor</th>
+          <th style="width: ${esFactura ? '50%' : '85%'};">Descripción</th>
+          ${esFactura ? '<th style="width: 35%;" class="text-right">Valor</th>' : ''}
         </tr>
       </thead>
       <tbody>
@@ -826,16 +851,16 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
     contenido += `
       <tr>
-        <td>${item.cantidad}</td>
-        <td>${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</td>
-        <td class="text-right">$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</td>
+        <td><strong style="font-size: 16px;">${item.cantidad}</strong></td>
+        <td><strong style="font-size: 16px;">${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</strong></td>
+        ${esFactura ? `<td class="text-right">$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</td>` : ''}
       </tr>
     `;
     if (item.notas) {
       contenido += `
         <tr>
-          <td colspan="3" style="font-size: 11px; padding-left: 15px; font-style: italic;">
-            -> ${item.notas.toUpperCase()}
+          <td colspan="${esFactura ? '3' : '2'}" style="font-size: 14px; padding-left: 15px; font-style: italic; border-left: 2px solid #000; margin-bottom: 5px; display: block;">
+            -> NOTA: ${item.notas.toUpperCase()}
           </td>
         </tr>
       `;
@@ -845,7 +870,10 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   contenido += `
       </tbody>
     </table>
-    
+  `;
+
+  if (esFactura) {
+    contenido += `
     <div class="total-section">
       TOTAL: $${orden.total.toLocaleString('es-CO')}
     </div>
@@ -857,9 +885,17 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
 
     <div class="legal-text">
       <p>Esta factura de venta es un titulo valor en virtud de la ley 1 de julio 2008, los intereses moratorios que se causen seran cobrados mensualmente acorde con las variaciones que sufren las tasas de interés certificadas por la superintendencia financiera de conformidad con el artículo 111 de la ley 510</p>
-      <p style="margin-top: 10px;">*** COPIA DE ${esFactura ? 'CLIENTE' : 'COCINA'} ***</p>
+      <p style="margin-top: 10px;">*** COPIA DE CLIENTE ***</p>
     </div>
-  `;
+    `;
+  } else {
+    contenido += `
+    <div class="divider"></div>
+    <div class="legal-text">
+      <p style="margin-top: 10px; font-size: 14px;">*** COPIA DE COCINA ***</p>
+    </div>
+    `;
+  }
   
   let iframe = document.getElementById('impresora-oculta');
   if (!iframe) {
@@ -883,10 +919,12 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   `);
   iframe.contentDocument.close();
 
+  // Se aumentó el tiempo a 800ms para darle tiempo al navegador de renderizar 
+  // las letras gruesas antes de enviarlo a la cola de la impresora térmica
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-  }, 300);
+  }, 800);
 }
 
 const fetchObras = async () => {
