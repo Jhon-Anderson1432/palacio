@@ -701,21 +701,29 @@ const calcularEstadisticasPos = async () => {
 
 const imprimirCierreCaja = () => {
   let contenido = `
-    <div style="font-family: 'Courier New', Courier, monospace; width: 270px; padding: 5px; color: black; background: white;">
-      <h2 style="text-align: center; margin-bottom: 2px; font-size: 18px;">CIERRE DE CAJA</h2>
-      <p style="text-align: center; font-size: 10px; margin-top: 0; font-weight: bold; text-transform: uppercase;">${localAsignado.value ? localAsignado.value.replace(/-/g, ' ') : 'GLOBAL'}</p>
-      
-      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; margin: 5px 0; font-size: 11px;">
-        <p style="margin: 2px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
-        <p style="margin: 2px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
-      </div>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
+      body { width: 280px; padding: 5px; font-size: 12px; text-transform: uppercase; }
+      .header { text-align: center; margin-bottom: 10px; }
+      .divider { border-top: 1px dashed #000; margin: 8px 0; }
+    </style>
+    <div class="header">
+      <h2 style="font-size: 18px; margin-bottom: 2px;">CIERRE DE CAJA</h2>
+      <p style="font-size: 12px;">${localAsignado.value ? localAsignado.value.replace(/-/g, ' ') : 'GLOBAL'}</p>
+    </div>
+    
+    <div class="divider"></div>
+    <div style="font-size: 12px; margin-bottom: 10px;">
+      <p style="margin: 2px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
+      <p style="margin: 2px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
+    </div>
 
-      <h3 style="font-size: 14px; margin-bottom: 5px;">DESGLOSE POR MESERA:</h3>
+    <h3 style="font-size: 14px; margin-bottom: 5px;">DESGLOSE POR MESERA:</h3>
   `
 
   statsPos.desgloseMeseras.forEach(m => {
     contenido += `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 12px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
         <span>${m.nombre} (${m.mesas} mesas)</span>
         <span>$${m.ventas.toLocaleString('es-CO')}</span>
       </div>
@@ -723,12 +731,11 @@ const imprimirCierreCaja = () => {
   })
 
   contenido += `
-      <hr style="border-top: 1px dashed black; margin-top: 10px;"/>
-      <h3 style="text-align: right; margin-top: 5px; font-size: 16px;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
+      <div class="divider"></div>
+      <h3 style="text-align: right; margin-top: 10px; font-size: 16px;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
       
-      <p style="text-align: center; margin-top: 15px; font-size: 9px; font-style: italic;">- Fin del Reporte Diario -</p>
+      <p style="text-align: center; margin-top: 20px; font-size: 10px; font-style: italic;">- Fin del Reporte Diario -</p>
       <div style="text-align: center; margin-top: 5px;">***</div>
-    </div>
   `
 
   let iframe = document.getElementById('impresora-oculta');
@@ -761,47 +768,98 @@ const imprimirCierreCaja = () => {
 
 const imprimirTicket = (orden, tipo = 'comanda') => {
   const esFactura = tipo === 'factura' || orden.estado === 'pagado';
-  const tituloDocumento = esFactura ? 'Factura de Venta' : 'Ticket de Cocina (Comanda)';
-  const footerDocumento = esFactura ? '- Copia de Cliente -' : '- Copia de Cocina -';
+  const tituloDocumento = esFactura ? 'DOCUMENTO EQUIVALENTE POS' : 'TICKET DE COCINA (COMANDA)';
 
   let contenido = `
-    <div style="font-family: 'Courier New', Courier, monospace; width: 270px; padding: 5px; color: black; background: white;">
-      <h2 style="text-align: center; margin-bottom: 2px; font-size: 18px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h2>
-      <p style="text-align: center; font-size: 10px; margin-top: 0; color: #444; font-weight: bold; text-transform: uppercase;">${tituloDocumento}</p>
-      
-      <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; margin: 5px 0; font-size: 11px;">
-        <p style="margin: 2px 0;font-size: 14px;"><strong>MESA:</strong> ${orden.mesa}</p>
-        <p style="margin: 2px 0;font-size: 12px; "><strong>MESERA:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
-        <p style="margin: 2px 0;font-size: 12px; "><strong>FECHA:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
-      </div>
-  `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
+      body { width: 280px; padding: 5px; font-size: 12px; text-transform: uppercase; }
+      .header { text-align: center; margin-bottom: 10px; }
+      .header h2 { font-size: 16px; margin-bottom: 2px; font-weight: 900 !important; }
+      .header p { font-size: 11px; margin-bottom: 1px; }
+      .divider { border-top: 1px dashed #000; margin: 8px 0; }
+      .info-client p { font-size: 11px; margin-bottom: 2px; }
+      table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 5px; }
+      th { text-align: left; padding-bottom: 5px; border-bottom: 1px dashed #000; }
+      td { vertical-align: top; padding-top: 5px; }
+      .text-right { text-align: right; }
+      .total-section { font-size: 14px; font-weight: 900 !important; text-align: right; margin-top: 5px; margin-bottom: 10px; }
+      .footer-info p { font-size: 11px; margin-bottom: 2px; }
+      .legal-text { font-size: 9px; text-align: center; margin-top: 15px; font-weight: 600 !important; line-height: 1.2; }
+    </style>
+    
+    <div class="header">
+      <h2>HACIENDA EL PORTAL S.A.S</h2>
+      <p>NIT. 800.145.761-1</p>
+      <p>TELEFONO: 5134422</p>
+      <p>CR 52 # 48-45 PISO 5 MEDELLIN</p>
+      <p>NO SOMOS AUTORETENEDORES DE IVA</p>
+      <p>SOMOS RESPONSABLES DE IVA</p>
+      <div class="divider"></div>
+      <h3 style="font-size: 14px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
+      <p style="font-size: 13px; margin-top: 3px;">${tituloDocumento}</p>
+    </div>
+
+    <div class="info-client">
+      <p><strong>Cliente:</strong> CONSUMIDOR FINAL</p>
+      <p><strong>Documento:</strong> 22222222222-3</p>
+      <p><strong>Dirección:</strong> CRA 52 # 48-45 PISO 5</p>
+      <p><strong>Mesa:</strong> ${orden.mesa}</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Cant.</th>
+          <th style="width: 50%;">Descripción</th>
+          <th style="width: 35%;" class="text-right">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
   
   orden.pos_orden_items.forEach(item => {
-    const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : ''
-    
+    const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
     contenido += `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 14px; font-weight: bold;">
-        <span style="flex: 1; padding-right: 10px;">${item.cantidad}x ${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</span>
-        <span>$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</span>
-      </div>
-    `
+      <tr>
+        <td>${item.cantidad}</td>
+        <td>${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</td>
+        <td class="text-right">$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</td>
+      </tr>
+    `;
     if (item.notas) {
       contenido += `
-        <div style="font-size: 13px; color: #000; padding-left: 20px; margin-bottom: 10px; font-style: italic; border-left: 2px solid black;">
-          -> ${item.notas.toUpperCase()}
-        </div>
-      `
+        <tr>
+          <td colspan="3" style="font-size: 10px; padding-left: 15px; font-style: italic;">
+            -> ${item.notas.toUpperCase()}
+          </td>
+        </tr>
+      `;
     }
-  })
+  });
   
   contenido += `
-      <hr style="border-top: 2px dashed black; margin-top: 15px;"/>
-      <h3 style="text-align: right; margin-top: 10px; font-size: ${esFactura ? '18px' : '16px'};">TOTAL: $${orden.total.toLocaleString('es-CO')}</h3>
-      
-      <p style="text-align: center; margin-top: 30px; font-size: 10px; font-style: italic;">${footerDocumento}</p>
-      <div style="text-align: center; margin-top: 10px;">***</div>
+      </tbody>
+    </table>
+    
+    <div class="divider"></div>
+    
+    <div class="total-section">
+      TOTAL: $${orden.total.toLocaleString('es-CO')}
     </div>
-  `
+
+    <div class="footer-info">
+      <p><strong>Vendedor:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+      <p><strong>Fecha expedición:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
+    </div>
+
+    <div class="legal-text">
+      <p>Esta factura de venta es un titulo valor en virtud de la ley 1 de julio 2008, los intereses moratorios que se causen seran cobrados mensualmente acorde con las variaciones que sufren las tasas de interés certificadas por la superintendencia financiera de conformidad con el artículo 111 de la ley 510</p>
+      <p style="margin-top: 8px;">*** COPIA DE ${esFactura ? 'CLIENTE' : 'COCINA'} ***</p>
+    </div>
+  `;
   
   let iframe = document.getElementById('impresora-oculta');
   if (!iframe) {
