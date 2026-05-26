@@ -1,21 +1,27 @@
 <template>
-  <div class="h-[100dvh] w-full bg-[#0a0a0a] text-white font-sans flex flex-col md:flex-row overflow-hidden">
+  <div class="h-[100dvh] w-full bg-[#0a0a0a] text-white font-sans flex flex-col md:flex-row overflow-hidden relative">
     
     <div class="flex-1 flex flex-col h-[100dvh] border-r border-white/10">
       
-      <header class="bg-[#111] p-4 md:p-6 flex justify-between items-center border-b border-white/10">
+      <header class="bg-[#111] p-4 md:p-6 flex justify-between items-center border-b border-white/10 relative z-20">
         <div>
           <h1 class="text-[#D4AF37] font-serif text-xl md:text-2xl uppercase tracking-widest">Toma de Pedidos</h1>
           <p class="text-xs md:text-sm text-neutral-400 uppercase mt-1">
             Mesera Activa: <span class="text-white font-bold">{{ nombreMesera }}</span> ({{ localAsignado.replace(/-/g, ' ') }})
           </p>
         </div>
-        <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase tracking-widest transition-all">
-          Salir
-        </button>
+        <div class="flex items-center gap-3">
+          <button @click="panelMesasAbierto = true" class="bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20 px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2">
+            <span>Mis Mesas</span>
+            <span class="bg-[#D4AF37] text-black px-2 py-0.5 rounded-full text-[10px]">{{ misOrdenesActivas.length }}</span>
+          </button>
+          <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 px-4 py-3 rounded-lg text-xs md:text-sm font-bold uppercase tracking-widest transition-all hidden md:block">
+            Salir
+          </button>
+        </div>
       </header>
 
-      <div class="p-4 md:p-5 bg-black border-b border-white/5 overflow-x-auto hide-scrollbar flex gap-3 md:gap-4">
+      <div class="p-4 md:p-5 bg-black border-b border-white/5 overflow-x-auto hide-scrollbar flex gap-3 md:gap-4 relative z-10">
         <button 
           v-for="cat in categoriasDisponibles" 
           :key="cat" 
@@ -26,7 +32,7 @@
         </button>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-32 md:pb-6 space-y-8">
+      <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-32 md:pb-6 space-y-8 z-0">
         
         <div v-if="cargandoMenu" class="text-center py-10 text-[#D4AF37] text-sm uppercase tracking-widest animate-pulse">
           Cargando Menú...
@@ -43,6 +49,9 @@
               <div>
                 <h3 class="font-serif text-base md:text-lg leading-tight group-hover:text-[#D4AF37] transition-colors">{{ item.nombre }}</h3>
                 <span class="text-[#D4AF37] text-sm md:text-base font-bold mt-2 inline-block">${{ item.precio.toLocaleString('es-CO') }}</span>
+                <p v-if="item.descripcion" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-2 line-clamp-2">
+                  {{ item.descripcion }}
+                </p>
               </div>
               <div class="mt-4 flex justify-end">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xl md:text-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shadow-inner">
@@ -57,6 +66,44 @@
       </div>
     </div>
 
+    <div v-if="panelMesasAbierto" @click="panelMesasAbierto = false" class="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm transition-opacity"></div>
+    
+    <aside :class="['fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-[#111] border-l border-white/10 z-[110] transition-transform duration-300 transform flex flex-col shadow-2xl', panelMesasAbierto ? 'translate-x-0' : 'translate-x-full']">
+      <header class="p-5 md:p-6 border-b border-white/10 flex justify-between items-center bg-black">
+        <h2 class="text-[#D4AF37] font-serif text-xl md:text-2xl uppercase tracking-widest">Mis Mesas Activas</h2>
+        <button @click="panelMesasAbierto = false" class="text-neutral-500 hover:text-white p-2 bg-white/5 rounded-full transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-5 md:p-6 space-y-4">
+        <div v-if="cargandoOrdenes" class="text-center py-10 text-[#D4AF37] text-xs uppercase tracking-widest animate-pulse">Sincronizando mesas...</div>
+        
+        <div v-else-if="misOrdenesActivas.length === 0" class="text-center py-12 text-neutral-500 text-xs uppercase tracking-widest border border-dashed border-white/10 rounded-2xl">
+          No tienes mesas pendientes por cobrar.
+        </div>
+
+        <div v-else v-for="orden in misOrdenesActivas" :key="orden.id" @click="seleccionarMesaParaAdicionar(orden.mesa)" class="bg-black border border-[#D4AF37]/30 p-5 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-all flex flex-col justify-between group shadow-sm">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="text-xl font-serif text-white group-hover:text-[#D4AF37] transition-colors">Mesa {{ orden.mesa }}</h3>
+            <span class="bg-yellow-500/20 text-yellow-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-yellow-500/50 shadow-sm">
+              Pendiente
+            </span>
+          </div>
+          <div class="text-xs text-neutral-400 uppercase tracking-widest mb-4">
+            Abierta: {{ new Date(orden.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+          </div>
+          <div class="flex justify-between items-center border-t border-white/10 pt-3 mt-auto">
+            <span class="text-xs text-neutral-500 uppercase tracking-widest font-bold">Total Acumulado</span>
+            <span class="text-xl md:text-2xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
+          </div>
+          <div class="mt-3 text-center text-[10px] text-white/40 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+            Tocar para adicionar platos
+          </div>
+        </div>
+      </div>
+    </aside>
+
     <div class="w-full md:w-[380px] lg:w-[420px] bg-[#111] h-[100dvh] flex flex-col fixed md:relative bottom-0 z-50 transition-transform duration-300 transform md:translate-y-0 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] md:shadow-none" :class="mostrarCarritoMovil ? 'translate-y-0' : 'translate-y-[85dvh]'">
       
       <div @click="mostrarCarritoMovil = !mostrarCarritoMovil" class="md:hidden bg-[#D4AF37] p-4 text-center text-black font-bold uppercase text-sm flex justify-between items-center rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
@@ -64,7 +111,10 @@
         <span class="bg-black text-[#D4AF37] px-3 py-1 rounded-full text-xs">{{ carrito.length }} ítems</span>
       </div>
 
-      <div class="p-5 md:p-6 border-b border-white/10 bg-black">
+      <div class="p-5 md:p-6 border-b border-white/10 bg-black relative">
+        <button @click="handleLogout" class="absolute top-5 right-5 text-red-500 hover:text-red-400 p-2 md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
         <label class="text-xs md:text-sm text-neutral-400 uppercase font-bold tracking-widest">Número de Mesa / Cliente</label>
         <input v-model="mesaActual" type="text" placeholder="Ej: Mesa 4" class="w-full bg-white/5 border border-[#D4AF37]/30 p-4 md:p-5 rounded-xl focus:border-[#D4AF37] text-white outline-none mt-3 text-center text-xl md:text-2xl font-bold font-serif" />
       </div>
@@ -113,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { supabase } from '../../lib/supabase' 
 import { useRouter } from 'vue-router'
 
@@ -131,6 +181,12 @@ const mostrarCarritoMovil = ref(false)
 const mesaActual = ref('')
 const carrito = ref([])
 const enviando = ref(false)
+
+// NUEVO: ESTADOS PARA "MIS MESAS ACTIVAS"
+const panelMesasAbierto = ref(false)
+const misOrdenesActivas = ref([])
+const cargandoOrdenes = ref(false)
+let subscripcionMisMesas = null
 
 // DICCIONARIOS DE TRADUCCIÓN/FORMATO
 const dictCategorias = {
@@ -169,6 +225,50 @@ const inicializarTerminal = async () => {
   meseraId.value = perfil.id
 
   await fetchMenuLocal()
+  await fetchMisOrdenesActivas()
+  inicializarRealtimeMisMesas()
+}
+
+// NUEVO: TRAER LAS MESAS ACTIVAS DE LA MESERA
+const fetchMisOrdenesActivas = async () => {
+  cargandoOrdenes.value = true
+  const { data, error } = await supabase
+    .from('pos_ordenes')
+    .select('id, mesa, total, estado, created_at')
+    .eq('mesera_id', meseraId.value)
+    .eq('local', localAsignado.value)
+    .eq('estado', 'pendiente')
+    .order('created_at', { ascending: false })
+
+  if (!error && data) {
+    misOrdenesActivas.value = data
+  }
+  cargandoOrdenes.value = false
+}
+
+// NUEVO: ESCUCHAR CAMBIOS EN LAS MESAS DE LA MESERA (WebSockets)
+const inicializarRealtimeMisMesas = () => {
+  if (subscripcionMisMesas) return;
+  
+  subscripcionMisMesas = supabase
+    .channel('mis_mesas_changes')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'pos_ordenes',
+      filter: `mesera_id=eq.${meseraId.value}`
+    }, () => {
+      fetchMisOrdenesActivas(); // Refresca silenciosamente si la cajera cobra o ella adiciona
+    })
+    .subscribe();
+}
+
+// NUEVO: SELECCIONAR UNA MESA DEL PANEL PARA ADICIONAR
+const seleccionarMesaParaAdicionar = (numeroMesa) => {
+  mesaActual.value = numeroMesa
+  panelMesasAbierto.value = false
+  // Opcional: Podríamos mostrar el carrito móvil si está en celular para que empiece a agregar
+  if(window.innerWidth < 768) mostrarCarritoMovil.value = true
 }
 
 // 2. TRAER EL MENÚ CON CATEGORÍAS Y SUBCATEGORÍAS ORDENADAS
@@ -176,7 +276,7 @@ const fetchMenuLocal = async () => {
   cargandoMenu.value = true
   const { data } = await supabase
     .from('menu_gastronomia')
-    .select('id, nombre, precio, categoria, subcategoria, codigo_pos') // IMPORTANTE: Se añadió subcategoria
+    .select('id, nombre, precio, descripcion, categoria, subcategoria, codigo_pos') // IMPORTANTE: Se añadió descripcion
     .ilike('local', `%${localAsignado.value}%`)
     .eq('disponible', true)
     .order('nombre', { ascending: true })
@@ -278,29 +378,65 @@ const cancelarOrden = () => {
   }
 }
 
-// 4. ENVÍO DE LA ORDEN A CAJA
+// 4. ENVÍO DE LA ORDEN A CAJA (CON ADICIÓN A ORDENES EXISTENTES)
 const enviarOrden = async () => {
   if (!mesaActual.value) { alert("Debes ingresar el número de mesa."); return; }
   
   enviando.value = true
   try {
-    const { data: ordenData, error: ordenError } = await supabase
+    // 1. Verificamos si ya existe una orden PENDIENTE para esa mesa en este local
+    const { data: ordenExistente, error: ordenExistenteError } = await supabase
       .from('pos_ordenes')
-      .insert([{
-        local: localAsignado.value,
-        mesera_id: meseraId.value,
-        mesa: mesaActual.value,
-        estado: 'pendiente',
-        subtotal: totalCarrito.value,
-        total: totalCarrito.value
-      }])
-      .select()
-      .single()
+      .select('id, subtotal, total')
+      .eq('local', localAsignado.value)
+      .eq('mesa', mesaActual.value)
+      .eq('estado', 'pendiente')
+      .maybeSingle()
 
-    if (ordenError) throw ordenError
+    if (ordenExistenteError) throw ordenExistenteError
 
+    let ordenId = null;
+
+    if (ordenExistente) {
+      // 2A. SI EXISTE: Actualizamos la orden sumándole el nuevo total
+      ordenId = ordenExistente.id;
+      const nuevoSubtotal = ordenExistente.subtotal + totalCarrito.value;
+      const nuevoTotal = ordenExistente.total + totalCarrito.value;
+
+      const { error: updateError } = await supabase
+        .from('pos_ordenes')
+        .update({ 
+          subtotal: nuevoSubtotal, 
+          total: nuevoTotal,
+          // Actualizamos la fecha para que salte a la cima de la caja y se re-imprima
+          created_at: new Date().toISOString() 
+        })
+        .eq('id', ordenId);
+        
+      if (updateError) throw updateError;
+
+    } else {
+      // 2B. SI NO EXISTE: Creamos una orden nueva
+      const { data: nuevaOrden, error: insertError } = await supabase
+        .from('pos_ordenes')
+        .insert([{
+          local: localAsignado.value,
+          mesera_id: meseraId.value,
+          mesa: mesaActual.value,
+          estado: 'pendiente',
+          subtotal: totalCarrito.value,
+          total: totalCarrito.value
+        }])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+      ordenId = nuevaOrden.id;
+    }
+
+    // 3. Insertamos los nuevos platos a la orden (ya sea nueva o la existente)
     const itemsParaInsertar = carrito.value.map(item => ({
-      orden_id: ordenData.id,
+      orden_id: ordenId,
       producto_id: item.producto.id,
       cantidad: item.cantidad,
       precio_unitario: item.producto.precio,
@@ -313,7 +449,13 @@ const enviarOrden = async () => {
 
     if (itemsError) throw itemsError
 
-    alert(`✅ ¡Orden enviada a caja exitosamente! (Mesa ${mesaActual.value})`)
+    // 4. Limpiamos y avisamos
+    if (ordenExistente) {
+      alert(`✅ ¡Platos añadidos a la orden existente de la Mesa ${mesaActual.value} exitosamente!`);
+    } else {
+      alert(`✅ ¡Orden nueva enviada a caja exitosamente! (Mesa ${mesaActual.value})`);
+    }
+    
     carrito.value = []
     mesaActual.value = ''
     mostrarCarritoMovil.value = false
@@ -335,6 +477,12 @@ const handleLogout = async () => {
 }
 
 onMounted(() => { inicializarTerminal() })
+
+onUnmounted(() => {
+  if (subscripcionMisMesas) {
+    supabase.removeChannel(subscripcionMisMesas)
+  }
+})
 </script>
 
 <style scoped>

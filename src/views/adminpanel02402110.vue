@@ -703,27 +703,29 @@ const imprimirCierreCaja = () => {
   let contenido = `
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
-      body { width: 280px; padding: 5px; font-size: 12px; text-transform: uppercase; }
-      .header { text-align: center; margin-bottom: 10px; }
-      .divider { border-top: 1px dashed #000; margin: 8px 0; }
+      body { width: 280px; padding: 10px 5px 40px 5px; font-size: 14px; text-transform: uppercase; line-height: 1.4; }
+      .header { text-align: center; margin-bottom: 15px; }
+      .header h2 { font-size: 22px; margin-bottom: 5px; font-weight: 900 !important;}
+      .header p { font-size: 13px; margin-bottom: 3px; }
+      .divider { border-top: 2px dashed #000; margin: 15px 0; }
     </style>
     <div class="header">
-      <h2 style="font-size: 18px; margin-bottom: 2px;">CIERRE DE CAJA</h2>
-      <p style="font-size: 12px;">${localAsignado.value ? localAsignado.value.replace(/-/g, ' ') : 'GLOBAL'}</p>
+      <h2>CIERRE DE CAJA</h2>
+      <p>${localAsignado.value ? localAsignado.value.replace(/-/g, ' ') : 'GLOBAL'}</p>
     </div>
     
     <div class="divider"></div>
-    <div style="font-size: 12px; margin-bottom: 10px;">
-      <p style="margin: 2px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
-      <p style="margin: 2px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
+    <div style="font-size: 13px; margin-bottom: 15px;">
+      <p style="margin: 4px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
+      <p style="margin: 4px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
     </div>
 
-    <h3 style="font-size: 14px; margin-bottom: 5px;">DESGLOSE POR MESERA:</h3>
+    <h3 style="font-size: 15px; margin-bottom: 10px;">DESGLOSE POR MESERA:</h3>
   `
 
   statsPos.desgloseMeseras.forEach(m => {
     contenido += `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
         <span>${m.nombre} (${m.mesas} mesas)</span>
         <span>$${m.ventas.toLocaleString('es-CO')}</span>
       </div>
@@ -732,10 +734,10 @@ const imprimirCierreCaja = () => {
 
   contenido += `
       <div class="divider"></div>
-      <h3 style="text-align: right; margin-top: 10px; font-size: 16px;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
+      <h3 style="text-align: right; margin-top: 15px; font-size: 18px; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
       
-      <p style="text-align: center; margin-top: 20px; font-size: 10px; font-style: italic;">- Fin del Reporte Diario -</p>
-      <div style="text-align: center; margin-top: 5px;">***</div>
+      <p style="text-align: center; margin-top: 30px; font-size: 12px; font-style: italic;">- Fin del Reporte Diario -</p>
+      <div style="text-align: center; margin-top: 10px;">***</div>
   `
 
   let iframe = document.getElementById('impresora-oculta');
@@ -773,19 +775,19 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   let contenido = `
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
-      body { width: 280px; padding: 5px; font-size: 12px; text-transform: uppercase; }
-      .header { text-align: center; margin-bottom: 10px; }
-      .header h2 { font-size: 16px; margin-bottom: 2px; font-weight: 900 !important; }
-      .header p { font-size: 11px; margin-bottom: 1px; }
-      .divider { border-top: 1px dashed #000; margin: 8px 0; }
-      .info-client p { font-size: 11px; margin-bottom: 2px; }
-      table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 5px; }
-      th { text-align: left; padding-bottom: 5px; border-bottom: 1px dashed #000; }
-      td { vertical-align: top; padding-top: 5px; }
+      body { width: 280px; padding: 15px 5px 40px 5px; font-size: 14px; text-transform: uppercase; line-height: 1.4; }
+      .header { text-align: center; margin-bottom: 15px; }
+      .header h2 { font-size: 22px; margin-bottom: 4px; font-weight: 900 !important; }
+      .header p { font-size: 13px; margin-bottom: 3px; }
+      .divider { border-top: 2px dashed #000; margin: 15px 0; }
+      .info-client p { font-size: 13px; margin-bottom: 4px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
+      th { text-align: left; padding-bottom: 10px; border-bottom: 2px dashed #000; }
+      td { vertical-align: top; padding-top: 10px; padding-bottom: 5px; }
       .text-right { text-align: right; }
-      .total-section { font-size: 14px; font-weight: 900 !important; text-align: right; margin-top: 5px; margin-bottom: 10px; }
-      .footer-info p { font-size: 11px; margin-bottom: 2px; }
-      .legal-text { font-size: 9px; text-align: center; margin-top: 15px; font-weight: 600 !important; line-height: 1.2; }
+      .total-section { font-size: 20px; font-weight: 900 !important; text-align: right; margin-top: 15px; margin-bottom: 20px; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
+      .footer-info p { font-size: 13px; margin-bottom: 4px; }
+      .legal-text { font-size: 11px; text-align: center; margin-top: 30px; font-weight: 600 !important; line-height: 1.3; }
     </style>
     
     <div class="header">
@@ -796,8 +798,8 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
       <p>NO SOMOS AUTORETENEDORES DE IVA</p>
       <p>SOMOS RESPONSABLES DE IVA</p>
       <div class="divider"></div>
-      <h3 style="font-size: 14px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
-      <p style="font-size: 13px; margin-top: 3px;">${tituloDocumento}</p>
+      <h3 style="font-size: 18px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
+      <p style="font-size: 14px; margin-top: 5px;">${tituloDocumento}</p>
     </div>
 
     <div class="info-client">
@@ -832,7 +834,7 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     if (item.notas) {
       contenido += `
         <tr>
-          <td colspan="3" style="font-size: 10px; padding-left: 15px; font-style: italic;">
+          <td colspan="3" style="font-size: 11px; padding-left: 15px; font-style: italic;">
             -> ${item.notas.toUpperCase()}
           </td>
         </tr>
@@ -843,8 +845,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   contenido += `
       </tbody>
     </table>
-    
-    <div class="divider"></div>
     
     <div class="total-section">
       TOTAL: $${orden.total.toLocaleString('es-CO')}
@@ -857,7 +857,7 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
 
     <div class="legal-text">
       <p>Esta factura de venta es un titulo valor en virtud de la ley 1 de julio 2008, los intereses moratorios que se causen seran cobrados mensualmente acorde con las variaciones que sufren las tasas de interés certificadas por la superintendencia financiera de conformidad con el artículo 111 de la ley 510</p>
-      <p style="margin-top: 8px;">*** COPIA DE ${esFactura ? 'CLIENTE' : 'COCINA'} ***</p>
+      <p style="margin-top: 10px;">*** COPIA DE ${esFactura ? 'CLIENTE' : 'COCINA'} ***</p>
     </div>
   `;
   
