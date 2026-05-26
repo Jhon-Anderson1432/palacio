@@ -21,15 +21,27 @@
         </div>
       </header>
 
-      <div class="p-4 md:p-5 bg-black border-b border-white/5 overflow-x-auto hide-scrollbar flex gap-3 md:gap-4 relative z-10">
-        <button 
-          v-for="cat in categoriasDisponibles" 
-          :key="cat" 
-          @click="categoriaActiva = cat"
-          :class="['whitespace-nowrap uppercase tracking-widest text-xs md:text-sm px-6 py-3 md:py-4 rounded-xl transition-all font-bold', categoriaActiva === cat ? 'bg-[#D4AF37] text-black shadow-md' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10']"
-        >
-          {{ formatearCategoria(cat) }}
-        </button>
+      <div class="p-4 md:p-5 bg-black border-b border-white/5 flex flex-col gap-4 relative z-10">
+        <div class="relative">
+          <input
+            v-model="busquedaMenu"
+            type="text"
+            placeholder="Buscar plato, bebida, ingrediente..."
+            class="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-[#D4AF37]/50 transition-all text-white placeholder:text-neutral-500"
+          />
+          <span class="absolute left-5 top-3.5 text-neutral-500">🔍</span>
+        </div>
+
+        <div class="overflow-x-auto hide-scrollbar flex gap-3 md:gap-4">
+          <button 
+            v-for="cat in categoriasDisponibles" 
+            :key="cat" 
+            @click="categoriaActiva = cat"
+            :class="['whitespace-nowrap uppercase tracking-widest text-xs md:text-sm px-6 py-3 md:py-4 rounded-xl transition-all font-bold', categoriaActiva === cat ? 'bg-[#D4AF37] text-black shadow-md' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10']"
+          >
+            {{ formatearCategoria(cat) }}
+          </button>
+        </div>
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-32 md:pb-6 space-y-8 z-0">
@@ -37,26 +49,30 @@
         <div v-if="cargandoMenu" class="text-center py-10 text-[#D4AF37] text-sm uppercase tracking-widest animate-pulse">
           Cargando Menú...
         </div>
+
+        <div v-else-if="menuFiltradoYBusqueda.length === 0" class="text-center py-12 text-neutral-500 text-xs uppercase tracking-widest border border-dashed border-white/10 rounded-2xl">
+          No se encontraron resultados para "{{ busquedaMenu }}"
+        </div>
         
-        <div v-for="(items, subcat) in menuAgrupado" :key="subcat" class="w-full">
+        <div v-else v-for="(items, subcat) in menuAgrupado" :key="subcat" class="w-full">
           
           <h3 v-if="subcat !== 'otros' || Object.keys(menuAgrupado).length > 1" class="text-[#D4AF37] font-serif text-xl md:text-2xl mb-4 border-b border-[#D4AF37]/20 pb-2 pl-2 tracking-wide uppercase">
             {{ formatearSubcategoria(subcat) }}
           </h3>
 
           <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-            <div v-for="item in items" :key="item.id" @click="agregarAlCarrito(item)" class="bg-[#111] border border-white/5 rounded-2xl p-4 md:p-5 cursor-pointer hover:border-[#D4AF37]/50 hover:bg-white/5 transition-all flex flex-col justify-between group active:scale-95 shadow-sm">
+            <div v-for="item in items" :key="item.id" class="bg-[#111] border border-white/5 rounded-2xl p-4 md:p-5 hover:border-[#D4AF37]/30 transition-all flex flex-col justify-between group shadow-sm">
               <div>
-                <h3 class="font-serif text-base md:text-lg leading-tight group-hover:text-[#D4AF37] transition-colors">{{ item.nombre }}</h3>
+                <h3 class="font-serif text-base md:text-lg leading-tight transition-colors">{{ item.nombre }}</h3>
                 <span class="text-[#D4AF37] text-sm md:text-base font-bold mt-2 inline-block">${{ item.precio.toLocaleString('es-CO') }}</span>
                 <p v-if="item.descripcion" class="text-gray-400 text-xs md:text-sm font-light leading-relaxed mt-2 line-clamp-2">
                   {{ item.descripcion }}
                 </p>
               </div>
               <div class="mt-4 flex justify-end">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xl md:text-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shadow-inner">
+                <button @click.stop="agregarAlCarrito(item)" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xl md:text-2xl hover:bg-[#D4AF37] hover:text-black transition-colors shadow-inner active:scale-90">
                   +
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -83,7 +99,7 @@
           No tienes mesas pendientes por cobrar.
         </div>
 
-        <div v-else v-for="orden in misOrdenesActivas" :key="orden.id" @click="seleccionarMesaParaAdicionar(orden.mesa)" class="bg-black border border-[#D4AF37]/30 p-5 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-all flex flex-col justify-between group shadow-sm">
+        <div v-else v-for="orden in misOrdenesActivas" :key="orden.id" @click="editarMesaPendiente(orden)" class="bg-black border border-[#D4AF37]/30 p-5 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-all flex flex-col justify-between group shadow-sm">
           <div class="flex justify-between items-start mb-3">
             <h3 class="text-xl font-serif text-white group-hover:text-[#D4AF37] transition-colors">Mesa {{ orden.mesa }}</h3>
             <span class="bg-yellow-500/20 text-yellow-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-yellow-500/50 shadow-sm">
@@ -98,7 +114,7 @@
             <span class="text-xl md:text-2xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
           </div>
           <div class="mt-3 text-center text-[10px] text-white/40 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-            Tocar para adicionar platos
+            Tocar para editar / adicionar
           </div>
         </div>
       </div>
@@ -107,7 +123,7 @@
     <div class="w-full md:w-[380px] lg:w-[420px] bg-[#111] h-[100dvh] flex flex-col fixed md:relative bottom-0 z-50 transition-transform duration-300 transform md:translate-y-0 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] md:shadow-none" :class="mostrarCarritoMovil ? 'translate-y-0' : 'translate-y-[85dvh]'">
       
       <div @click="mostrarCarritoMovil = !mostrarCarritoMovil" class="md:hidden bg-[#D4AF37] p-4 text-center text-black font-bold uppercase text-sm flex justify-between items-center rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
-        <span>Ver Ticket de Mesa</span>
+        <span>{{ ordenActualId ? 'Editando Mesa' : 'Ver Ticket de Mesa' }}</span>
         <span class="bg-black text-[#D4AF37] px-3 py-1 rounded-full text-xs">{{ carrito.length }} ítems</span>
       </div>
 
@@ -115,11 +131,17 @@
         <button @click="handleLogout" class="absolute top-5 right-5 text-red-500 hover:text-red-400 p-2 md:hidden">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
         </button>
-        <label class="text-xs md:text-sm text-neutral-400 uppercase font-bold tracking-widest">Número de Mesa / Cliente</label>
-        <input v-model="mesaActual" type="text" placeholder="Ej: Mesa 4" class="w-full bg-white/5 border border-[#D4AF37]/30 p-4 md:p-5 rounded-xl focus:border-[#D4AF37] text-white outline-none mt-3 text-center text-xl md:text-2xl font-bold font-serif" />
+        <label class="text-xs md:text-sm text-neutral-400 uppercase font-bold tracking-widest">
+          {{ ordenActualId ? 'Editando Mesa (Bloqueado)' : 'Número de Mesa / Cliente' }}
+        </label>
+        <input v-model="mesaActual" type="text" placeholder="Ej: Mesa 4" :disabled="ordenActualId !== null" class="w-full bg-white/5 border border-[#D4AF37]/30 p-4 md:p-5 rounded-xl focus:border-[#D4AF37] text-white outline-none mt-3 text-center text-xl md:text-2xl font-bold font-serif disabled:opacity-70" />
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 md:p-5 space-y-4">
+      <div class="flex-1 overflow-y-auto p-4 md:p-5 space-y-4 relative">
+        <div v-if="cargandoEdicion" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 flex items-center justify-center">
+          <span class="text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest font-bold">Cargando pedido...</span>
+        </div>
+
         <div v-if="carrito.length === 0" class="text-center text-neutral-500 text-sm uppercase tracking-widest mt-12 px-4">
           Selecciona platos en el menú para iniciar la orden
         </div>
@@ -148,11 +170,15 @@
         </div>
         
         <div class="flex gap-3 md:gap-4">
-          <button @click="cancelarOrden" class="w-1/3 py-4 md:py-5 rounded-xl border border-red-500/30 text-red-500 text-xs md:text-sm uppercase font-bold tracking-widest hover:bg-red-500/10 active:scale-95 transition-transform">
+          <button v-if="!ordenActualId" @click="cancelarOrden" class="w-1/3 py-4 md:py-5 rounded-xl border border-red-500/30 text-red-500 text-xs md:text-sm uppercase font-bold tracking-widest hover:bg-red-500/10 active:scale-95 transition-transform">
             Cancelar
           </button>
+          <button v-else @click="volverAtras" class="w-1/3 py-4 md:py-5 rounded-xl border border-neutral-500/30 text-neutral-400 text-xs md:text-sm uppercase font-bold tracking-widest hover:bg-neutral-500/10 active:scale-95 transition-transform">
+            Volver
+          </button>
+          
           <button @click="enviarOrden" :disabled="enviando || carrito.length === 0 || !mesaActual" :class="['flex-1 py-4 md:py-5 rounded-xl text-black text-xs md:text-sm uppercase font-bold tracking-widest transition-all active:scale-95', (carrito.length === 0 || !mesaActual) ? 'bg-neutral-600 cursor-not-allowed opacity-50' : 'bg-[#D4AF37] hover:bg-yellow-500 shadow-[0_5px_20px_rgba(212,175,55,0.3)]']">
-            {{ enviando ? 'Enviando...' : 'Mandar a Caja' }}
+            {{ enviando ? 'Enviando...' : (ordenActualId ? 'Actualizar Mesa' : 'Mandar a Caja') }}
           </button>
         </div>
       </div>
@@ -181,12 +207,15 @@ const mostrarCarritoMovil = ref(false)
 const mesaActual = ref('')
 const carrito = ref([])
 const enviando = ref(false)
+const busquedaMenu = ref('') 
 
-// NUEVO: ESTADOS PARA "MIS MESAS ACTIVAS"
+// ESTADOS PARA "MIS MESAS ACTIVAS" Y EDICIÓN
 const panelMesasAbierto = ref(false)
 const misOrdenesActivas = ref([])
 const cargandoOrdenes = ref(false)
 let subscripcionMisMesas = null
+const ordenActualId = ref(null) 
+const cargandoEdicion = ref(false)
 
 // DICCIONARIOS DE TRADUCCIÓN/FORMATO
 const dictCategorias = {
@@ -229,7 +258,7 @@ const inicializarTerminal = async () => {
   inicializarRealtimeMisMesas()
 }
 
-// NUEVO: TRAER LAS MESAS ACTIVAS DE LA MESERA
+// TRAER LAS MESAS ACTIVAS DE LA MESERA
 const fetchMisOrdenesActivas = async () => {
   cargandoOrdenes.value = true
   const { data, error } = await supabase
@@ -246,7 +275,7 @@ const fetchMisOrdenesActivas = async () => {
   cargandoOrdenes.value = false
 }
 
-// NUEVO: ESCUCHAR CAMBIOS EN LAS MESAS DE LA MESERA (WebSockets)
+// ESCUCHAR CAMBIOS EN LAS MESAS DE LA MESERA (WebSockets)
 const inicializarRealtimeMisMesas = () => {
   if (subscripcionMisMesas) return;
   
@@ -258,17 +287,44 @@ const inicializarRealtimeMisMesas = () => {
       table: 'pos_ordenes',
       filter: `mesera_id=eq.${meseraId.value}`
     }, () => {
-      fetchMisOrdenesActivas(); // Refresca silenciosamente si la cajera cobra o ella adiciona
+      fetchMisOrdenesActivas(); 
     })
     .subscribe();
 }
 
-// NUEVO: SELECCIONAR UNA MESA DEL PANEL PARA ADICIONAR
-const seleccionarMesaParaAdicionar = (numeroMesa) => {
-  mesaActual.value = numeroMesa
+// CARGAR UNA ORDEN EXISTENTE PARA EDITARLA
+const editarMesaPendiente = async (orden) => {
   panelMesasAbierto.value = false
-  // Opcional: Podríamos mostrar el carrito móvil si está en celular para que empiece a agregar
   if(window.innerWidth < 768) mostrarCarritoMovil.value = true
+  
+  cargandoEdicion.value = true
+  mesaActual.value = orden.mesa
+  ordenActualId.value = orden.id
+  carrito.value = [] 
+
+  try {
+    const { data: items, error } = await supabase
+      .from('pos_orden_items')
+      .select('id, cantidad, precio_unitario, notas, producto_id, menu_gastronomia(id, nombre, precio, categoria)')
+      .eq('orden_id', orden.id)
+
+    if (error) throw error
+
+    if (items) {
+      carrito.value = items.map(item => ({
+        id_unico: Date.now() + Math.random(), 
+        producto: item.menu_gastronomia,
+        cantidad: item.cantidad,
+        notas: item.notas || ''
+      }))
+    }
+  } catch (error) {
+    console.error("Error al cargar la mesa:", error)
+    alert("No se pudo cargar el detalle de la mesa.")
+    cancelarOrden()
+  } finally {
+    cargandoEdicion.value = false
+  }
 }
 
 // 2. TRAER EL MENÚ CON CATEGORÍAS Y SUBCATEGORÍAS ORDENADAS
@@ -276,7 +332,7 @@ const fetchMenuLocal = async () => {
   cargandoMenu.value = true
   const { data } = await supabase
     .from('menu_gastronomia')
-    .select('id, nombre, precio, descripcion, categoria, subcategoria, codigo_pos') // IMPORTANTE: Se añadió descripcion
+    .select('id, nombre, precio, descripcion, categoria, subcategoria, codigo_pos') 
     .ilike('local', `%${localAsignado.value}%`)
     .eq('disponible', true)
     .order('nombre', { ascending: true })
@@ -284,7 +340,6 @@ const fetchMenuLocal = async () => {
   if (data) {
     menuCompleto.value = data
     
-    // Obtener y ordenar las categorías principales (Para las pestañas)
     let categorias = [...new Set(data.map(item => item.categoria))]
     const ordenTarjetas = ['bebidas', 'entraditas', 'restaurante', 'postres', 'licores']
     
@@ -302,28 +357,37 @@ const fetchMenuLocal = async () => {
   cargandoMenu.value = false
 }
 
-// LÓGICA DE FILTRADO Y AGRUPACIÓN
-const menuFiltrado = computed(() => {
-  return menuCompleto.value.filter(item => item.categoria === categoriaActiva.value)
+// LÓGICA DE FILTRADO, BUSQUEDA Y AGRUPACIÓN
+const menuFiltradoYBusqueda = computed(() => {
+  let resultado = menuCompleto.value
+
+  if (busquedaMenu.value.trim() !== '') {
+    const query = busquedaMenu.value.toLowerCase().trim()
+    return resultado.filter(item => 
+      item.nombre.toLowerCase().includes(query) || 
+      (item.descripcion && item.descripcion.toLowerCase().includes(query))
+    )
+  }
+
+  return resultado.filter(item => item.categoria === categoriaActiva.value)
 })
 
 const tieneSubcategorias = computed(() => {
-  return menuFiltrado.value.some(item => item.subcategoria && item.subcategoria.trim() !== '')
+  return menuFiltradoYBusqueda.value.some(item => item.subcategoria && item.subcategoria.trim() !== '')
 })
 
 const menuAgrupado = computed(() => {
   if (!tieneSubcategorias.value) {
-    return { 'otros': menuFiltrado.value }
+    return { 'otros': menuFiltradoYBusqueda.value }
   }
 
   const grupos = {}
-  menuFiltrado.value.forEach(item => {
+  menuFiltradoYBusqueda.value.forEach(item => {
     const sub = item.subcategoria?.trim() || 'otros'
     if (!grupos[sub]) grupos[sub] = []
     grupos[sub].push(item)
   })
 
-  // Aplicamos el orden estricto de las subcategorías
   const ordenEstricto = [
     'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'adiciones',
     'cocteles', 'cervezas', 'tragos', 'botellas',
@@ -371,52 +435,73 @@ const totalCarrito = computed(() => {
 })
 
 const cancelarOrden = () => {
-  if(confirm('¿Vaciar la orden actual por completo?')) {
+  if(confirm('¿Deseas vaciar el carrito actual? (Si estabas editando una mesa, los cambios no se guardarán)')) {
     carrito.value = []
     mesaActual.value = ''
+    ordenActualId.value = null 
     mostrarCarritoMovil.value = false
   }
 }
 
-// 4. ENVÍO DE LA ORDEN A CAJA (CON ADICIÓN A ORDENES EXISTENTES)
+// NUEVO: Función para dar marcha atrás sin borrar nada de la base de datos
+const volverAtras = () => {
+  carrito.value = []
+  mesaActual.value = ''
+  ordenActualId.value = null
+  mostrarCarritoMovil.value = false
+}
+
+// 4. ENVÍO DE LA ORDEN A CAJA (O ACTUALIZACIÓN EXACTA)
 const enviarOrden = async () => {
   if (!mesaActual.value) { alert("Debes ingresar el número de mesa."); return; }
   
   enviando.value = true
   try {
-    // 1. Verificamos si ya existe una orden PENDIENTE para esa mesa en este local
-    const { data: ordenExistente, error: ordenExistenteError } = await supabase
-      .from('pos_ordenes')
-      .select('id, subtotal, total')
-      .eq('local', localAsignado.value)
-      .eq('mesa', mesaActual.value)
-      .eq('estado', 'pendiente')
-      .maybeSingle()
+    
+    if (ordenActualId.value) {
+      
+      const { error: deleteError } = await supabase
+        .from('pos_orden_items')
+        .delete()
+        .eq('orden_id', ordenActualId.value)
+        
+      if (deleteError) throw deleteError
 
-    if (ordenExistenteError) throw ordenExistenteError
+      const itemsParaInsertar = carrito.value.map(item => ({
+        orden_id: ordenActualId.value,
+        producto_id: item.producto.id,
+        cantidad: item.cantidad,
+        precio_unitario: item.producto.precio,
+        notas: item.notas.trim() || null
+      }))
 
-    let ordenId = null;
-
-    if (ordenExistente) {
-      // 2A. SI EXISTE: Actualizamos la orden sumándole el nuevo total
-      ordenId = ordenExistente.id;
-      const nuevoSubtotal = ordenExistente.subtotal + totalCarrito.value;
-      const nuevoTotal = ordenExistente.total + totalCarrito.value;
+      if(itemsParaInsertar.length > 0) {
+        const { error: itemsError } = await supabase.from('pos_orden_items').insert(itemsParaInsertar)
+        if (itemsError) throw itemsError
+      }
 
       const { error: updateError } = await supabase
         .from('pos_ordenes')
         .update({ 
-          subtotal: nuevoSubtotal, 
-          total: nuevoTotal,
-          // Actualizamos la fecha para que salte a la cima de la caja y se re-imprima
+          subtotal: totalCarrito.value, 
+          total: totalCarrito.value,
           created_at: new Date().toISOString() 
         })
-        .eq('id', ordenId);
+        .eq('id', ordenActualId.value);
         
       if (updateError) throw updateError;
+      
+      alert(`✅ ¡Mesa ${mesaActual.value} actualizada exitosamente!`);
 
     } else {
-      // 2B. SI NO EXISTE: Creamos una orden nueva
+      
+      const { data: fantasma } = await supabase.from('pos_ordenes').select('id').eq('local', localAsignado.value).eq('mesa', mesaActual.value).eq('estado', 'pendiente').maybeSingle()
+      if(fantasma) {
+        alert("Ya existe una orden pendiente para esta mesa. Usa el panel 'Mis Mesas' para editarla o cancelarla primero.")
+        enviando.value = false
+        return
+      }
+
       const { data: nuevaOrden, error: insertError } = await supabase
         .from('pos_ordenes')
         .insert([{
@@ -431,38 +516,29 @@ const enviarOrden = async () => {
         .single();
 
       if (insertError) throw insertError;
-      ordenId = nuevaOrden.id;
-    }
+      
+      const itemsParaInsertar = carrito.value.map(item => ({
+        orden_id: nuevaOrden.id,
+        producto_id: item.producto.id,
+        cantidad: item.cantidad,
+        precio_unitario: item.producto.precio,
+        notas: item.notas.trim() || null
+      }))
 
-    // 3. Insertamos los nuevos platos a la orden (ya sea nueva o la existente)
-    const itemsParaInsertar = carrito.value.map(item => ({
-      orden_id: ordenId,
-      producto_id: item.producto.id,
-      cantidad: item.cantidad,
-      precio_unitario: item.producto.precio,
-      notas: item.notas.trim() || null
-    }))
+      const { error: itemsError } = await supabase.from('pos_orden_items').insert(itemsParaInsertar)
+      if (itemsError) throw itemsError
 
-    const { error: itemsError } = await supabase
-      .from('pos_orden_items')
-      .insert(itemsParaInsertar)
-
-    if (itemsError) throw itemsError
-
-    // 4. Limpiamos y avisamos
-    if (ordenExistente) {
-      alert(`✅ ¡Platos añadidos a la orden existente de la Mesa ${mesaActual.value} exitosamente!`);
-    } else {
       alert(`✅ ¡Orden nueva enviada a caja exitosamente! (Mesa ${mesaActual.value})`);
     }
-    
+
     carrito.value = []
     mesaActual.value = ''
+    ordenActualId.value = null
     mostrarCarritoMovil.value = false
 
   } catch (error) {
     console.error("Error al enviar la orden:", error)
-    alert("Ocurrió un error al enviar la orden a caja.")
+    alert("Ocurrió un error al sincronizar con la caja.")
   } finally {
     enviando.value = false
   }
@@ -470,7 +546,7 @@ const enviarOrden = async () => {
 
 const handleLogout = async () => {
   if(carrito.value.length > 0) {
-    if(!confirm("Tienes una orden pendiente sin enviar. ¿Seguro que deseas salir?")) return
+    if(!confirm("Tienes información en el carrito. Si sales ahora, se perderá. ¿Seguro que deseas salir?")) return
   }
   await supabase.auth.signOut()
   router.push('/login-pos')
