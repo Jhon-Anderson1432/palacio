@@ -90,7 +90,7 @@
       <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
         
         <div v-if="pestañaActiva === 'caja'">
-          <header class="mb-8 md:mb-12 flex justify-between items-end">
+          <header class="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
               <h1 class="text-3xl md:text-4xl font-serif text-white flex items-center gap-3">
                 Órdenes Activas
@@ -103,16 +103,25 @@
                 {{ localAsignado ? 'Sede: ' + localAsignado.replace(/-/g, ' ') : 'Monitoreo Global' }}
               </p>
             </div>
+            
+            <div class="flex bg-black border border-white/10 rounded-full p-1">
+              <button @click="estadoCaja = 'pendiente'" :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all', estadoCaja === 'pendiente' ? 'bg-[#D4AF37] text-black' : 'text-neutral-500 hover:text-white']">
+                Pendientes ({{ ordenesPendientes.length }})
+              </button>
+              <button @click="estadoCaja = 'pagado'" :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all', estadoCaja === 'pagado' ? 'bg-green-500 text-black' : 'text-neutral-500 hover:text-white']">
+                Facturadas
+              </button>
+            </div>
           </header>
 
           <div v-if="cargandoCaja" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Buscando comandas...</div>
           
-          <div v-else-if="ordenesCaja.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
-            No hay órdenes registradas en este momento.
+          <div v-else-if="ordenesCajaFiltradas.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
+            No hay órdenes en estado "{{ estadoCaja }}" registradas.
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div v-for="orden in ordenesCaja" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
+            <div v-for="orden in ordenesCajaFiltradas" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
               
               <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                 <div>
@@ -164,12 +173,17 @@
         <div v-if="pestañaActiva === 'estadisticas_pos'">
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
-              <h1 class="text-3xl md:text-4xl font-serif text-white">Cierre de Caja (Hoy)</h1>
+              <h1 class="text-3xl md:text-4xl font-serif text-white">Cierre de Caja</h1>
               <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Resumen de Ventas Pagadas</p>
             </div>
-            <button @click="imprimirCierreCaja()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-all text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-              🖨️ Imprimir Cierre
-            </button>
+            
+            <div class="flex items-center gap-3">
+              <input type="date" v-model="fechaFiltroMetricas" @change="calcularEstadisticasPos" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
+              
+              <button @click="imprimirCierreCaja()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-all text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                🖨️ Imprimir Cierre
+              </button>
+            </div>
           </header>
 
           <div v-if="cargandoStatsPos" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Calculando métricas...</div>
@@ -177,11 +191,11 @@
           <div v-else class="max-w-5xl mx-auto space-y-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/30 flex flex-col justify-between h-32 md:h-40 shadow-lg">
-                <span class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-widest font-bold">Ventas Totales (Hoy)</span>
+                <span class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-widest font-bold">Ventas Totales</span>
                 <span class="text-4xl md:text-5xl font-serif text-white">${{ statsPos.totalVentasDia.toLocaleString('es-CO') }}</span>
               </div>
               <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/10 flex flex-col justify-between h-32 md:h-40">
-                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Mesas Atendidas (Hoy)</span>
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Mesas Atendidas</span>
                 <span class="text-4xl md:text-5xl font-serif text-white">{{ statsPos.totalMesasDia }}</span>
               </div>
             </div>
@@ -200,7 +214,7 @@
                 </div>
               </div>
               <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
-                Aún no hay ventas pagadas registradas en el día de hoy.
+                No hay ventas pagadas registradas en esta fecha.
               </div>
             </div>
           </div>
@@ -236,17 +250,71 @@
         </div>
 
         <div v-if="pestañaActiva === 'gastronomia'">
-          <header class="mb-8 md:mb-12">
+          <header class="mb-6">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
             <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Filtrado por sede: {{ localAsignado.replace(/-/g, ' ') }}</p>
             <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
           </header>
 
+          <div class="mb-4 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
+            <button 
+              @click="categoriaActivaGastro = 'todas'"
+              :class="[
+                'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium',
+                categoriaActivaGastro === 'todas'
+                  ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]' 
+                  : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+              ]"
+            >
+              Todas las categorías
+            </button>
+            <button 
+              v-for="cat in categoriasGastroDisponiblesMenu" 
+              :key="cat" 
+              @click="categoriaActivaGastro = cat"
+              :class="[
+                'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium',
+                categoriaActivaGastro === cat 
+                  ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]' 
+                  : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+              ]"
+            >
+              {{ obtenerNombreCategoria(cat) }}
+            </button>
+          </div>
+
+          <div v-if="categoriaActivaGastro !== 'todas' && subcategoriasGastroDisponiblesMenu.length > 0" class="mb-8 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
+            <button 
+              @click="subcategoriaActivaGastro = 'todas'"
+              :class="[
+                'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium',
+                subcategoriaActivaGastro === 'todas'
+                  ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
+                  : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
+              ]"
+            >
+              Todas
+            </button>
+            <button 
+              v-for="sub in subcategoriasGastroDisponiblesMenu" 
+              :key="sub" 
+              @click="subcategoriaActivaGastro = sub"
+              :class="[
+                'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium',
+                subcategoriaActivaGastro === sub 
+                  ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
+                  : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
+              ]"
+            >
+              {{ obtenerNombreSubcategoria(sub) }}
+            </button>
+          </div>
+
           <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
           
           <div v-else class="space-y-10">
             <div v-if="gastroFiltrados.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl">
-              No se encontraron platos en el menú.
+              No se encontraron platos con ese filtro.
             </div>
             
             <div v-for="(subcategorias, categoriaId) in menuAgrupado" :key="categoriaId" class="mb-10">
@@ -390,7 +458,7 @@
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯 পুলিশের</span> 日本語</h4>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
               <input v-model="form.titulo_ja" placeholder="タイトル" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
               <input v-model="form.medidas_ja" placeholder="手法" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 uppercase">
             </div>
@@ -490,7 +558,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, reactive, watch } from 'vue'
 import { supabase } from '../lib/supabase' 
 import { useRouter } from 'vue-router'
 
@@ -503,9 +571,10 @@ const menuAbierto = ref(false)
 const rolUsuario = ref('superadmin') 
 const localAsignado = ref(null)
 
-// CAJA REGISTRADORA
+// CAJA REGISTRADORA Y NUEVO FILTRO DE ESTADO
 const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
+const estadoCaja = ref('pendiente') // 'pendiente' o 'pagado'
 let subscripcionPos = null 
 
 // GALERÍA DE ARTE 
@@ -530,12 +599,27 @@ const logsActividad = ref([])
 const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
 const cargandoStatsPos = ref(false)
 
+// ESTADO PARA EL FILTRO DE FECHA (Por defecto: Hoy)
+const getHoyStr = () => {
+  const d = new Date()
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+const fechaFiltroMetricas = ref(getHoyStr())
+
 // GASTRONOMÍA 
 const todosLosPlatos = ref([])
 const cargandoGastro = ref(false)
 const showGastroForm = ref(false)
 const enviandoGastro = ref(false)
 const gastroEditandoId = ref(null)
+
+// NUEVO: ESTADOS PARA FILTROS POR TARJETAS EN GASTRONOMÍA
+const categoriaActivaGastro = ref('todas')
+const subcategoriaActivaGastro = ref('todas')
+
+watch(categoriaActivaGastro, () => {
+  subcategoriaActivaGastro.value = 'todas'
+})
 
 const categoriasDisponibles = [
   { id: 'entraditas', nombre: 'ENTRADITAS' },
@@ -613,12 +697,9 @@ const inicializarRealtime = () => {
       
       if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
 
-      // Solución al problema de actualización y la impresión vacía:
-      // Se esperan 1.2 segundos para asegurar que la tablet guardó los "pos_orden_items" en la BD.
       setTimeout(async () => {
         await fetchOrdenesCaja(false); 
 
-        // Si es un pedido nuevo, disparamos la comanda automáticamente
         if (payload.eventType === 'INSERT') {
           const nuevaOrden = ordenesCaja.value.find(o => o.id === payload.new.id);
           if (nuevaOrden) {
@@ -643,7 +724,7 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
       )
     `)
     .order('created_at', { ascending: false })
-    .limit(50) 
+    .limit(200) 
 
   if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
     query = query.eq('local', localAsignado.value)
@@ -653,6 +734,18 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
   if (!error) ordenesCaja.value = data || []
   if (mostrarLoader) cargandoCaja.value = false
 }
+
+const ordenesPendientes = computed(() => {
+  return ordenesCaja.value.filter(orden => orden.estado === 'pendiente')
+})
+
+const ordenesFacturadas = computed(() => {
+  return ordenesCaja.value.filter(orden => orden.estado === 'pagado')
+})
+
+const ordenesCajaFiltradas = computed(() => {
+  return estadoCaja.value === 'pendiente' ? ordenesPendientes.value : ordenesFacturadas.value
+})
 
 const actualizarEstadoOrden = async (id, nuevoEstado) => {
   if (confirm(`¿Confirmas pasar esta orden a estado: ${nuevoEstado.toUpperCase()}?`)) {
@@ -671,14 +764,19 @@ const eliminarOrdenFisica = async (id) => {
 const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = true
   
-  const hoy = new Date()
-  hoy.setHours(0,0,0,0)
-  const inicioDia = hoy.toISOString()
+  if (!fechaFiltroMetricas.value) {
+    fechaFiltroMetricas.value = getHoyStr()
+  }
+
+  const [yyyy, mm, dd] = fechaFiltroMetricas.value.split('-')
+  const inicioDia = new Date(yyyy, mm - 1, dd, 0, 0, 0, 0).toISOString()
+  const finDia = new Date(yyyy, mm - 1, dd, 23, 59, 59, 999).toISOString()
 
   let query = supabase
     .from('pos_ordenes')
     .select(`*, perfiles(nombre)`)
     .gte('created_at', inicioDia)
+    .lte('created_at', finDia)
     .eq('estado', 'pagado')
 
   if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
@@ -703,6 +801,9 @@ const calcularEstadisticasPos = async () => {
 }
 
 const imprimirCierreCaja = () => {
+  const [y, m, d] = fechaFiltroMetricas.value.split('-');
+  const fechaImpresion = new Date(y, m - 1, d).toLocaleDateString();
+
   let contenido = `
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
@@ -719,7 +820,7 @@ const imprimirCierreCaja = () => {
     
     <div class="divider"></div>
     <div style="font-size: 13px; margin-bottom: 15px;">
-      <p style="margin: 4px 0;"><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</p>
+      <p style="margin: 4px 0;"><strong>FECHA:</strong> ${fechaImpresion}</p>
       <p style="margin: 4px 0;"><strong>MESAS PAGADAS:</strong> ${statsPos.totalMesasDia}</p>
     </div>
 
@@ -739,7 +840,7 @@ const imprimirCierreCaja = () => {
       <div class="divider"></div>
       <h3 style="text-align: right; margin-top: 15px; font-size: 18px; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000;">TOTAL VENTAS: $${statsPos.totalVentasDia.toLocaleString('es-CO')}</h3>
       
-      <p style="text-align: center; margin-top: 30px; font-size: 12px; font-style: italic;">- Fin del Reporte Diario -</p>
+      <p style="text-align: center; margin-top: 30px; font-size: 12px; font-style: italic;">- Fin del Reporte -</p>
       <div style="text-align: center; margin-top: 10px;">***</div>
   `
 
@@ -818,7 +919,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     <div class="divider"></div>
     `;
   } else {
-    // ES COMANDA: Diseño limpio para la cocina
     contenido += `
     <div class="header">
       <h2 style="font-size: 24px;">MESA: ${orden.mesa}</h2>
@@ -919,8 +1019,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   `);
   iframe.contentDocument.close();
 
-  // Se aumentó el tiempo a 800ms para darle tiempo al navegador de renderizar 
-  // las letras gruesas antes de enviarlo a la cola de la impresora térmica
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
@@ -1046,16 +1144,69 @@ const fetchGastronomia = async () => {
   
   const { data } = await query
   todosLosPlatos.value = data || []
+  
+  if (todosLosPlatos.value.length > 0 && categoriaActivaGastro.value === 'todas') {
+      categoriaActivaGastro.value = 'todas';
+  }
   cargandoGastro.value = false
 }
 
-const gastroFiltrados = computed(() => {
-  const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
-  if (!query) return todosLosPlatos.value
-  return todosLosPlatos.value.filter(o => o.nombre.toLowerCase().includes(query) || (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) || o.categoria.toLowerCase().includes(query))
+// NUEVO: COMPUTADAS DE NAVEGACIÓN Y FILTRO
+const categoriasGastroDisponiblesMenu = computed(() => {
+  let cat = [...new Set(todosLosPlatos.value.map(item => item.categoria).filter(Boolean))]
+  const ordenTarjetas = ['bebidas', 'entraditas', 'restaurante', 'postres', 'licores']
+  cat.sort((a, b) => {
+    let indexA = ordenTarjetas.indexOf(a)
+    let indexB = ordenTarjetas.indexOf(b)
+    if (indexA === -1) indexA = 999
+    if (indexB === -1) indexB = 999
+    return indexA - indexB
+  })
+  return cat
 })
 
-// NUEVO: COMPUTADA PARA AGRUPAR EL MENÚ
+const subcategoriasGastroDisponiblesMenu = computed(() => {
+  if (!categoriaActivaGastro.value || categoriaActivaGastro.value === 'todas') return []
+  const itemsDeCategoria = todosLosPlatos.value.filter(item => item.categoria === categoriaActivaGastro.value)
+  let sub = [...new Set(itemsDeCategoria.map(item => item.subcategoria).filter(Boolean))]
+  
+  const ordenEstricto = [
+    'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'adiciones',
+    'cocteles', 'cervezas', 'tragos', 'botellas',
+    'refrescantes', 'calientes', 'jugos',
+    'otros'
+  ]
+  sub.sort((a, b) => {
+    let indexA = ordenEstricto.indexOf(a)
+    let indexB = ordenEstricto.indexOf(b)
+    if (indexA === -1) indexA = 999
+    if (indexB === -1) indexB = 999
+    return indexA - indexB
+  })
+  
+  return sub
+})
+
+const gastroFiltrados = computed(() => {
+  let filtrados = todosLosPlatos.value
+  
+  if (categoriaActivaGastro.value !== 'todas') {
+    filtrados = filtrados.filter(item => item.categoria === categoriaActivaGastro.value)
+  }
+  
+  if (subcategoriaActivaGastro.value !== 'todas') {
+    filtrados = filtrados.filter(item => item.subcategoria === subcategoriaActivaGastro.value)
+  }
+
+  const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
+  if (query) {
+    filtrados = filtrados.filter(o => o.nombre.toLowerCase().includes(query) || (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) || o.categoria.toLowerCase().includes(query))
+  }
+  
+  return filtrados
+})
+
+// MANTIENE LA AGRUPACIÓN VISUAL PERO SOLO CON LOS FILTRADOS
 const menuAgrupado = computed(() => {
   const agrupado = {}
   gastroFiltrados.value.forEach(item => {
@@ -1180,4 +1331,9 @@ onMounted(() => { cargarPerfilYDatos() })
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* Estilo para que el icono del calendario sea visible en fondo oscuro */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
 </style>
