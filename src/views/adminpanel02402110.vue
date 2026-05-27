@@ -613,7 +613,7 @@ const showGastroForm = ref(false)
 const enviandoGastro = ref(false)
 const gastroEditandoId = ref(null)
 
-// NUEVO: ESTADOS PARA FILTROS POR TARJETAS EN GASTRONOMÍA
+// ESTADOS PARA FILTROS POR TARJETAS EN GASTRONOMÍA
 const categoriaActivaGastro = ref('todas')
 const subcategoriaActivaGastro = ref('todas')
 
@@ -1133,7 +1133,6 @@ const deleteObra = async (obra) => {
   }
 }
 
-// LÓGICA GASTRONÓMICA 
 const fetchGastronomia = async () => {
   cargandoGastro.value = true
   let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
@@ -1151,7 +1150,6 @@ const fetchGastronomia = async () => {
   cargandoGastro.value = false
 }
 
-// NUEVO: COMPUTADAS DE NAVEGACIÓN Y FILTRO
 const categoriasGastroDisponiblesMenu = computed(() => {
   let cat = [...new Set(todosLosPlatos.value.map(item => item.categoria).filter(Boolean))]
   const ordenTarjetas = ['bebidas', 'entraditas', 'restaurante', 'postres', 'licores']
@@ -1206,7 +1204,6 @@ const gastroFiltrados = computed(() => {
   return filtrados
 })
 
-// MANTIENE LA AGRUPACIÓN VISUAL PERO SOLO CON LOS FILTRADOS
 const menuAgrupado = computed(() => {
   const agrupado = {}
   gastroFiltrados.value.forEach(item => {
@@ -1279,7 +1276,7 @@ const guardarGastro = async () => {
     }
     delete payload.locales 
     
-    if (subcategoriasDisponibles.length === 0) {
+    if (subcategoriasDisponibles.value.length === 0) {
       payload.subcategoria = null
     } else if (!payload.subcategoria) {
       alert("Debes seleccionar una subcategoría para esta sección.");
@@ -1331,7 +1328,6 @@ onMounted(() => { cargarPerfilYDatos() })
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* Estilo para que el icono del calendario sea visible en fondo oscuro */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
