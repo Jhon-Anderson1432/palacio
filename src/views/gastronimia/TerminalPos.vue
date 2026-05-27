@@ -42,6 +42,34 @@
             {{ formatearCategoria(cat) }}
           </button>
         </div>
+
+        <div v-if="subcategoriasDisponiblesMenu.length > 0 && busquedaMenu.trim() === ''" class="overflow-x-auto hide-scrollbar flex gap-2 md:gap-3">
+          <button 
+            @click="subcategoriaActiva = 'todas'"
+            :class="[
+              'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium',
+              subcategoriaActiva === 'todas'
+                ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
+                : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
+            ]"
+          >
+            Todas
+          </button>
+          <button 
+            v-for="sub in subcategoriasDisponiblesMenu" 
+            :key="sub" 
+            @click="subcategoriaActiva = sub"
+            :class="[
+              'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium',
+              subcategoriaActiva === sub 
+                ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
+                : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
+            ]"
+          >
+            {{ formatearSubcategoria(sub) }}
+          </button>
+        </div>
+
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-32 md:pb-6 space-y-8 z-0">
@@ -189,7 +217,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { supabase } from '../../lib/supabase' 
 import { useRouter } from 'vue-router'
 
@@ -202,6 +230,13 @@ const menuCompleto = ref([])
 const cargandoMenu = ref(true)
 const categoriasDisponibles = ref([])
 const categoriaActiva = ref('')
+
+// NUEVO: ESTADO DE SUBCATEGORÍA PARA MESERAS
+const subcategoriaActiva = ref('todas')
+
+watch(categoriaActiva, () => {
+  subcategoriaActiva.value = 'todas'
+})
 
 const mostrarCarritoMovil = ref(false)
 const mesaActual = ref('')
@@ -357,6 +392,30 @@ const fetchMenuLocal = async () => {
   cargandoMenu.value = false
 }
 
+// NUEVO: COMPUTAR LAS SUBCATEGORÍAS DISPONIBLES SEGÚN LA CATEGORÍA ACTIVA
+const subcategoriasDisponiblesMenu = computed(() => {
+  if (!categoriaActiva.value) return []
+  const itemsDeCategoria = menuCompleto.value.filter(item => item.categoria === categoriaActiva.value)
+  let sub = [...new Set(itemsDeCategoria.map(item => item.subcategoria).filter(Boolean))]
+  
+  const ordenEstricto = [
+    'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'adiciones',
+    'cocteles', 'cervezas', 'tragos', 'botellas',
+    'refrescantes', 'calientes', 'jugos',
+    'otros'
+  ]
+  sub.sort((a, b) => {
+    let indexA = ordenEstricto.indexOf(a)
+    let indexB = ordenEstricto.indexOf(b)
+    if (indexA === -1) indexA = 999
+    if (indexB === -1) indexB = 999
+    return indexA - indexB
+  })
+  
+  return sub
+})
+
+
 // LÓGICA DE FILTRADO, BUSQUEDA Y AGRUPACIÓN
 const menuFiltradoYBusqueda = computed(() => {
   let resultado = menuCompleto.value
@@ -369,7 +428,15 @@ const menuFiltradoYBusqueda = computed(() => {
     )
   }
 
-  return resultado.filter(item => item.categoria === categoriaActiva.value)
+  // Filtrar primero por categoría principal
+  resultado = resultado.filter(item => item.categoria === categoriaActiva.value)
+
+  // Luego filtrar por subcategoría si no está en "todas"
+  if (subcategoriaActiva.value !== 'todas') {
+    resultado = resultado.filter(item => item.subcategoria === subcategoriaActiva.value)
+  }
+
+  return resultado
 })
 
 const tieneSubcategorias = computed(() => {
@@ -443,7 +510,7 @@ const cancelarOrden = () => {
   }
 }
 
-// NUEVO: Función para dar marcha atrás sin borrar nada de la base de datos
+// Función para dar marcha atrás sin borrar nada de la base de datos
 const volverAtras = () => {
   carrito.value = []
   mesaActual.value = ''
