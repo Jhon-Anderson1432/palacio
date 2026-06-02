@@ -120,51 +120,59 @@
             No hay órdenes en estado "{{ estadoCaja }}" registradas.
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div v-for="orden in ordenesCajaFiltradas" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
+          <!-- NUEVO: VISTA AGRUPADA Y OPTIMIZADA DE CAJA -->
+          <div v-else class="w-full space-y-10">
+            <div v-for="(grupo, index) in vistasCaja" :key="index" class="w-full">
               
-              <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
-                <div>
-                  <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37]">{{ orden.mesa }}</span></h3>
-                  <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
-                  <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
-                </div>
-                <div class="text-right">
-                  <span :class="{'bg-yellow-500/20 text-yellow-500': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500': orden.estado === 'pagado', 'bg-red-500/20 text-red-500': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-current shadow-sm">
-                    {{ orden.estado }}
-                  </span>
-                </div>
-              </div>
+              <h3 v-if="estadoCaja === 'pagado'" class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-5 border-b border-[#D4AF37]/20 pb-2 capitalize">{{ grupo.fecha }}</h3>
 
-              <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-48 hide-scrollbar pr-2">
-                <div v-for="item in orden.pos_orden_items" :key="item.id" class="flex flex-col text-xs md:text-sm border-b border-white/5 pb-3">
-                  <div class="flex justify-between items-start">
-                    <span class="text-gray-300 pr-4">
-                      <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
-                      {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
-                    </span>
-                    <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div v-for="orden in grupo.ordenes" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
+                  
+                  <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
+                    <div>
+                      <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37]">{{ orden.mesa }}</span></h3>
+                      <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
+                      <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
+                    </div>
+                    <div class="text-right">
+                      <span :class="{'bg-yellow-500/20 text-yellow-500': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500': orden.estado === 'pagado', 'bg-red-500/20 text-red-500': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-current shadow-sm">
+                        {{ orden.estado }}
+                      </span>
+                    </div>
                   </div>
-                  <div v-if="item.notas" class="text-[11px] text-red-400 italic mt-1.5 pl-6 flex items-start gap-1 font-medium tracking-wide">
-                    <span>↳</span> {{ item.notas }}
+
+                  <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-48 hide-scrollbar pr-2">
+                    <div v-for="item in orden.pos_orden_items" :key="item.id" class="flex flex-col text-xs md:text-sm border-b border-white/5 pb-3">
+                      <div class="flex justify-between items-start">
+                        <span class="text-gray-300 pr-4">
+                          <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
+                          {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
+                        </span>
+                        <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+                      </div>
+                      <div v-if="item.notas" class="text-[11px] text-red-400 italic mt-1.5 pl-6 flex items-start gap-1 font-medium tracking-wide">
+                        <span>↳</span> {{ item.notas }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
+                    <span class="text-sm text-neutral-400 uppercase tracking-widest">Total</span>
+                    <span class="text-3xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-2 mt-auto">
+                    <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
+                      Imprimir {{ orden.estado === 'pagado' ? 'Factura' : 'Comanda' }}
+                    </button>
+                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">Cobrar</button>
+                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
+                    <button @click="eliminarOrdenFisica(orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
+                      🗑️ Eliminar Orden Definitivamente
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
-                <span class="text-sm text-neutral-400 uppercase tracking-widest">Total</span>
-                <span class="text-3xl font-serif text-[#D4AF37]">${{ orden.total.toLocaleString('es-CO') }}</span>
-              </div>
-
-              <div class="grid grid-cols-3 gap-2 mt-auto">
-                <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
-                  Imprimir {{ orden.estado === 'pagado' ? 'Factura' : 'Comanda' }}
-                </button>
-                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">Cobrar</button>
-                <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
-                <button @click="eliminarOrdenFisica(orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
-                  🗑️ Eliminar Orden Definitivamente
-                </button>
               </div>
             </div>
           </div>
@@ -558,7 +566,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue'
+import { ref, onMounted, computed, reactive, watch, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase' 
 import { useRouter } from 'vue-router'
 
@@ -576,6 +584,7 @@ const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
 const estadoCaja = ref('pendiente') // 'pendiente' o 'pagado'
 let subscripcionPos = null 
+const ordenesImpresas = new Set() // NUEVO: Evitar impresiones dobles
 
 // GALERÍA DE ARTE 
 const todasLasObras = ref([])
@@ -689,6 +698,7 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
+// LÓGICA DE TIEMPO REAL MEJORADA
 const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
@@ -697,16 +707,28 @@ const inicializarRealtime = () => {
       
       if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
 
-      setTimeout(async () => {
-        await fetchOrdenesCaja(false); 
+      if (payload.eventType === 'INSERT') {
+        // Bloqueo de seguridad: Evitar procesar el mismo evento dos veces
+        if (ordenesImpresas.has(payload.new.id)) return;
+        ordenesImpresas.add(payload.new.id);
 
-        if (payload.eventType === 'INSERT') {
-          const nuevaOrden = ordenesCaja.value.find(o => o.id === payload.new.id);
-          if (nuevaOrden) {
-            imprimirTicket(nuevaOrden, 'comanda');
+        // Esperar 1.5 segundos exactos para que la TerminalPOS inserte los items
+        setTimeout(async () => {
+          const { data: ordenEspecifica } = await supabase
+            .from('pos_ordenes')
+            .select(`*, perfiles ( nombre ), pos_orden_items ( id, cantidad, precio_unitario, notas, menu_gastronomia (nombre, codigo_pos) )`)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (ordenEspecifica && ordenEspecifica.pos_orden_items && ordenEspecifica.pos_orden_items.length > 0) {
+            imprimirTicket(ordenEspecifica, 'comanda');
           }
-        }
-      }, 1200); 
+          fetchOrdenesCaja(false); 
+        }, 1500);
+
+      } else {
+        setTimeout(() => { fetchOrdenesCaja(false); }, 1000);
+      }
     })
     .subscribe();
 }
@@ -745,6 +767,30 @@ const ordenesFacturadas = computed(() => {
 
 const ordenesCajaFiltradas = computed(() => {
   return estadoCaja.value === 'pendiente' ? ordenesPendientes.value : ordenesFacturadas.value
+})
+
+// NUEVO: AGRUPACIÓN VISUAL POR FECHAS PARA FACTURAS
+const vistasCaja = computed(() => {
+  if (estadoCaja.value === 'pendiente') {
+    return [{ fecha: '', ordenes: ordenesPendientes.value }]
+  } else {
+    const grupos = {}
+    ordenesFacturadas.value.forEach(orden => {
+      const d = new Date(orden.created_at)
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+      const fechaKey = d.toLocaleDateString('es-CO', options)
+      
+      const fechaCapitalizada = fechaKey.charAt(0).toUpperCase() + fechaKey.slice(1)
+
+      if (!grupos[fechaCapitalizada]) grupos[fechaCapitalizada] = []
+      grupos[fechaCapitalizada].push(orden)
+    })
+    
+    return Object.keys(grupos).map(fecha => ({
+      fecha,
+      ordenes: grupos[fecha]
+    }))
+  }
 })
 
 const actualizarEstadoOrden = async (id, nuevoEstado) => {
@@ -1323,6 +1369,14 @@ const handleLogout = async () => {
 }
 
 onMounted(() => { cargarPerfilYDatos() })
+
+// NUEVO: Limpieza de conexión de tiempo real
+onUnmounted(() => {
+  if (subscripcionPos) {
+    supabase.removeChannel(subscripcionPos)
+    subscripcionPos = null
+  }
+})
 </script>
 
 <style scoped>
