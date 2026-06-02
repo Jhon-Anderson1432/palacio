@@ -120,7 +120,6 @@
             No hay órdenes en estado "{{ estadoCaja }}" registradas.
           </div>
 
-          <!-- NUEVO: VISTA AGRUPADA Y OPTIMIZADA DE CAJA -->
           <div v-else class="w-full space-y-10">
             <div v-for="(grupo, index) in vistasCaja" :key="index" class="w-full">
               
@@ -584,7 +583,7 @@ const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
 const estadoCaja = ref('pendiente') // 'pendiente' o 'pagado'
 let subscripcionPos = null 
-const ordenesImpresas = new Set() // NUEVO: Evitar impresiones dobles
+const ordenesImpresas = new Set() // Evitar impresiones dobles
 
 // GALERÍA DE ARTE 
 const todasLasObras = ref([])
@@ -698,7 +697,7 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
-// LÓGICA DE TIEMPO REAL MEJORADA
+// LÓGICA DE TIEMPO REAL MEJORADA Y A PRUEBA DE FALLOS
 const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
@@ -712,25 +711,40 @@ const inicializarRealtime = () => {
         if (ordenesImpresas.has(payload.new.id)) return;
         ordenesImpresas.add(payload.new.id);
 
-        // Esperar 1.5 segundos exactos para que la TerminalPOS inserte los items
-        setTimeout(async () => {
+        // MEJORA 1: Bucle de reintentos por si el internet de la mesera es lento
+        const intentarImprimir = async (intento = 1) => {
           const { data: ordenEspecifica } = await supabase
             .from('pos_ordenes')
             .select(`*, perfiles ( nombre ), pos_orden_items ( id, cantidad, precio_unitario, notas, menu_gastronomia (nombre, codigo_pos) )`)
             .eq('id', payload.new.id)
             .single();
 
+          // Solo imprime si ya detectó los platos asociados a la orden
           if (ordenEspecifica && ordenEspecifica.pos_orden_items && ordenEspecifica.pos_orden_items.length > 0) {
             imprimirTicket(ordenEspecifica, 'comanda');
+            fetchOrdenesCaja(false); 
+          } else if (intento <= 4) {
+            // Si los platos no han llegado a la base de datos, espera 1s y reintenta (hasta 4 veces)
+            setTimeout(() => intentarImprimir(intento + 1), 1000);
+          } else {
+             fetchOrdenesCaja(false);
           }
-          fetchOrdenesCaja(false); 
-        }, 1500);
+        };
+
+        // Iniciar el primer intento después de 1 segundo
+        setTimeout(() => intentarImprimir(1), 1000);
 
       } else {
         setTimeout(() => { fetchOrdenesCaja(false); }, 1000);
       }
     })
-    .subscribe();
+    .subscribe((status) => {
+      // MEJORA 2: Reconexión automática si el PC se suspende o se cae el internet
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+         subscripcionPos = null;
+         setTimeout(() => inicializarRealtime(), 3000);
+      }
+    });
 }
 
 const fetchOrdenesCaja = async (mostrarLoader = true) => {
@@ -769,7 +783,6 @@ const ordenesCajaFiltradas = computed(() => {
   return estadoCaja.value === 'pendiente' ? ordenesPendientes.value : ordenesFacturadas.value
 })
 
-// NUEVO: AGRUPACIÓN VISUAL POR FECHAS PARA FACTURAS
 const vistasCaja = computed(() => {
   if (estadoCaja.value === 'pendiente') {
     return [{ fecha: '', ordenes: ordenesPendientes.value }]
@@ -891,17 +904,21 @@ const imprimirCierreCaja = () => {
   `
 
   let iframe = document.getElementById('impresora-oculta');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.id = 'impresora-oculta';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
+  
+  // MEJORA 3: Limpiar el iframe viejo antes de crear uno nuevo para evitar bloqueos anti-spam del navegador
+  if (iframe) {
+    document.body.removeChild(iframe);
   }
+  
+  iframe = document.createElement('iframe');
+  iframe.id = 'impresora-oculta';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
 
   iframe.contentDocument.open();
   iframe.contentDocument.write(`
@@ -915,6 +932,14 @@ const imprimirCierreCaja = () => {
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
+    
+    // Destruir el iframe después de imprimir para no saturar la memoria del navegador
+    setTimeout(() => {
+      const frameToRemove = document.getElementById('impresora-oculta');
+      if (frameToRemove) {
+        document.body.removeChild(frameToRemove);
+      }
+    }, 5000);
   }, 800);
 }
 
@@ -1044,17 +1069,21 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   }
   
   let iframe = document.getElementById('impresora-oculta');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.id = 'impresora-oculta';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
+  
+  // MEJORA 3: Limpiar el iframe viejo antes de crear uno nuevo para evitar bloqueos anti-spam del navegador
+  if (iframe) {
+    document.body.removeChild(iframe);
   }
+  
+  iframe = document.createElement('iframe');
+  iframe.id = 'impresora-oculta';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
 
   iframe.contentDocument.open();
   iframe.contentDocument.write(`
@@ -1068,6 +1097,14 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
+    
+    // Destruir el iframe después de imprimir para no saturar la memoria del navegador
+    setTimeout(() => {
+      const frameToRemove = document.getElementById('impresora-oculta');
+      if (frameToRemove) {
+        document.body.removeChild(frameToRemove);
+      }
+    }, 5000);
   }, 800);
 }
 
@@ -1370,7 +1407,7 @@ const handleLogout = async () => {
 
 onMounted(() => { cargarPerfilYDatos() })
 
-// NUEVO: Limpieza de conexión de tiempo real
+// Limpieza de conexión de tiempo real
 onUnmounted(() => {
   if (subscripcionPos) {
     supabase.removeChannel(subscripcionPos)
