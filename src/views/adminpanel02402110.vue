@@ -209,14 +209,33 @@
 
             <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8">
               <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Desempeño por Mesera</h3>
-              <div v-if="statsPos.desgloseMeseras.length > 0" class="space-y-4">
-                <div v-for="mesera in statsPos.desgloseMeseras" :key="mesera.nombre" class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
-                  <div class="mb-2 sm:mb-0">
-                    <p class="text-sm md:text-base text-white font-bold">{{ mesera.nombre }}</p>
-                    <p class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest mt-1">{{ mesera.mesas }} mesas atendidas</p>
+              <div v-if="statsPos.desgloseMeseras.length > 0" class="space-y-6">
+                <div v-for="mesera in statsPos.desgloseMeseras" :key="mesera.nombre" class="flex flex-col p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors space-y-4">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <div class="mb-2 sm:mb-0">
+                      <p class="text-sm md:text-base text-white font-bold">{{ mesera.nombre }}</p>
+                      <p class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest mt-1">
+                        {{ mesera.cantidadMesas }} mesas atendidas
+                      </p>
+                    </div>
+                    <div class="sm:text-right">
+                      <span class="text-2xl font-serif text-[#D4AF37]">${{ mesera.ventas.toLocaleString('es-CO') }}</span>
+                    </div>
                   </div>
-                  <div class="sm:text-right">
-                    <span class="text-2xl font-serif text-[#D4AF37]">${{ mesera.ventas.toLocaleString('es-CO') }}</span>
+                  
+                  <div class="border-t border-white/10 pt-3 space-y-4">
+                    <div v-for="mesa in mesera.desgloseMesas" :key="mesa.nombre" class="bg-black/30 p-3 rounded-xl border border-white/5">
+                      <div class="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
+                        <span class="text-[11px] uppercase tracking-widest text-white font-bold">Mesa: <span class="text-[#D4AF37]">{{ mesa.nombre }}</span></span>
+                        <span class="text-[11px] text-[#D4AF37] font-bold">${{ mesa.total.toLocaleString('es-CO') }}</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        <div v-for="(cant, prod) in mesa.productos" :key="prod" class="flex justify-between items-center bg-black/40 px-3 py-2 rounded-xl text-xs border border-white/5">
+                          <span class="text-gray-300 truncate pr-2 capitalize">{{ prod.toLowerCase() }}</span>
+                          <span class="text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded-md whitespace-nowrap">x{{ cant }}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -629,6 +648,8 @@ watch(categoriaActivaGastro, () => {
   subcategoriaActivaGastro.value = 'todas'
 })
 
+const copyRigid = true
+
 const categoriasDisponibles = [
   { id: 'entraditas', nombre: 'ENTRADITAS' },
   { id: 'restaurante', nombre: 'RESTAURANTE' },
@@ -820,6 +841,7 @@ const eliminarOrdenFisica = async (id) => {
   }
 }
 
+// MODIFICADO: Cálculo extendido desglosando ventas individuales por mesa
 const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = true
   
@@ -833,7 +855,14 @@ const calcularEstadisticasPos = async () => {
 
   let query = supabase
     .from('pos_ordenes')
-    .select(`*, perfiles(nombre)`)
+    .select(`
+      *, 
+      perfiles(nombre),
+      pos_orden_items(
+        cantidad,
+        menu_gastronomia(nombre)
+      )
+    `)
     .gte('created_at', inicioDia)
     .lte('created_at', finDia)
     .eq('estado', 'pagado')
@@ -850,15 +879,57 @@ const calcularEstadisticasPos = async () => {
     const agrupado = {}
     data.forEach(orden => {
       const mesera = orden.perfiles?.nombre || 'Desconocida'
-      if(!agrupado[mesera]) agrupado[mesera] = { nombre: mesera, ventas: 0, mesas: 0 }
+      const nombreMesa = orden.mesa || 'Sin Mesa'
+
+      if(!agrupado[mesera]) {
+        agrupado[mesera] = { 
+          nombre: mesera, 
+          ventas: 0, 
+          mesasUnicas: new Set(),
+          mesasDetalle: {} 
+        }
+      }
       agrupado[mesera].ventas += orden.total
-      agrupado[mesera].mesas += 1
+      agrupado[mesera].mesasUnicas.add(nombreMesa)
+      
+      if (!agrupado[mesera].mesasDetalle[nombreMesa]) {
+        agrupado[mesera].mesasDetalle[nombreMesa] = { total: 0, productos: {} }
+      }
+
+      agrupado[mesera].mesasDetalle[nombreMesa].total += orden.total
+
+      if (orden.pos_orden_items) {
+        orden.pos_orden_items.forEach(item => {
+          const prodNombre = item.menu_gastronomia?.nombre || 'Plato eliminado'
+          if (!agrupado[mesera].mesasDetalle[nombreMesa].productos[prodNombre]) {
+            agrupado[mesera].mesasDetalle[nombreMesa].productos[prodNombre] = 0
+          }
+          agrupado[mesera].mesasDetalle[nombreMesa].productos[prodNombre] += item.cantidad
+        })
+      }
     })
-    statsPos.desgloseMeseras = Object.values(agrupado).sort((a,b) => b.ventas - a.ventas)
+    
+    statsPos.desgloseMeseras = Object.values(agrupado).map(m => {
+      const arrayMesas = Object.keys(m.mesasDetalle)
+        .sort((a, b) => String(a).localeCompare(String(b), undefined, {numeric: true}))
+        .map(nombreMesa => ({
+          nombre: nombreMesa,
+          total: m.mesasDetalle[nombreMesa].total,
+          productos: m.mesasDetalle[nombreMesa].productos
+        }))
+
+      return {
+        nombre: m.nombre,
+        ventas: m.ventas,
+        cantidadMesas: m.mesasUnicas.size,
+        desgloseMesas: arrayMesas
+      }
+    }).sort((a,b) => b.ventas - a.ventas)
   }
   cargandoStatsPos.value = false
 }
 
+// MODIFICADO: Impresión física de Cierre de Caja desglosado por mesa individual
 const imprimirCierreCaja = () => {
   const [y, m, d] = fechaFiltroMetricas.value.split('-');
   const fechaImpresion = new Date(y, m - 1, d).toLocaleDateString();
@@ -888,9 +959,37 @@ const imprimirCierreCaja = () => {
 
   statsPos.desgloseMeseras.forEach(m => {
     contenido += `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-        <span>${m.nombre} (${m.mesas} mesas)</span>
-        <span>$${m.ventas.toLocaleString('es-CO')}</span>
+      <div style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #000;">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 900 !important;">
+          <span>${m.nombre} (${m.cantidadMesas} mesas)</span>
+          <span>$${m.ventas.toLocaleString('es-CO')}</span>
+        </div>
+    `
+    
+    m.desgloseMesas.forEach(mesa => {
+      contenido += `
+        <div style="margin-top: 6px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; border-bottom: 1px dashed #eee; margin-bottom: 4px; padding-bottom: 2px;">
+            <span>MESA: ${mesa.nombre}</span>
+            <span>$${mesa.total.toLocaleString('es-CO')}</span>
+          </div>
+          <div style="padding-left: 6px; font-size: 12px;">
+      `
+      Object.entries(mesa.productos).forEach(([prod, cant]) => {
+        contenido += `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+            <span>- ${prod}</span>
+            <span>X${cant}</span>
+          </div>
+        `
+      })
+      contenido += `
+          </div>
+        </div>
+      `
+    })
+
+    contenido += `
       </div>
     `
   })
@@ -905,7 +1004,6 @@ const imprimirCierreCaja = () => {
 
   let iframe = document.getElementById('impresora-oculta');
   
-  // MEJORA 3: Limpiar el iframe viejo antes de crear uno nuevo para evitar bloqueos anti-spam del navegador
   if (iframe) {
     document.body.removeChild(iframe);
   }
@@ -933,7 +1031,6 @@ const imprimirCierreCaja = () => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
     
-    // Destruir el iframe después de imprimir para no saturar la memoria del navegador
     setTimeout(() => {
       const frameToRemove = document.getElementById('impresora-oculta');
       if (frameToRemove) {
@@ -1070,7 +1167,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   
   let iframe = document.getElementById('impresora-oculta');
   
-  // MEJORA 3: Limpiar el iframe viejo antes de crear uno nuevo para evitar bloqueos anti-spam del navegador
   if (iframe) {
     document.body.removeChild(iframe);
   }
@@ -1098,7 +1194,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
     
-    // Destruir el iframe después de imprimir para no saturar la memoria del navegador
     setTimeout(() => {
       const frameToRemove = document.getElementById('impresora-oculta');
       if (frameToRemove) {
