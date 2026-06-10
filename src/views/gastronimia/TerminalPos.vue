@@ -421,11 +421,17 @@ const menuFiltradoYBusqueda = computed(() => {
   let resultado = menuCompleto.value
 
   if (busquedaMenu.value.trim() !== '') {
-    const query = busquedaMenu.value.toLowerCase().trim()
-    return resultado.filter(item => 
-      item.nombre.toLowerCase().includes(query) || 
-      (item.descripcion && item.descripcion.toLowerCase().includes(query))
-    )
+    // Normalizar la búsqueda: minúsculas y eliminación de tildes/diacríticos
+    const query = busquedaMenu.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    
+    return resultado.filter(item => {
+      // Normalizar el nombre y la descripción del plato
+      const nombreNormalizado = item.nombre ? item.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""
+      const descNormalizada = item.descripcion ? item.descripcion.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""
+      
+      // Comparar las versiones limpias (sin tildes)
+      return nombreNormalizado.includes(query) || descNormalizada.includes(query)
+    })
   }
 
   // Filtrar primero por categoría principal
