@@ -127,7 +127,7 @@
           No tienes mesas pendientes por cobrar.
         </div>
 
-        <div v-else v-for="orden in misOrdenesActivas" :key="orden.id" @click="editarMesaPendiente(orden)" class="bg-black border border-[#D4AF37]/30 p-5 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-all flex flex-col justify-between group shadow-sm">
+        <div v-else v-for="orden in misOrdenesActivas" :key="orden.mesa" @click="editarMesaPendiente(orden)" class="bg-black border border-[#D4AF37]/30 p-5 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-all flex flex-col justify-between group shadow-sm">
           <div class="flex justify-between items-start mb-3">
             <h3 class="text-xl font-serif text-white group-hover:text-[#D4AF37] transition-colors">Mesa {{ orden.mesa }}</h3>
             <span class="bg-yellow-500/20 text-yellow-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-yellow-500/50 shadow-sm">
@@ -174,7 +174,7 @@
           Selecciona platos en el menú para iniciar la orden
         </div>
 
-        <div v-for="(item, index) in carrito" :key="index" class="bg-black border border-white/5 p-4 md:p-5 rounded-2xl shadow-sm">
+        <div v-for="(item, index) in carrito" :key="item.id_unico" class="bg-black border border-white/5 p-4 md:p-5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-start mb-4">
             <h4 class="text-base md:text-lg font-bold text-white w-2/3 leading-tight">{{ item.producto.nombre }}</h4>
             <span class="text-[#D4AF37] text-sm md:text-base font-bold">${{ (item.producto.precio * item.cantidad).toLocaleString('es-CO') }}</span>
@@ -293,7 +293,7 @@ const inicializarTerminal = async () => {
   inicializarRealtimeMisMesas()
 }
 
-// TRAER LAS MESAS ACTIVAS DE LA MESERA
+// TRAER LAS MESAS ACTIVAS DE LA MESERA Y AGRUPARLAS
 const fetchMisOrdenesActivas = async () => {
   cargandoOrdenes.value = true
   const { data, error } = await supabase
@@ -302,10 +302,26 @@ const fetchMisOrdenesActivas = async () => {
     .eq('mesera_id', meseraId.value)
     .eq('local', localAsignado.value)
     .eq('estado', 'pendiente')
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true }) // Ordenamos de más viejo a más nuevo
 
   if (!error && data) {
-    misOrdenesActivas.value = data
+    const agrupadas = {};
+    data.forEach(orden => {
+      if (!agrupadas[orden.mesa]) {
+        agrupadas[orden.mesa] = {
+          mesa: orden.mesa,
+          ids_asociados: [orden.id],
+          total: orden.total,
+          created_at: orden.created_at // Conserva la hora de creación de la apertura de la mesa
+        };
+      } else {
+        agrupadas[orden.mesa].ids_asociados.push(orden.id);
+        agrupadas[orden.mesa].total += orden.total; // Sumamos totales de adiciones
+      }
+    });
+    
+    // Las convertimos a Array y las ordenamos mostrando las que tuvieron movimiento más reciente arriba
+    misOrdenesActivas.value = Object.values(agrupadas).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   }
   cargandoOrdenes.value = false
 }
@@ -328,29 +344,33 @@ const inicializarRealtimeMisMesas = () => {
 }
 
 // CARGAR UNA ORDEN EXISTENTE PARA EDITARLA
-const editarMesaPendiente = async (orden) => {
+const editarMesaPendiente = async (ordenGroup) => {
   panelMesasAbierto.value = false
   if(window.innerWidth < 768) mostrarCarritoMovil.value = true
   
   cargandoEdicion.value = true
-  mesaActual.value = orden.mesa
-  ordenActualId.value = orden.id
+  mesaActual.value = ordenGroup.mesa
+  ordenActualId.value = ordenGroup.ids_asociados // Guardamos el Array de IDs
   carrito.value = [] 
 
   try {
     const { data: items, error } = await supabase
       .from('pos_orden_items')
-      .select('id, cantidad, precio_unitario, notas, producto_id, menu_gastronomia(id, nombre, precio, categoria)')
-      .eq('orden_id', orden.id)
+      .select('id, cantidad, precio_unitario, notas, orden_id, producto_id, menu_gastronomia(id, nombre, precio, categoria)')
+      .in('orden_id', ordenGroup.ids_asociados)
 
     if (error) throw error
 
     if (items) {
       carrito.value = items.map(item => ({
+        id_db: item.id, // IDENTIFICADOR CLAVE: Ya estaba en base de datos
+        orden_id_db: item.orden_id, // Para saber a qué orden pertenece
         id_unico: Date.now() + Math.random(), 
         producto: item.menu_gastronomia,
         cantidad: item.cantidad,
-        notas: item.notas || ''
+        notas: item.notas || '',
+        original_cantidad: item.cantidad,
+        original_notas: item.notas || ''
       }))
     }
   } catch (error) {
@@ -392,7 +412,7 @@ const fetchMenuLocal = async () => {
   cargandoMenu.value = false
 }
 
-// NUEVO: COMPUTAR LAS SUBCATEGORÍAS DISPONIBLES SEGÚN LA CATEGORÍA ACTIVA
+// COMPUTAR LAS SUBCATEGORÍAS DISPONIBLES SEGÚN LA CATEGORÍA ACTIVA
 const subcategoriasDisponiblesMenu = computed(() => {
   if (!categoriaActiva.value) return []
   const itemsDeCategoria = menuCompleto.value.filter(item => item.categoria === categoriaActiva.value)
@@ -415,29 +435,22 @@ const subcategoriasDisponiblesMenu = computed(() => {
   return sub
 })
 
-
 // LÓGICA DE FILTRADO, BUSQUEDA Y AGRUPACIÓN
 const menuFiltradoYBusqueda = computed(() => {
   let resultado = menuCompleto.value
 
   if (busquedaMenu.value.trim() !== '') {
-    // Normalizar la búsqueda: minúsculas y eliminación de tildes/diacríticos
     const query = busquedaMenu.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     
     return resultado.filter(item => {
-      // Normalizar el nombre y la descripción del plato
       const nombreNormalizado = item.nombre ? item.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""
       const descNormalizada = item.descripcion ? item.descripcion.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""
-      
-      // Comparar las versiones limpias (sin tildes)
       return nombreNormalizado.includes(query) || descNormalizada.includes(query)
     })
   }
 
-  // Filtrar primero por categoría principal
   resultado = resultado.filter(item => item.categoria === categoriaActiva.value)
 
-  // Luego filtrar por subcategoría si no está en "todas"
   if (subcategoriaActiva.value !== 'todas') {
     resultado = resultado.filter(item => item.subcategoria === subcategoriaActiva.value)
   }
@@ -482,7 +495,7 @@ const menuAgrupado = computed(() => {
 // 3. LÓGICA DEL CARRITO
 const agregarAlCarrito = (producto) => {
   carrito.value.unshift({ 
-    id_unico: Date.now(), 
+    id_unico: Date.now() + Math.random(), 
     producto: producto, 
     cantidad: 1, 
     notas: '' 
@@ -516,7 +529,6 @@ const cancelarOrden = () => {
   }
 }
 
-// Función para dar marcha atrás sin borrar nada de la base de datos
 const volverAtras = () => {
   carrito.value = []
   mesaActual.value = ''
@@ -524,56 +536,86 @@ const volverAtras = () => {
   mostrarCarritoMovil.value = false
 }
 
-// 4. ENVÍO DE LA ORDEN A CAJA (O ACTUALIZACIÓN EXACTA)
+// 4. ENVÍO DE LA ORDEN A CAJA (LÓGICA ACTUALIZADA PARA AÑADIR TICKETS NUEVOS EN VEZ DE BORRAR)
 const enviarOrden = async () => {
   if (!mesaActual.value) { alert("Debes ingresar el número de mesa."); return; }
   
   enviando.value = true
   try {
     
-    if (ordenActualId.value) {
+    if (ordenActualId.value && Array.isArray(ordenActualId.value)) {
+      // ===== ESTAMOS ACTUALIZANDO UNA MESA EXISTENTE =====
       
-      const { error: deleteError } = await supabase
-        .from('pos_orden_items')
-        .delete()
-        .eq('orden_id', ordenActualId.value)
-        
-      if (deleteError) throw deleteError
+      const itemsNuevos = carrito.value.filter(item => !item.id_db);
+      const itemsExistentes = carrito.value.filter(item => item.id_db);
 
-      const itemsParaInsertar = carrito.value.map(item => ({
-        orden_id: ordenActualId.value,
-        producto_id: item.producto.id,
-        cantidad: item.cantidad,
-        precio_unitario: item.producto.precio,
-        notas: item.notas.trim() || null
-      }))
+      // 1. Encontrar ítems eliminados (estaban en BD pero la mesera los borró del carrito)
+      const { data: currentDbItems } = await supabase.from('pos_orden_items').select('id, orden_id').in('orden_id', ordenActualId.value);
+      const idsEnCarrito = itemsExistentes.map(i => i.id_db);
+      const itemsParaBorrar = (currentDbItems || []).filter(dbItem => !idsEnCarrito.includes(dbItem.id));
 
-      if(itemsParaInsertar.length > 0) {
-        const { error: itemsError } = await supabase.from('pos_orden_items').insert(itemsParaInsertar)
-        if (itemsError) throw itemsError
+      if (itemsParaBorrar.length > 0) {
+        const idsToDelete = itemsParaBorrar.map(i => i.id);
+        await supabase.from('pos_orden_items').delete().in('id', idsToDelete);
       }
 
-      const { error: updateError } = await supabase
-        .from('pos_ordenes')
-        .update({ 
-          subtotal: totalCarrito.value, 
-          total: totalCarrito.value,
-          created_at: new Date().toISOString() 
-        })
-        .eq('id', ordenActualId.value);
+      // 2. Actualizar ítems que solo cambiaron de cantidad o notas
+      for (const item of itemsExistentes) {
+        if (item.cantidad !== item.original_cantidad || item.notas !== item.original_notas) {
+          await supabase.from('pos_orden_items').update({
+            cantidad: item.cantidad,
+            notas: item.notas.trim() || null
+          }).eq('id', item.id_db);
+        }
+      }
+
+      // 3. Recalcular el total de los tickets viejos
+      for (const ordId of ordenActualId.value) {
+         const itemsDeEstaOrden = itemsExistentes.filter(i => i.orden_id_db === ordId);
+         const sum = itemsDeEstaOrden.reduce((acc, curr) => acc + (curr.producto.precio * curr.cantidad), 0);
+         
+         if (itemsDeEstaOrden.length === 0) {
+            // Si la mesera borró todo de ese ticket, lo eliminamos
+            await supabase.from('pos_ordenes').delete().eq('id', ordId);
+         } else {
+            await supabase.from('pos_ordenes').update({ total: sum, subtotal: sum }).eq('id', ordId);
+         }
+      }
+
+      // 4. CREAR TICKETS PARA LOS PLATOS NUEVOS AÑADIDOS
+      if (itemsNuevos.length > 0) {
+        const totalNuevos = itemsNuevos.reduce((acc, curr) => acc + (curr.producto.precio * curr.cantidad), 0);
         
-      if (updateError) throw updateError;
-      
+        const { data: nuevaOrden, error: insertError } = await supabase
+          .from('pos_ordenes')
+          .insert([{
+            local: localAsignado.value,
+            mesera_id: meseraId.value,
+            mesa: mesaActual.value,
+            estado: 'pendiente',
+            subtotal: totalNuevos,
+            total: totalNuevos
+          }])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        const itemsParaInsertar = itemsNuevos.map(item => ({
+          orden_id: nuevaOrden.id,
+          producto_id: item.producto.id,
+          cantidad: item.cantidad,
+          precio_unitario: item.producto.precio,
+          notas: item.notas.trim() || null
+        }));
+
+        await supabase.from('pos_orden_items').insert(itemsParaInsertar);
+      }
+
       alert(`✅ ¡Mesa ${mesaActual.value} actualizada exitosamente!`);
 
     } else {
-      
-      const { data: fantasma } = await supabase.from('pos_ordenes').select('id').eq('local', localAsignado.value).eq('mesa', mesaActual.value).eq('estado', 'pendiente').maybeSingle()
-      if(fantasma) {
-        alert("Ya existe una orden pendiente para esta mesa. Usa el panel 'Mis Mesas' para editarla o cancelarla primero.")
-        enviando.value = false
-        return
-      }
+      // ===== ES UNA MESA TOTALMENTE NUEVA =====
 
       const { data: nuevaOrden, error: insertError } = await supabase
         .from('pos_ordenes')

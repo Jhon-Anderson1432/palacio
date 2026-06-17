@@ -142,11 +142,18 @@
                   </div>
 
                   <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-48 hide-scrollbar pr-2">
-                    <div v-for="item in orden.pos_orden_items" :key="item.id" class="flex flex-col text-xs md:text-sm border-b border-white/5 pb-3">
+                    <div v-for="item in (orden.pos_orden_items_originales || orden.pos_orden_items)" :key="'orig-'+item.id" 
+                         :class="['flex flex-col text-xs md:text-sm transition-all', 
+                                  (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 mb-2 shadow-sm' : 'border-b border-white/5 pb-3']">
                       <div class="flex justify-between items-start">
-                        <span class="text-gray-300 pr-4">
-                          <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
-                          {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
+                        <span class="text-gray-300 pr-4 flex items-center flex-wrap gap-2">
+                          <div>
+                            <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
+                            {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
+                          </div>
+                          <span v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'" class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
+                            + Añadido
+                          </span>
                         </span>
                         <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
                       </div>
@@ -154,6 +161,34 @@
                         <span>↳</span> {{ item.notas }}
                       </div>
                     </div>
+
+                    <template v-if="orden.pos_orden_items_anadidos && orden.pos_orden_items_anadidos.length > 0">
+                      <div class="pt-3 pb-2 mt-2 flex items-center justify-center border-t border-dashed border-[#D4AF37]/50">
+                        <span class="bg-red-500 text-white px-4 py-1.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse border border-red-400">
+                          🚨 NUEVO PEDIDO AGREGADO
+                        </span>
+                      </div>
+                      <div v-for="item in orden.pos_orden_items_anadidos" :key="'add-'+item.id" 
+                           :class="['flex flex-col text-xs md:text-sm transition-all relative overflow-hidden', 
+                                    (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/20 border border-orange-500/50 rounded-xl p-3 mb-2' : 'bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-2']">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+                        <div class="flex justify-between items-start pl-3 pt-1">
+                          <span class="text-white pr-4 flex items-center flex-wrap gap-2 font-bold">
+                            <div>
+                              <span class="text-red-400 font-extrabold text-base mr-1">{{ item.cantidad }}x</span> 
+                              {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
+                            </div>
+                            <span v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'" class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
+                              + Añadido
+                            </span>
+                          </span>
+                          <span class="text-white font-bold whitespace-nowrap mt-1 pr-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+                        </div>
+                        <div v-if="item.notas" class="text-[11px] text-red-300 italic mt-1.5 pl-8 pb-1 flex items-start gap-1 font-medium tracking-wide">
+                          <span>↳</span> {{ item.notas }}
+                        </div>
+                      </div>
+                    </template>
                   </div>
 
                   <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
@@ -165,9 +200,9 @@
                     <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
                       Imprimir {{ orden.estado === 'pagado' ? 'Factura' : 'Comanda' }}
                     </button>
-                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">Cobrar</button>
-                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
-                    <button @click="eliminarOrdenFisica(orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
+                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">Cobrar</button>
+                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Anular</button>
+                    <button @click="eliminarOrdenFisica(orden.ids_asociados || orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-md">
                       🗑️ Eliminar Orden Definitivamente
                     </button>
                   </div>
@@ -664,7 +699,7 @@ const subcategoriasDisponibles = computed(() => {
       { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
       { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
       { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
-      { id: 'adiciones', nombre: 'ADICIONES' }
+      { id: 'añadidos', nombre: 'AÑADIDOS' }
     ]
   } else if (formGastro.value.categoria === 'licores') {
     return [
@@ -736,7 +771,7 @@ const inicializarRealtime = () => {
         const intentarImprimir = async (intento = 1) => {
           const { data: ordenEspecifica } = await supabase
             .from('pos_ordenes')
-            .select(`*, perfiles ( nombre ), pos_orden_items ( id, cantidad, precio_unitario, notas, menu_gastronomia (nombre, codigo_pos) )`)
+            .select(`*, perfiles ( nombre ), pos_orden_items ( id, cantidad, precio_unitario, notas, menu_gastronomia (nombre, codigo_pos, categoria, subcategoria) )`)
             .eq('id', payload.new.id)
             .single();
 
@@ -777,7 +812,7 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
       perfiles ( nombre ),
       pos_orden_items (
         id, cantidad, precio_unitario, notas,
-        menu_gastronomia (nombre, codigo_pos)
+        menu_gastronomia (nombre, codigo_pos, categoria, subcategoria)
       )
     `)
     .order('created_at', { ascending: false })
@@ -792,9 +827,41 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
   if (mostrarLoader) cargandoCaja.value = false
 }
 
+// === AQUÍ ESTÁ LA NUEVA LÓGICA DE AGRUPACIÓN PARA MÚLTIPLES ÓRDENES ===
 const ordenesPendientes = computed(() => {
-  return ordenesCaja.value.filter(orden => orden.estado === 'pendiente')
-})
+  // Ordenamos primero de la más vieja a la más nueva
+  const pendientes = [...ordenesCaja.value]
+    .filter(orden => orden.estado === 'pendiente')
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  const agrupadas = {};
+  
+  pendientes.forEach(orden => {
+    if (!agrupadas[orden.mesa]) {
+      // La primera vez que vemos esta mesa (el pedido inicial)
+      agrupadas[orden.mesa] = {
+        ...orden,
+        ids_asociados: [orden.id],
+        pos_orden_items_originales: [...(orden.pos_orden_items || [])],
+        pos_orden_items_anadidos: [],
+        total_combinado: orden.total
+      };
+    } else {
+      // Órdenes subsecuentes enviadas desde la tablet (agregados nuevos)
+      agrupadas[orden.mesa].ids_asociados.push(orden.id);
+      agrupadas[orden.mesa].pos_orden_items_anadidos.push(...(orden.pos_orden_items || []));
+      agrupadas[orden.mesa].total_combinado += orden.total;
+    }
+  });
+
+  // Convertimos de vuelta a arreglo, consolidamos items y total, y ordenamos para mostrar las tablas activadas más recientes arriba
+  return Object.values(agrupadas).map(grupo => ({
+    ...grupo,
+    total: grupo.total_combinado,
+    // Se juntan todos los items en uno solo por si le das a Imprimir Factura, que salgan todos sin errores
+    pos_orden_items: [...grupo.pos_orden_items_originales, ...grupo.pos_orden_items_anadidos]
+  })).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+});
 
 const ordenesFacturadas = computed(() => {
   return ordenesCaja.value.filter(orden => orden.estado === 'pagado')
@@ -827,16 +894,25 @@ const vistasCaja = computed(() => {
   }
 })
 
-const actualizarEstadoOrden = async (id, nuevoEstado) => {
+// === MODIFICADOS PARA SOPORTAR ACTUALIZACIÓN DE MÚLTIPLES IDS ===
+const actualizarEstadoOrden = async (idOrArray, nuevoEstado) => {
   if (confirm(`¿Confirmas pasar esta orden a estado: ${nuevoEstado.toUpperCase()}?`)) {
-    await supabase.from('pos_ordenes').update({ estado: nuevoEstado }).eq('id', id)
+    if (Array.isArray(idOrArray)) {
+      await supabase.from('pos_ordenes').update({ estado: nuevoEstado }).in('id', idOrArray)
+    } else {
+      await supabase.from('pos_ordenes').update({ estado: nuevoEstado }).eq('id', idOrArray)
+    }
     fetchOrdenesCaja()
   }
 }
 
-const eliminarOrdenFisica = async (id) => {
+const eliminarOrdenFisica = async (idOrArray) => {
   if (confirm(`¿Peligro: Eliminar definitivamente esta orden de la base de datos? Esto no se puede deshacer.`)) {
-    await supabase.from('pos_ordenes').delete().eq('id', id)
+    if (Array.isArray(idOrArray)) {
+      await supabase.from('pos_ordenes').delete().in('id', idOrArray)
+    } else {
+      await supabase.from('pos_ordenes').delete().eq('id', idOrArray)
+    }
     fetchOrdenesCaja()
   }
 }
@@ -1279,7 +1355,7 @@ const guardarObra = async () => {
     let url3 = imgFiles[3] ? await uploadImageAndGetUrl(imgFiles[3]) : form.value.imagen_3
 
     const payload = { ...form.value, imagen_1: url1, imagen_2: url2, imagen_3: url3 }
-   
+    
     payload.titulo = formatoTitulo(payload.titulo)
     payload.autor = formatoTitulo(payload.autor)
     payload.tecnica = formatoTitulo(payload.tecnica)
@@ -1297,7 +1373,7 @@ const guardarObra = async () => {
       const { error } = await supabase.from('obras').insert([payload])
       if (error) throw error
     }
-   
+    
     alert("¡Obra procesada con éxito!")
     showForm.value = false
     fetchObras()
@@ -1347,7 +1423,7 @@ const subcategoriasGastroDisponiblesMenu = computed(() => {
   let sub = [...new Set(itemsDeCategoria.map(item => item.subcategoria).filter(Boolean))]
   
   const ordenEstricto = [
-    'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'adiciones',
+    'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'añadidos',
     'cocteles', 'cervezas', 'tragos', 'botellas',
     'refrescantes', 'calientes', 'jugos',
     'otros'
@@ -1406,7 +1482,7 @@ const obtenerNombreSubcategoria = (id) => {
     { id: 'entradas', nombre: 'ENTRADAS' }, { id: 'cremas', nombre: 'CREMAS' }, { id: 'ensaladas', nombre: 'ENSALADAS' },
     { id: 'ceviche', nombre: 'CEVICHE' }, { id: 'comida_rapida', nombre: 'COMIDA RÁPIDA' }, { id: 'carnes', nombre: 'CARNES' },
     { id: 'pollo', nombre: 'POLLO' }, { id: 'pescados', nombre: 'PESCADOS' }, { id: 'menu_ejecutivo', nombre: 'MENÚ EJECUTIVO' },
-    { id: 'adiciones', nombre: 'ADICIONES' },
+    { id: 'añadidos', nombre: 'AÑADIDOS' },
     { id: 'cocteles', nombre: 'CÓCTELES' }, { id: 'cervezas', nombre: 'CERVEZAS' },
     { id: 'tragos', nombre: 'TRAGOS' }, { id: 'botellas', nombre: 'BOTELLAS' },
     { id: 'refrescantes', nombre: 'REFRESCANTES' }, { id: 'calientes', nombre: 'CALIENTES' }, { id: 'jugos', nombre: 'JUGOS' }
@@ -1481,7 +1557,7 @@ const guardarGastro = async () => {
       const { error } = await supabase.from('menu_gastronomia').insert([payload])
       if (error) throw error
     }
-   
+    
     alert("¡Plato procesado con éxito!")
     showGastroForm.value = false
     fetchGastronomia()
