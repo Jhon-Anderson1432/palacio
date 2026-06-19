@@ -14,6 +14,9 @@ import Adminpanel02402110 from '../views/adminpanel02402110.vue'
 import LoginPos from '../views/gastronimia/LoginPos.vue'
 import TerminalPos from '../views/gastronimia/TerminalPos.vue'
 
+// Vistas Seguridad (Nuevas)
+import VigilanteScan from '../views/seguridad/VigilanteScan.vue'
+
 const routes = [
   {
     path: '/',
@@ -63,6 +66,14 @@ const routes = [
     component: TerminalPos,
     meta: { requiresAuth: true }
   },
+  // Módulo de Seguridad
+  // Módulo de Seguridad
+  {
+    path: '/vigilancia-scan',
+    name: 'VigilanteScan',
+    component: VigilanteScan
+    // <-- Se eliminó el meta requiresAuth para que sea de acceso libre
+  },
   // Gastronomía
   {
     path: '/homegastro',
@@ -87,7 +98,7 @@ router.beforeEach(async (to, from, next) => {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      // Si intenta entrar a admin, va a login-privado. Si intenta entrar a POS, va a login-pos.
+      // Si intenta entrar a admin o a vigilancia, va a login-privado. Si intenta entrar a POS, va a login-pos.
       if (to.path.includes('terminal')) {
         next('/login-pos')
       } else {

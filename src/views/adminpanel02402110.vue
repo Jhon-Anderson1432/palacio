@@ -41,6 +41,12 @@
              <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
           </button>
         </div>
+
+        <div v-if="rolUsuario === 'admin_seguridad' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
+          <button @click="pestañaActiva = 'seguridad'; fetchSeguridad(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'seguridad' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+             <span class="font-medium text-sm uppercase tracking-widest">Monitoreo Seguridad</span>
+          </button>
+        </div>
       </nav>
       
       <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all text-[10px] font-bold uppercase tracking-widest mt-4">
@@ -70,7 +76,7 @@
         </div>
         <div v-else class="flex-1">
           <h2 class="text-lg md:text-xl font-serif text-white truncate">
-            {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' : 'Estadísticas de la Galería') }}
+            {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' : (pestañaActiva === 'seguridad' ? 'Control de Vigilancia' : 'Estadísticas de la Galería')) }}
           </h2>
         </div>
         
@@ -82,7 +88,11 @@
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> PLATO
         </button>
 
-        <button v-if="pestañaActiva === 'caja'" @click="fetchOrdenesCaja()" class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all">
+        <button v-if="pestañaActiva === 'seguridad'" @click="abrirModalQR()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 transition-transform active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+          <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">NUEVO</span> PUNTO QR
+        </button>
+
+        <button v-if="pestañaActiva === 'caja' || pestañaActiva === 'seguridad'" @click="pestañaActiva === 'caja' ? fetchOrdenesCaja() : fetchSeguridad()" class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all">
           🔄
         </button>
       </nav>
@@ -276,6 +286,94 @@
               </div>
               <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
                 No hay ventas pagadas registradas en esta fecha.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="pestañaActiva === 'seguridad'">
+          <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-serif text-white">Vigilancia Diaria</h1>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Control de Recorridos y Puntos QR</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <input type="date" v-model="fechaFiltroSeguridad" @change="fetchSeguridad" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
+            </div>
+          </header>
+
+          <div v-if="cargandoSeguridad" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Cargando registros...</div>
+
+          <div v-else class="max-w-6xl mx-auto space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              <div class="bg-neutral-900 p-5 rounded-3xl border border-white/10 flex flex-col justify-between h-32">
+                <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Total Rondas Hoy</span>
+                <span class="text-4xl font-serif text-white">{{ statsSeguridad.totalRondas }}</span>
+              </div>
+              <div class="bg-neutral-900 p-5 rounded-3xl border border-green-500/20 flex flex-col justify-between h-32">
+                <span class="text-[10px] text-green-500 uppercase tracking-widest font-bold">Rondas Completadas</span>
+                <span class="text-4xl font-serif text-green-400">{{ statsSeguridad.completadas }}</span>
+              </div>
+              <div class="bg-neutral-900 p-5 rounded-3xl border border-orange-500/20 flex flex-col justify-between h-32 relative">
+                <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Observaciones Reportadas</span>
+                <span class="text-4xl font-serif text-orange-400">{{ statsSeguridad.observaciones }}</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8">
+              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Detalle de Recorridos</h3>
+              
+              <div v-if="rondasSeguridad.length > 0" class="space-y-6">
+                <div v-for="ronda in rondasSeguridad" :key="ronda.id" class="bg-black/50 border border-white/10 rounded-2xl p-5 md:p-6 transition-all hover:border-white/20">
+                  <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 border-b border-white/5 pb-4">
+                    <div>
+                      <h4 class="text-lg font-serif text-white flex items-center gap-2">
+                        {{ ronda.perfiles?.nombre || 'Vigilante' }}
+                      </h4>
+                      <p class="text-xs text-neutral-400 mt-1">Inicio: {{ new Date(ronda.inicio_ronda).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</p>
+                    </div>
+                    
+                    <div class="text-right flex flex-col items-end gap-2">
+                      <span :class="['px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border', ronda.estado === 'completada' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50 animate-pulse']">
+                        {{ ronda.estado.replace('_', ' ') }}
+                      </span>
+                      <p v-if="ronda.estado === 'completada'" class="text-xs font-bold mt-1">
+                        Duración: 
+                        <span :class="ronda.minutos > 40 ? 'text-red-500' : 'text-neutral-300'">
+                          {{ ronda.minutos }} min
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3 pl-2">
+                    <div v-if="!ronda.registros_punto_control || ronda.registros_punto_control.length === 0" class="text-xs text-neutral-500 italic">
+                      No hay escaneos registrados aún.
+                    </div>
+                    
+                    <div v-for="(registro, idx) in ronda.registros_punto_control" :key="registro.id" class="relative pl-6 pb-2 border-l border-white/10 last:border-0 last:pb-0">
+                      <div class="absolute w-3 h-3 bg-[#D4AF37] rounded-full left-[-6px] top-1 border-2 border-black"></div>
+                      
+                      <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                        <span class="text-xs font-bold text-[#D4AF37] w-16">
+                          {{ new Date(registro.hora_registro).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                        </span>
+                        <span class="text-sm text-white flex-1">
+                          {{ registro.puntos_control?.nombre }} (Piso {{ registro.puntos_control?.piso }})
+                        </span>
+                      </div>
+                      
+                      <div v-if="registro.observacion" class="mt-2 ml-0 md:ml-20 bg-orange-500/10 border border-orange-500/20 p-3 rounded-xl flex items-start gap-2">
+                        <span class="text-orange-500">⚠️</span>
+                        <p class="text-xs text-orange-200 italic leading-relaxed">{{ registro.observacion }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
+                No hay recorridos registrados en la fecha seleccionada.
               </div>
             </div>
           </div>
@@ -615,6 +713,61 @@
       </div>
     </div>
 
+    <div v-if="mostrandoModalQR" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg">
+      <div class="bg-neutral-900 border border-white/10 w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl relative">
+        <button @click="mostrandoModalQR = false" class="absolute top-4 right-4 text-neutral-500 hover:text-white text-xl">✕</button>
+
+        <h2 class="text-xl font-serif text-[#D4AF37] mb-6 uppercase tracking-widest text-center">
+          {{ nuevoQRGuardado ? 'QR Generado' : 'Crear Punto de Control' }}
+        </h2>
+
+        <form v-if="!nuevoQRGuardado" @submit.prevent="generarYGuardarQR" class="space-y-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Nombre del Punto (Ej: Puerta Principal, Pasillo 2)</label>
+            <input v-model="formQR.nombre" type="text" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] transition-colors uppercase text-sm">
+          </div>
+
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Piso / Nivel</label>
+            <input v-model="formQR.piso" type="number" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] transition-colors text-sm">
+          </div>
+
+          <div class="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 mt-2">
+            <input v-model="formQR.es_punto_final" type="checkbox" id="esFinal" class="w-4 h-4 accent-[#D4AF37]">
+            <label for="esFinal" class="text-xs text-white uppercase tracking-widest cursor-pointer leading-tight">
+              Marcar como Punto Final <br>
+              <span class="text-[9px] text-neutral-500">Al escanearlo, inicia la hora de descanso.</span>
+            </label>
+          </div>
+
+          <button type="submit" :disabled="generandoQR" class="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:opacity-50 text-xs uppercase tracking-widest transition-colors mt-6 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+            {{ generandoQR ? 'Creando...' : 'Generar Código QR' }}
+          </button>
+        </form>
+
+        <div v-else class="flex flex-col items-center">
+          <div class="bg-white p-4 rounded-xl mb-4 qr-container">
+            <qrcode-vue :value="nuevoQRGuardado.codigo_qr" :size="200" level="H" />
+          </div>
+          <p class="text-white text-sm font-bold uppercase tracking-widest text-center">{{ nuevoQRGuardado.nombre }}</p>
+          <p class="text-neutral-400 text-xs uppercase tracking-widest mt-1">Piso {{ nuevoQRGuardado.piso }}</p>
+          
+          <span v-if="nuevoQRGuardado.es_punto_final" class="mt-3 bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+            Punto de Descanso
+          </span>
+
+          <div class="flex gap-3 w-full mt-8">
+            <button @click="imprimirQRActual" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 rounded-xl hover:bg-yellow-600 text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+              <span class="text-base">🖨️</span> Imprimir
+            </button>
+            <button @click="abrirModalQR" class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 text-[10px] uppercase tracking-widest">
+              Crear Otro
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -622,15 +775,74 @@
 import { ref, onMounted, computed, reactive, watch, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase' 
 import { useRouter } from 'vue-router'
+import QrcodeVue from 'qrcode.vue' // <-- AGREGA ESTA LÍNEA
 
 const router = useRouter()
 const pestañaActiva = ref('inventario')
 const searchQuery = ref('')
 const menuAbierto = ref(false) 
 
-// ESTADOS DE SEGURIDAD
+// ESTADOS DE SEGURIDAD GENERALES
 const rolUsuario = ref('superadmin') 
 const localAsignado = ref(null)
+
+// ============================================
+// NUEVO: ESTADOS Y LÓGICA DE SEGURIDAD (VIGILANTES)
+// ============================================
+const rondasSeguridad = ref([])
+const cargandoSeguridad = ref(false)
+const statsSeguridad = reactive({ totalRondas: 0, completadas: 0, observaciones: 0 })
+
+const fetchSeguridad = async () => {
+  cargandoSeguridad.value = true
+  
+  if (!fechaFiltroSeguridad.value) fechaFiltroSeguridad.value = getHoyStr()
+  const [yyyy, mm, dd] = fechaFiltroSeguridad.value.split('-')
+  const inicioDia = new Date(yyyy, mm - 1, dd, 0, 0, 0, 0).toISOString()
+  const finDia = new Date(yyyy, mm - 1, dd, 23, 59, 59, 999).toISOString()
+
+  const { data, error } = await supabase
+    .from('rondas_vigilancia')
+    .select(`
+      *,
+      perfiles ( nombre ),
+      registros_punto_control (
+        id, hora_registro, observacion,
+        puntos_control ( piso, nombre )
+      )
+    `)
+    .gte('created_at', inicioDia)
+    .lte('created_at', finDia)
+    .order('created_at', { ascending: false })
+    
+  if (!error && data) {
+    let obsCount = 0;
+    
+    // Calcular duraciones y ordenar los registros internos por hora
+    const rondasFormateadas = data.map(ronda => {
+      let minutos = 0;
+      if (ronda.fin_ronda) {
+        const diff = new Date(ronda.fin_ronda) - new Date(ronda.inicio_ronda);
+        minutos = Math.floor(diff / 60000);
+      }
+
+      if (ronda.registros_punto_control) {
+        ronda.registros_punto_control.sort((a, b) => new Date(a.hora_registro) - new Date(b.hora_registro));
+        ronda.registros_punto_control.forEach(reg => {
+          if (reg.observacion) obsCount++;
+        });
+      }
+
+      return { ...ronda, minutos };
+    });
+
+    rondasSeguridad.value = rondasFormateadas;
+    statsSeguridad.totalRondas = rondasFormateadas.length;
+    statsSeguridad.completadas = rondasFormateadas.filter(r => r.estado === 'completada').length;
+    statsSeguridad.observaciones = obsCount;
+  }
+  cargandoSeguridad.value = false
+}
 
 // CAJA REGISTRADORA Y NUEVO FILTRO DE ESTADO
 const ordenesCaja = ref([])
@@ -661,12 +873,13 @@ const logsActividad = ref([])
 const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
 const cargandoStatsPos = ref(false)
 
-// ESTADO PARA EL FILTRO DE FECHA (Por defecto: Hoy)
+// ESTADO PARA EL FILTRO DE FECHA (Compartido por métricas POS y Seguridad)
 const getHoyStr = () => {
   const d = new Date()
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 }
 const fechaFiltroMetricas = ref(getHoyStr())
+const fechaFiltroSeguridad = ref(getHoyStr()) // Filtro específico para la pestaña de seguridad
 
 // GASTRONOMÍA 
 const todosLosPlatos = ref([])
@@ -740,11 +953,17 @@ const cargarPerfilYDatos = async () => {
     } else if (perfil.rol === 'admin_galeria') {
       pestañaActiva.value = 'inventario'
       fetchObras()
+    } else if (perfil.rol === 'admin_seguridad') {
+      // NUEVO: Manejo del inicio de sesión para el admin de seguridad
+      pestañaActiva.value = 'seguridad'
+      fetchSeguridad()
     } else {
+      // SUPERADMIN carga todo
       pestañaActiva.value = 'inventario'
       fetchObras()
       fetchGastronomia()
       fetchOrdenesCaja()
+      fetchSeguridad()
       inicializarRealtime() 
     }
   } else {
@@ -763,11 +982,9 @@ const inicializarRealtime = () => {
       if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
 
       if (payload.eventType === 'INSERT') {
-        // Bloqueo de seguridad: Evitar procesar el mismo evento dos veces
         if (ordenesImpresas.has(payload.new.id)) return;
         ordenesImpresas.add(payload.new.id);
 
-        // MEJORA 1: Bucle de reintentos por si el internet de la mesera es lento
         const intentarImprimir = async (intento = 1) => {
           const { data: ordenEspecifica } = await supabase
             .from('pos_ordenes')
@@ -775,19 +992,16 @@ const inicializarRealtime = () => {
             .eq('id', payload.new.id)
             .single();
 
-          // Solo imprime si ya detectó los platos asociados a la orden
           if (ordenEspecifica && ordenEspecifica.pos_orden_items && ordenEspecifica.pos_orden_items.length > 0) {
             imprimirTicket(ordenEspecifica, 'comanda');
             fetchOrdenesCaja(false); 
           } else if (intento <= 4) {
-            // Si los platos no han llegado a la base de datos, espera 1s y reintenta (hasta 4 veces)
             setTimeout(() => intentarImprimir(intento + 1), 1000);
           } else {
              fetchOrdenesCaja(false);
           }
         };
 
-        // Iniciar el primer intento después de 1 segundo
         setTimeout(() => intentarImprimir(1), 1000);
 
       } else {
@@ -795,7 +1009,6 @@ const inicializarRealtime = () => {
       }
     })
     .subscribe((status) => {
-      // MEJORA 2: Reconexión automática si el PC se suspende o se cae el internet
       if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
          subscripcionPos = null;
          setTimeout(() => inicializarRealtime(), 3000);
@@ -827,9 +1040,7 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
   if (mostrarLoader) cargandoCaja.value = false
 }
 
-// === AQUÍ ESTÁ LA NUEVA LÓGICA DE AGRUPACIÓN PARA MÚLTIPLES ÓRDENES ===
 const ordenesPendientes = computed(() => {
-  // Ordenamos primero de la más vieja a la más nueva
   const pendientes = [...ordenesCaja.value]
     .filter(orden => orden.estado === 'pendiente')
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -838,7 +1049,6 @@ const ordenesPendientes = computed(() => {
   
   pendientes.forEach(orden => {
     if (!agrupadas[orden.mesa]) {
-      // La primera vez que vemos esta mesa (el pedido inicial)
       agrupadas[orden.mesa] = {
         ...orden,
         ids_asociados: [orden.id],
@@ -847,18 +1057,15 @@ const ordenesPendientes = computed(() => {
         total_combinado: orden.total
       };
     } else {
-      // Órdenes subsecuentes enviadas desde la tablet (agregados nuevos)
       agrupadas[orden.mesa].ids_asociados.push(orden.id);
       agrupadas[orden.mesa].pos_orden_items_anadidos.push(...(orden.pos_orden_items || []));
       agrupadas[orden.mesa].total_combinado += orden.total;
     }
   });
 
-  // Convertimos de vuelta a arreglo, consolidamos items y total, y ordenamos para mostrar las tablas activadas más recientes arriba
   return Object.values(agrupadas).map(grupo => ({
     ...grupo,
     total: grupo.total_combinado,
-    // Se juntan todos los items en uno solo por si le das a Imprimir Factura, que salgan todos sin errores
     pos_orden_items: [...grupo.pos_orden_items_originales, ...grupo.pos_orden_items_anadidos]
   })).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
@@ -894,7 +1101,6 @@ const vistasCaja = computed(() => {
   }
 })
 
-// === MODIFICADOS PARA SOPORTAR ACTUALIZACIÓN DE MÚLTIPLES IDS ===
 const actualizarEstadoOrden = async (idOrArray, nuevoEstado) => {
   if (confirm(`¿Confirmas pasar esta orden a estado: ${nuevoEstado.toUpperCase()}?`)) {
     if (Array.isArray(idOrArray)) {
@@ -917,7 +1123,6 @@ const eliminarOrdenFisica = async (idOrArray) => {
   }
 }
 
-// MODIFICADO: Cálculo extendido desglosando ventas individuales por mesa
 const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = true
   
@@ -1005,7 +1210,6 @@ const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = false
 }
 
-// MODIFICADO: Impresión física de Cierre de Caja desglosado por mesa individual
 const imprimirCierreCaja = () => {
   const [y, m, d] = fechaFiltroMetricas.value.split('-');
   const fechaImpresion = new Date(y, m - 1, d).toLocaleDateString();
@@ -1098,22 +1302,10 @@ const imprimirCierreCaja = () => {
   iframe.contentDocument.write(`
     <html>
       <head><title>Impresión Cierre</title></head>
-      <body>${contenido}</body>
+      <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
     </html>
   `);
   iframe.contentDocument.close();
-
-  setTimeout(() => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    
-    setTimeout(() => {
-      const frameToRemove = document.getElementById('impresora-oculta');
-      if (frameToRemove) {
-        document.body.removeChild(frameToRemove);
-      }
-    }, 5000);
-  }, 800);
 }
 
 const imprimirTicket = (orden, tipo = 'comanda') => {
@@ -1261,22 +1453,10 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   iframe.contentDocument.write(`
     <html>
       <head><title>Impresión</title></head>
-      <body>${contenido}</body>
+      <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
     </html>
   `);
   iframe.contentDocument.close();
-
-  setTimeout(() => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    
-    setTimeout(() => {
-      const frameToRemove = document.getElementById('impresora-oculta');
-      if (frameToRemove) {
-        document.body.removeChild(frameToRemove);
-      }
-    }, 5000);
-  }, 800);
 }
 
 const fetchObras = async () => {
@@ -1574,6 +1754,96 @@ const deleteProductoGastro = async (item) => {
 const handleLogout = async () => {
   await supabase.auth.signOut()
   router.push('/login-privado')
+}
+
+// ============================================
+// LÓGICA DEL GENERADOR DE CÓDIGOS QR
+// ============================================
+const mostrandoModalQR = ref(false)
+const nuevoQRGuardado = ref(null)
+const generandoQR = ref(false)
+const formQR = ref({ piso: '', nombre: '', es_punto_final: false })
+
+const abrirModalQR = () => {
+  formQR.value = { piso: '', nombre: '', es_punto_final: false }
+  nuevoQRGuardado.value = null
+  mostrandoModalQR.value = true
+}
+
+const generarYGuardarQR = async () => {
+  if (formQR.value.piso === '' || !formQR.value.nombre) return alert('Llena todos los campos')
+  generandoQR.value = true
+
+  try {
+    const codigoAleatorio = 'PALACIO-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+
+    // Creamos el objeto limpio basándonos exactamente en tu tabla 'puntos_control'
+    const payload = {
+      piso: formQR.value.piso.toString(),
+      nombre: formQR.value.nombre,
+      codigo_qr: codigoAleatorio,
+      es_punto_final: formQR.value.es_punto_final
+      // created_at no es necesario incluirlo si la tabla tiene DEFAULT now()
+    }
+
+    const { data, error } = await supabase
+      .from('puntos_control')
+      .insert([payload])
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error detallado de Supabase:", error)
+      throw error
+    }
+
+    nuevoQRGuardado.value = data
+  } catch (error) {
+    console.error(error)
+    alert('Error al crear el punto de control: ' + error.message)
+  } finally {
+    generandoQR.value = false
+  }
+}
+
+const imprimirQRActual = () => {
+  const canvas = document.querySelector('.qr-container canvas')
+  if (!canvas) return
+  const imgData = canvas.toDataURL("image/png")
+
+  let contenido = `
+    <div style="text-align: center; font-family: Arial, sans-serif; padding: 20px;">
+      <h2 style="margin: 0; font-size: 24px; font-weight: 900;">PALACIO NACIONAL</h2>
+      <h3 style="margin: 5px 0 15px 0; font-size: 18px;">Punto: ${nuevoQRGuardado.value.nombre} (Piso ${nuevoQRGuardado.value.piso})</h3>
+      <img src="${imgData}" style="width: 200px; height: 200px;" />
+      <p style="margin-top: 15px; font-weight: bold; font-size: 14px;">
+        ${nuevoQRGuardado.value.es_punto_final ? '🔴 PUNTO FINAL DE RONDA' : '🟢 PUNTO DE CONTROL'}
+      </p>
+      <p style="font-size: 10px; color: #666; margin-top: 5px;">CÓDIGO SISTEMA: ${nuevoQRGuardado.value.codigo_qr}</p>
+    </div>
+  `
+
+  let iframe = document.getElementById('impresora-oculta');
+  if (iframe) document.body.removeChild(iframe);
+
+  iframe = document.createElement('iframe');
+  iframe.id = 'impresora-oculta';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(`
+    <html>
+      <head><title>Imprimir QR</title></head>
+      <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
+    </html>
+  `);
+  iframe.contentDocument.close();
 }
 
 onMounted(() => { cargarPerfilYDatos() })
