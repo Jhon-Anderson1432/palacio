@@ -377,6 +377,34 @@
               </div>
             </div>
           </div>
+          
+          <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8 mt-10">
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+              <h3 class="text-base md:text-lg font-serif text-white">Puntos QR Activos</h3>
+              <button @click="fetchPuntosControl" class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold hover:text-white">Actualizar Lista</button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-for="punto in puntosDeControl" :key="punto.id" class="bg-black/50 border border-white/10 p-4 rounded-xl flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-sm font-bold text-white flex items-center gap-2">
+                      {{ punto.nombre }}
+                      <span v-if="punto.es_punto_final" class="w-2 h-2 rounded-full bg-red-500" title="Punto Final"></span>
+                    </p>
+                    <p class="text-[10px] text-neutral-400 uppercase tracking-widest">Piso {{ punto.piso }}</p>
+                  </div>
+                  <div class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-[#D4AF37] transition-all" @click="mostrarQRGrande(punto)" title="Ver QR en grande">
+                    <qrcode-vue :value="punto.codigo_qr" :size="48" level="L" />
+                  </div>
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-white/5 mt-auto">
+                  <button @click="abrirModalQR(punto)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">Editar</button>
+                  <button @click="deletePuntoControl(punto)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-if="pestañaActiva === 'inventario'">
@@ -515,7 +543,6 @@
               </div>
             </div>
           </div>
-
         </div>
 
         <div v-if="pestañaActiva === 'estadisticas'">
@@ -644,13 +671,13 @@
             <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
             <div class="flex flex-wrap gap-3">
               <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-3 h-3"> CHAO CAFE
+              <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-3 h-3"> CHAO CAFE
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-3 h-3"> CHAO PESCAO
+              <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-3 h-3"> CHAO PESCAO
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm text-white uppercase">
-                <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
+              <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-3 h-3"> SKY BAR
               </label>
             </div>
           </div>
@@ -718,7 +745,7 @@
         <button @click="mostrandoModalQR = false" class="absolute top-4 right-4 text-neutral-500 hover:text-white text-xl">✕</button>
 
         <h2 class="text-xl font-serif text-[#D4AF37] mb-6 uppercase tracking-widest text-center">
-          {{ nuevoQRGuardado ? 'QR Generado' : 'Crear Punto de Control' }}
+          {{ nuevoQRGuardado ? 'QR Generado' : (qrEditandoId ? 'Editar Punto de Control' : 'Crear Punto de Control') }}
         </h2>
 
         <form v-if="!nuevoQRGuardado" @submit.prevent="generarYGuardarQR" class="space-y-4">
@@ -741,7 +768,7 @@
           </div>
 
           <button type="submit" :disabled="generandoQR" class="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:opacity-50 text-xs uppercase tracking-widest transition-colors mt-6 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-            {{ generandoQR ? 'Creando...' : 'Generar Código QR' }}
+            {{ generandoQR ? 'Procesando...' : (qrEditandoId ? 'Actualizar Punto' : 'Generar Código QR') }}
           </button>
         </form>
 
@@ -760,7 +787,7 @@
             <button @click="imprimirQRActual" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 rounded-xl hover:bg-yellow-600 text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
               <span class="text-base">🖨️</span> Imprimir
             </button>
-            <button @click="abrirModalQR" class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 text-[10px] uppercase tracking-widest">
+            <button @click="abrirModalQR()" class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 text-[10px] uppercase tracking-widest">
               Crear Otro
             </button>
           </div>
@@ -775,7 +802,7 @@
 import { ref, onMounted, computed, reactive, watch, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase' 
 import { useRouter } from 'vue-router'
-import QrcodeVue from 'qrcode.vue' // <-- AGREGA ESTA LÍNEA
+import QrcodeVue from 'qrcode.vue'
 
 const router = useRouter()
 const pestañaActiva = ref('inventario')
@@ -792,6 +819,12 @@ const localAsignado = ref(null)
 const rondasSeguridad = ref([])
 const cargandoSeguridad = ref(false)
 const statsSeguridad = reactive({ totalRondas: 0, completadas: 0, observaciones: 0 })
+const puntosDeControl = ref([])
+
+const fetchPuntosControl = async () => {
+  const { data, error } = await supabase.from('puntos_control').select('*').order('created_at', { ascending: false })
+  if (!error) puntosDeControl.value = data || []
+}
 
 const fetchSeguridad = async () => {
   cargandoSeguridad.value = true
@@ -818,7 +851,6 @@ const fetchSeguridad = async () => {
   if (!error && data) {
     let obsCount = 0;
     
-    // Calcular duraciones y ordenar los registros internos por hora
     const rondasFormateadas = data.map(ronda => {
       let minutos = 0;
       if (ronda.fin_ronda) {
@@ -847,9 +879,9 @@ const fetchSeguridad = async () => {
 // CAJA REGISTRADORA Y NUEVO FILTRO DE ESTADO
 const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
-const estadoCaja = ref('pendiente') // 'pendiente' o 'pagado'
+const estadoCaja = ref('pendiente') 
 let subscripcionPos = null 
-const ordenesImpresas = new Set() // Evitar impresiones dobles
+const ordenesImpresas = new Set() 
 
 // GALERÍA DE ARTE 
 const todasLasObras = ref([])
@@ -873,13 +905,13 @@ const logsActividad = ref([])
 const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
 const cargandoStatsPos = ref(false)
 
-// ESTADO PARA EL FILTRO DE FECHA (Compartido por métricas POS y Seguridad)
+// ESTADO PARA EL FILTRO DE FECHA
 const getHoyStr = () => {
   const d = new Date()
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 }
 const fechaFiltroMetricas = ref(getHoyStr())
-const fechaFiltroSeguridad = ref(getHoyStr()) // Filtro específico para la pestaña de seguridad
+const fechaFiltroSeguridad = ref(getHoyStr()) 
 
 // GASTRONOMÍA 
 const todosLosPlatos = ref([])
@@ -954,7 +986,6 @@ const cargarPerfilYDatos = async () => {
       pestañaActiva.value = 'inventario'
       fetchObras()
     } else if (perfil.rol === 'admin_seguridad') {
-      // NUEVO: Manejo del inicio de sesión para el admin de seguridad
       pestañaActiva.value = 'seguridad'
       fetchSeguridad()
     } else {
@@ -972,7 +1003,6 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
-// LÓGICA DE TIEMPO REAL MEJORADA Y A PRUEBA DE FALLOS
 const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
@@ -1398,7 +1428,7 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
           <td colspan="${esFactura ? '3' : '2'}" style="font-size: 14px; padding-left: 15px; font-style: italic; border-left: 2px solid #000; margin-bottom: 5px; display: block;">
             -> NOTA: ${item.notas.toUpperCase()}
           </td>
-        </tr>
+          </tr>
       `;
     }
   });
@@ -1762,11 +1792,28 @@ const handleLogout = async () => {
 const mostrandoModalQR = ref(false)
 const nuevoQRGuardado = ref(null)
 const generandoQR = ref(false)
+const qrEditandoId = ref(null)
 const formQR = ref({ piso: '', nombre: '', es_punto_final: false })
 
-const abrirModalQR = () => {
-  formQR.value = { piso: '', nombre: '', es_punto_final: false }
+const abrirModalQR = (punto = null) => {
+  if (punto && punto.id) {
+    qrEditandoId.value = punto.id
+    formQR.value = { 
+      piso: punto.piso, 
+      nombre: punto.nombre, 
+      es_punto_final: punto.es_punto_final 
+    }
+  } else {
+    qrEditandoId.value = null
+    formQR.value = { piso: '', nombre: '', es_punto_final: false }
+  }
   nuevoQRGuardado.value = null
+  mostrandoModalQR.value = true
+}
+
+const mostrarQRGrande = (punto) => {
+  qrEditandoId.value = punto.id
+  nuevoQRGuardado.value = punto
   mostrandoModalQR.value = true
 }
 
@@ -1775,34 +1822,58 @@ const generarYGuardarQR = async () => {
   generandoQR.value = true
 
   try {
-    const codigoAleatorio = 'PALACIO-' + Math.random().toString(36).substring(2, 10).toUpperCase()
-
-    // Creamos el objeto limpio basándonos exactamente en tu tabla 'puntos_control'
     const payload = {
       piso: formQR.value.piso.toString(),
       nombre: formQR.value.nombre,
-      codigo_qr: codigoAleatorio,
       es_punto_final: formQR.value.es_punto_final
-      // created_at no es necesario incluirlo si la tabla tiene DEFAULT now()
     }
 
-    const { data, error } = await supabase
-      .from('puntos_control')
-      .insert([payload])
-      .select()
-      .single()
+    let data;
 
-    if (error) {
-      console.error("Error detallado de Supabase:", error)
-      throw error
+    if (qrEditandoId.value) {
+      const { data: res, error } = await supabase
+        .from('puntos_control')
+        .update(payload)
+        .eq('id', qrEditandoId.value)
+        .select()
+        .single()
+
+      if (error) throw error
+      data = res
+    } else {
+      const codigoAleatorio = 'PALACIO-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+      payload.codigo_qr = codigoAleatorio
+
+      const { data: res, error } = await supabase
+        .from('puntos_control')
+        .insert([payload])
+        .select()
+        .single()
+
+      if (error) throw error
+      data = res
     }
 
     nuevoQRGuardado.value = data
+    fetchPuntosControl() // <-- LA LISTA SE ACTUALIZA AQUÍ
   } catch (error) {
     console.error(error)
-    alert('Error al crear el punto de control: ' + error.message)
+    alert('Error al procesar el punto de control: ' + error.message)
   } finally {
     generandoQR.value = false
+  }
+}
+
+const deletePuntoControl = async (punto) => {
+  if (confirm(`¿Peligro: Eliminar definitivamente el punto de control "${punto.nombre}"? Esto podría afectar métricas pasadas si hay registros asociados.`)) {
+    try {
+      const { error } = await supabase.from('puntos_control').delete().eq('id', punto.id)
+      if (error) throw error
+      fetchPuntosControl()
+    } catch (error) {
+      console.error(error)
+      alert('Error al eliminar: ' + error.message)
+    }
   }
 }
 
@@ -1846,9 +1917,11 @@ const imprimirQRActual = () => {
   iframe.contentDocument.close();
 }
 
-onMounted(() => { cargarPerfilYDatos() })
+onMounted(() => { 
+  cargarPerfilYDatos()
+  fetchPuntosControl() // <-- Y AQUÍ CARGA LOS QR AL INICIAR
+})
 
-// Limpieza de conexión de tiempo real
 onUnmounted(() => {
   if (subscripcionPos) {
     supabase.removeChannel(subscripcionPos)

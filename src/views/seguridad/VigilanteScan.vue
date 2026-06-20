@@ -95,10 +95,23 @@ const observacion = ref('')
 // Bloqueo temporal para no leer el mismo QR 20 veces por segundo
 const procesandoQR = ref(false)
 
-// 1. INICIALIZAR SESIÓN (SIN LOGIN)
+// 1. INICIALIZAR SESIÓN (CON LOGIN REAL SUPABASE Y RUTAS)
 const inicializar = async () => {
-  nombreVigilante.value = "Vigilante de Prueba"
-  vigilanteId.value = "00000000-0000-0000-0000-000000000000" // ID de prueba genérico
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error || !user) { 
+    router.push('/login-privado') 
+    return 
+  }
+
+  const { data: perfil } = await supabase
+    .from('perfiles')
+    .select('nombre')
+    .eq('id', user.id)
+    .single()
+  
+  nombreVigilante.value = perfil?.nombre || "Vigilante"
+  vigilanteId.value = user.id 
 
   await verificarEstado()
 }
@@ -232,9 +245,10 @@ const pintarMarcoQR = (detectedCodes, ctx) => {
   }
 }
 
-// Función para salir (como no hay login, redirige al inicio público)
-const cerrarSesion = () => {
-  router.push('/')
+// Función para cerrar sesión real con Supabase
+const cerrarSesion = async () => {
+  await supabase.auth.signOut()
+  router.push('/login-privado')
 }
 
 onMounted(() => {
