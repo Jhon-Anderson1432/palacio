@@ -51,10 +51,12 @@ const handleLogin = async () => {
     return
   }
 
-  // 5. Filtro de Meseras (Las enviamos al otro sistema)
+  // 5. Filtro de Roles (Aquí agregamos al admin_seguridad)
   if (perfil.rol === 'mesera' || perfil.rol === 'mesera_temporal') {
     errorMensaje.value = "Acceso denegado. Utiliza el Portal POS para meseras."
     await supabase.auth.signOut() 
+  } else if (perfil.rol === 'admin_seguridad') {
+    router.push('/panel-seguridad')
   } else {
     // Es Superadmin o Admin -> Entra a la interfaz unificada sin problemas
     router.push('/adminpanel02402110')

@@ -5,7 +5,7 @@
       <div>
         <h1 class="text-[#D4AF37] font-serif text-xl uppercase tracking-widest">Control de Seguridad</h1>
         <p class="text-xs text-neutral-400 mt-1 uppercase tracking-wider">
-          Modo: Vigilante Activo
+          Escáner Directo
         </p>
       </div>
       <button @click="cerrarSesion" class="text-red-500 text-xs font-bold uppercase tracking-widest hover:text-red-400 p-2">
@@ -15,17 +15,7 @@
 
     <div class="flex-1 relative bg-black overflow-hidden flex flex-col items-center justify-center">
       
-      <div v-if="enDescanso" class="text-center p-8 z-20">
-        <div class="text-6xl mb-4">☕</div>
-        <h2 class="text-2xl font-serif text-[#D4AF37] mb-2 uppercase">En Horario de Descanso</h2>
-        <p class="text-gray-400 text-sm">Tu próxima ronda comienza después de:</p>
-        <p class="text-3xl font-bold text-white mt-4">{{ horaFinDescanso }}</p>
-        <button @click="verificarEstado" class="mt-8 border border-white/20 px-6 py-2 rounded-full text-xs uppercase tracking-widest hover:bg-white/10">
-          Actualizar Estado
-        </button>
-      </div>
-
-      <div v-else class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.1)]">
+      <div class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.1)]">
         
         <div v-if="cargandoCamara" class="absolute inset-0 flex items-center justify-center bg-black z-10">
           <span class="text-[#D4AF37] text-sm uppercase tracking-widest animate-pulse">Activando cámara...</span>
@@ -50,19 +40,29 @@
     </div>
 
     <div v-if="mostrandoModalObservacion" class="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col p-6 items-center justify-center">
-      <h3 class="text-xl font-serif text-[#D4AF37] mb-2">QR Registrado Exitosamente</h3>
+      <h3 class="text-xl font-serif text-[#D4AF37] mb-2">QR Registrado</h3>
       <p class="text-sm text-gray-300 mb-6">Punto: <span class="font-bold text-white">{{ puntoActual?.nombre }}</span></p>
       
       <div class="w-full max-w-md">
+        
+        <label class="text-xs text-neutral-400 uppercase tracking-widest mb-2 block">Nombre del Vigilante (Requerido)</label>
+        <input 
+          v-model="nombreVigilante" 
+          type="text"
+          placeholder="Ej: Juan Pérez"
+          class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-[#D4AF37]/50 mb-4"
+        />
+
         <label class="text-xs text-neutral-400 uppercase tracking-widest mb-2 block">Añadir observación (Opcional)</label>
         <textarea 
           v-model="observacion" 
-          rows="4" 
+          rows="3" 
+          placeholder="Ej: Todo normal..."
           class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-[#D4AF37]/50"
         ></textarea>
         
         <button @click="guardarRegistro" class="w-full bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-sm py-4 rounded-xl mt-6 hover:bg-yellow-500 transition-colors">
-          Guardar y Continuar
+          Guardar Registro
         </button>
       </div>
     </div>
@@ -71,111 +71,77 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-// --- CONFIGURACIÓN: PEGA TU UID AQUÍ ---
-const ADMIN_UID = 'ec7fabd4-668b-4b5d-b66d-8a9b5333f9ac' 
-// --------------------------------------
-
 const cargandoCamara = ref(true)
-const enDescanso = ref(false)
-const horaFinDescanso = ref('')
-const rondaActiva = ref(null)
+const procesandoQR = ref(false)
+
 const mostrandoModalObservacion = ref(false)
 const puntoActual = ref(null)
 const observacion = ref('')
-const procesandoQR = ref(false)
-
-const inicializar = async () => {
-  await verificarEstado()
-}
-
-const verificarEstado = async () => {
-  const { data: ultimaRonda } = await supabase
-    .from('rondas_vigilancia')
-    .select('*')
-    .eq('vigilante_id', ADMIN_UID)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (ultimaRonda) {
-    if (ultimaRonda.estado === 'en_curso') {
-      rondaActiva.value = ultimaRonda
-    } else if (ultimaRonda.estado === 'completada' && ultimaRonda.descanso_hasta) {
-      const finDescanso = new Date(ultimaRonda.descanso_hasta)
-      if (new Date() < finDescanso) {
-        enDescanso.value = true
-        horaFinDescanso.value = finDescanso.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-      }
-    }
-  }
-}
+const nombreVigilante = ref('') // Nuevo estado para guardar el nombre del vigilante
 
 const onDetect = async (detectedCodes) => {
-  if (procesandoQR.value || enDescanso.value) return
+  if (procesandoQR.value) return
+  
   const rawCode = (detectedCodes[0].rawValue || detectedCodes[0].value || '').trim()
   if (!rawCode) return
 
   procesandoQR.value = true
 
   try {
-    const { data: puntoData } = await supabase
+    const { data: puntoData, error } = await supabase
       .from('puntos_control')
       .select('*')
       .eq('codigo_qr', rawCode)
       .maybeSingle()
 
+    if (error) throw error
+
     if (!puntoData) {
-      alert("Código QR no encontrado.")
-      procesandoQR.value = false
+      alert("❌ Código QR no encontrado en la base de datos.")
+      setTimeout(() => { procesandoQR.value = false }, 2000)
       return
     }
 
     puntoActual.value = puntoData
-    
-    if (!rondaActiva.value) {
-      const { data: nuevaRonda } = await supabase
-        .from('rondas_vigilancia')
-        .insert([{ vigilante_id: ADMIN_UID, estado: 'en_curso' }])
-        .select()
-        .single()
-      rondaActiva.value = nuevaRonda
-    }
+    observacion.value = ''
     mostrandoModalObservacion.value = true
+
   } catch (error) {
-    alert("Error: " + error.message)
+    alert("Error de lectura: " + error.message)
     procesandoQR.value = false
   }
 }
 
 const guardarRegistro = async () => {
+  if (!nombreVigilante.value.trim()) {
+    alert("⚠️ Por favor, ingresa tu nombre de vigilante antes de continuar.")
+    return
+  }
+
   try {
-    await supabase.from('registros_punto_control').insert([{
-      ronda_id: rondaActiva.value.id,
+    // Insertamos solo el punto, el nombre y la observación. 
+    // Supabase registrará la hora exacta automáticamente de forma nativa.
+    const { error } = await supabase.from('registros_punto_control').insert([{
       punto_control_id: puntoActual.value.id,
-      observacion: observacion.value.trim()
+      nombre_vigilante: nombreVigilante.value.trim(),
+      observacion: observacion.value.trim() || 'Sin novedad'
     }])
 
-    if (puntoActual.value.es_punto_final) {
-      const finDescanso = new Date(new Date().getTime() + 60 * 60 * 1000)
-      await supabase.from('rondas_vigilancia')
-        .update({ estado: 'completada', descanso_hasta: finDescanso.toISOString() })
-        .eq('id', rondaActiva.value.id)
-      alert("Ronda finalizada.")
-    } else {
-      alert("Punto registrado.")
-    }
-    mostrandoModalObservacion.value = false
-    await verificarEstado()
+    if (error) throw error
+
+    alert("✅ Punto registrado exitosamente.")
+    
   } catch (error) {
     alert("Error al guardar: " + error.message)
   } finally {
+    mostrandoModalObservacion.value = false
+    puntoActual.value = null
     setTimeout(() => { procesandoQR.value = false }, 2000)
   }
 }
@@ -188,6 +154,4 @@ const pintarMarcoQR = (detectedCodes, ctx) => {
 }
 
 const cerrarSesion = () => router.push('/')
-
-onMounted(inicializar)
 </script>

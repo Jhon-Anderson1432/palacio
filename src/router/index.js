@@ -16,6 +16,7 @@ import TerminalPos from '../views/gastronimia/TerminalPos.vue'
 
 // Vistas Seguridad (Nuevas)
 import VigilanteScan from '../views/seguridad/VigilanteScan.vue'
+import PanelSeguridad from '../views/PanelSeguridad.vue' // <-- Añadido
 
 const routes = [
   {
@@ -45,6 +46,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/panel-seguridad', // <-- Nueva ruta protegida
+    name: 'PanelSeguridad',
+    component: PanelSeguridad,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/contactos',
     name: 'Contactos',
     component: Contactos
@@ -67,12 +74,10 @@ const routes = [
     meta: { requiresAuth: true }
   },
   // Módulo de Seguridad
-  // Módulo de Seguridad
   {
     path: '/vigilancia-scan',
     name: 'VigilanteScan',
     component: VigilanteScan
-    // <-- Se eliminó el meta requiresAuth para que sea de acceso libre
   },
   // Gastronomía
   {
