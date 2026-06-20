@@ -25,7 +25,7 @@
         </button>
       </div>
 
-      <div v-else class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.1)]">
+      <div v-else class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.15)]">
         
         <div v-if="cargandoCamara" class="absolute inset-0 flex items-center justify-center bg-black z-10">
           <span class="text-[#D4AF37] text-sm uppercase tracking-widest animate-pulse">Activando cámara...</span>
@@ -58,7 +58,7 @@
         <textarea 
           v-model="observacion" 
           rows="4" 
-          placeholder="Ej: Luz fundida, puerta abierta, todo normal..."
+          placeholder="Ej: Todo normal..."
           class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-[#D4AF37]/50"
         ></textarea>
         
@@ -79,67 +79,65 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const cargandoCamara = ref(true)
-const nombreVigilante = ref('')
-const vigilanteId = ref(null)
+const nombreVigilante = ref('Vigilante Activo')
+// IMPORTANTE: Pon un ID de la tabla 'perfiles' que exista en tu base de datos
+const vigilanteId = ref('PEGAR_AQUI_UN_ID_DE_TU_TABLA_PERFILES') 
 
-// Estados de la lógica
 const enDescanso = ref(false)
 const horaFinDescanso = ref('')
 const rondaActiva = ref(null)
-
-// Estados del Modal
 const mostrandoModalObservacion = ref(false)
 const puntoActual = ref(null)
 const observacion = ref('')
-
-// Bloqueo temporal para no leer el mismo QR 20 veces por segundo
 const procesandoQR = ref(false)
 
-// 1. INICIALIZAR SESIÓN (CON LOGIN REAL SUPABASE Y RUTAS)
- 
-// 2. VERIFICAR SI ESTÁ EN RONDA O EN DESCANSO
+// 1. INICIALIZAR (SIN LOGIN)
+const inicializar = async () => {
+  // Aquí ya no pedimos sesión, usamos el ID que pusiste arriba.
+  await verificarEstado()
+}
+
+// 2. VERIFICAR ESTADO
 const verificarEstado = async () => {
-  // Buscar la ronda más reciente de este vigilante
+  if (!vigilanteId.value) return
+
   const { data: ultimaRonda } = await supabase
     .from('rondas_vigilancia')
     .select('*')
     .eq('vigilante_id', vigilanteId.value)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (ultimaRonda) {
     if (ultimaRonda.estado === 'en_curso') {
       rondaActiva.value = ultimaRonda
       enDescanso.value = false
     } else if (ultimaRonda.estado === 'completada' && ultimaRonda.descanso_hasta) {
-      // Verificar si ya pasó la hora de descanso
       const ahora = new Date()
       const finDescanso = new Date(ultimaRonda.descanso_hasta)
-      
       if (ahora < finDescanso) {
         enDescanso.value = true
         horaFinDescanso.value = finDescanso.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         rondaActiva.value = null
       } else {
         enDescanso.value = false
-        rondaActiva.value = null
       }
     }
   }
 }
 
-// 3. EVENTO CUANDO LA CÁMARA DETECTA UN QR
+// 3. DETECTAR QR
 const onDetect = async (detectedCodes) => {
   if (procesandoQR.value || enDescanso.value) return
   
-  const codigoLeido = detectedCodes[0].rawValue
+  // Limpiamos el código por si la cámara lee espacios raros
+  const codigoLeido = detectedCodes[0].rawValue.trim()
   if (!codigoLeido) return
 
   procesandoQR.value = true
 
   try {
-    // A. Validar que el QR pertenece al sistema
     const { data: puntoData, error: errorPunto } = await supabase
       .from('puntos_control')
       .select('*')
@@ -147,18 +145,17 @@ const onDetect = async (detectedCodes) => {
       .single()
 
     if (errorPunto || !puntoData) {
-      alert("❌ Código QR no válido para el sistema del Palacio.")
-      setTimeout(() => { procesandoQR.value = false }, 2000) // Pausa de 2 seg antes de volver a leer
+      alert("❌ QR no reconocido en la base de datos.")
+      setTimeout(() => { procesandoQR.value = false }, 2000)
       return
     }
 
     puntoActual.value = puntoData
     
-    // B. Manejar la Ronda (Crear una si no existe)
     if (!rondaActiva.value) {
       const { data: nuevaRonda, error: errorRonda } = await supabase
         .from('rondas_vigilancia')
-        .insert([{ vigilante_id: vigilanteId.value }])
+        .insert([{ vigilante_id: vigilanteId.value, estado: 'en_curso' }])
         .select()
         .single()
       
@@ -166,30 +163,26 @@ const onDetect = async (detectedCodes) => {
       rondaActiva.value = nuevaRonda
     }
 
-    // C. Abrir el modal para que agregue observación y guarde
     observacion.value = ''
     mostrandoModalObservacion.value = true
 
   } catch (error) {
-    console.error(error)
-    alert("Ocurrió un error al procesar el código.")
+    console.error("Error al procesar:", error)
+    alert("Error de conexión o de datos.")
     procesandoQR.value = false
   }
 }
 
-// 4. GUARDAR EL REGISTRO FINAL EN LA BASE DE DATOS
+// 4. GUARDAR
 const guardarRegistro = async () => {
   try {
-    // 1. Insertar el escaneo
     await supabase.from('registros_punto_control').insert([{
       ronda_id: rondaActiva.value.id,
       punto_control_id: puntoActual.value.id,
       observacion: observacion.value.trim() || null
     }])
 
-    // 2. ¿Era el último QR de la ronda?
     if (puntoActual.value.es_punto_final) {
-      // Sumar 1 hora para el descanso
       const fechaFin = new Date()
       const fechaDescanso = new Date(fechaFin.getTime() + (60 * 60 * 1000)) 
 
@@ -199,24 +192,21 @@ const guardarRegistro = async () => {
         descanso_hasta: fechaDescanso.toISOString()
       }).eq('id', rondaActiva.value.id)
 
-      alert("✅ Ronda Finalizada con éxito. Inicia tu hora de descanso.")
-      await verificarEstado() // Esto actualizará la vista a modo "Descanso"
+      alert("✅ Ronda Finalizada. Hora de descanso iniciada.")
+      await verificarEstado()
     } else {
-      alert(`✅ Punto ${puntoActual.value.piso} registrado. Continúa la ronda.`)
+      alert(`✅ Punto ${puntoActual.value.nombre} registrado.`)
     }
 
   } catch (error) {
-    console.error(error)
-    alert("Error al guardar el registro.")
+    alert("Error al guardar en la base de datos.")
   } finally {
     mostrandoModalObservacion.value = false
     puntoActual.value = null
-    // Esperamos 2 segundos antes de reactivar la cámara para evitar dobles escaneos
     setTimeout(() => { procesandoQR.value = false }, 2000)
   }
 }
 
-// Dibujar un marco verde alrededor del QR cuando la cámara lo enfoca (Feedback visual)
 const pintarMarcoQR = (detectedCodes, ctx) => {
   for (const barcode of detectedCodes) {
     const { boundingBox: { x, y, width, height } } = barcode
@@ -226,10 +216,9 @@ const pintarMarcoQR = (detectedCodes, ctx) => {
   }
 }
 
-// Función para cerrar sesión real con Supabase
-const cerrarSesion = async () => {
-  await supabase.auth.signOut()
-  router.push('/login-privado')
+// Salir ahora solo te lleva al Home
+const cerrarSesion = () => {
+  router.push('/')
 }
 
 onMounted(() => {
