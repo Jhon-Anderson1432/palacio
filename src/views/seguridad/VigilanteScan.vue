@@ -25,7 +25,7 @@
         </button>
       </div>
 
-      <div v-else class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.15)]">
+      <div v-else class="w-full h-full max-w-md mx-auto relative shadow-[0_0_50px_rgba(212,175,55,0.1)]">
         
         <div v-if="cargandoCamara" class="absolute inset-0 flex items-center justify-center bg-black z-10">
           <span class="text-[#D4AF37] text-sm uppercase tracking-widest animate-pulse">Activando cámara...</span>
@@ -51,14 +51,14 @@
 
     <div v-if="mostrandoModalObservacion" class="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col p-6 items-center justify-center">
       <h3 class="text-xl font-serif text-[#D4AF37] mb-2">QR Registrado Exitosamente</h3>
-      <p class="text-sm text-gray-300 mb-6">Punto: <span class="font-bold text-white">{{ puntoActual.nombre }} ({{ puntoActual.piso }})</span></p>
+      <p class="text-sm text-gray-300 mb-6">Punto: <span class="font-bold text-white">{{ puntoActual?.nombre }} ({{ puntoActual?.piso }})</span></p>
       
       <div class="w-full max-w-md">
         <label class="text-xs text-neutral-400 uppercase tracking-widest mb-2 block">Añadir observación (Opcional)</label>
         <textarea 
           v-model="observacion" 
           rows="4" 
-          placeholder="Ej: Todo normal..."
+          placeholder="Ej: Luz fundida, puerta abierta, todo normal..."
           class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-[#D4AF37]/50"
         ></textarea>
         
@@ -79,27 +79,47 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const cargandoCamara = ref(true)
-const nombreVigilante = ref('Vigilante Activo')
-// IMPORTANTE: Pon un ID de la tabla 'perfiles' que exista en tu base de datos
-const vigilanteId = ref('PEGAR_AQUI_UN_ID_DE_TU_TABLA_PERFILES') 
+const nombreVigilante = ref('Conectando...')
+const vigilanteId = ref(null)
 
 const enDescanso = ref(false)
 const horaFinDescanso = ref('')
 const rondaActiva = ref(null)
+
 const mostrandoModalObservacion = ref(false)
 const puntoActual = ref(null)
 const observacion = ref('')
+
 const procesandoQR = ref(false)
 
-// 1. INICIALIZAR (SIN LOGIN)
+// 1. INICIALIZAR (SIN NINGÚN LOGIN - TOTALMENTE LIBRE)
 const inicializar = async () => {
-  // Aquí ya no pedimos sesión, usamos el ID que pusiste arriba.
+  try {
+    // Buscamos AUTOMÁTICAMENTE el primer usuario de tu tabla 'perfiles'
+    // Esto evita que Supabase dé error de "Foreign Key" al guardar la ronda.
+    const { data: perfiles, error } = await supabase
+      .from('perfiles')
+      .select('id, nombre')
+      .limit(1)
+
+    if (error) throw error
+
+    if (perfiles && perfiles.length > 0) {
+      vigilanteId.value = perfiles[0].id
+      nombreVigilante.value = perfiles[0].nombre
+    } else {
+      alert("⚠️ Cuidado: Tu tabla 'perfiles' está vacía. El registro podría fallar.")
+    }
+  } catch (err) {
+    console.error(err)
+  }
+
   await verificarEstado()
 }
 
-// 2. VERIFICAR ESTADO
+// 2. VERIFICAR SI ESTÁ EN RONDA O EN DESCANSO
 const verificarEstado = async () => {
-  if (!vigilanteId.value) return
+  if (!vigilanteId.value) return;
 
   const { data: ultimaRonda } = await supabase
     .from('rondas_vigilancia')
@@ -116,43 +136,53 @@ const verificarEstado = async () => {
     } else if (ultimaRonda.estado === 'completada' && ultimaRonda.descanso_hasta) {
       const ahora = new Date()
       const finDescanso = new Date(ultimaRonda.descanso_hasta)
+      
       if (ahora < finDescanso) {
         enDescanso.value = true
         horaFinDescanso.value = finDescanso.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         rondaActiva.value = null
       } else {
         enDescanso.value = false
+        rondaActiva.value = null
       }
     }
   }
 }
 
-// 3. DETECTAR QR
+// 3. EVENTO CUANDO LA CÁMARA DETECTA UN QR
 const onDetect = async (detectedCodes) => {
   if (procesandoQR.value || enDescanso.value) return
   
-  // Limpiamos el código por si la cámara lee espacios raros
-  const codigoLeido = detectedCodes[0].rawValue.trim()
+  // Extraemos y limpiamos el texto del QR por si tiene espacios vacíos
+  const rawCode = detectedCodes[0].rawValue || detectedCodes[0].value || ''
+  const codigoLeido = rawCode.trim()
+  
   if (!codigoLeido) return
 
   procesandoQR.value = true
 
   try {
+    // Validamos el código en la base de datos
     const { data: puntoData, error: errorPunto } = await supabase
       .from('puntos_control')
       .select('*')
       .eq('codigo_qr', codigoLeido)
-      .single()
+      .maybeSingle()
 
-    if (errorPunto || !puntoData) {
-      alert("❌ QR no reconocido en la base de datos.")
-      setTimeout(() => { procesandoQR.value = false }, 2000)
+    if (errorPunto) throw errorPunto
+    
+    if (!puntoData) {
+      alert(`❌ Código QR no pertenece al sistema.\nLeído: "${codigoLeido}"`)
+      setTimeout(() => { procesandoQR.value = false }, 2500)
       return
     }
 
     puntoActual.value = puntoData
     
+    // Si no hay ronda activa, creamos una nueva
     if (!rondaActiva.value) {
+      if (!vigilanteId.value) throw new Error("Falta el ID del vigilante.")
+
       const { data: nuevaRonda, error: errorRonda } = await supabase
         .from('rondas_vigilancia')
         .insert([{ vigilante_id: vigilanteId.value, estado: 'en_curso' }])
@@ -167,39 +197,45 @@ const onDetect = async (detectedCodes) => {
     mostrandoModalObservacion.value = true
 
   } catch (error) {
-    console.error("Error al procesar:", error)
-    alert("Error de conexión o de datos.")
+    console.error(error)
+    // Mostramos EL ERROR EXACTO de Supabase en el celular
+    alert("⛔ Error de Base de Datos: " + (error.message || JSON.stringify(error)))
     procesandoQR.value = false
   }
 }
 
-// 4. GUARDAR
+// 4. GUARDAR EL REGISTRO FINAL EN LA BASE DE DATOS
 const guardarRegistro = async () => {
   try {
-    await supabase.from('registros_punto_control').insert([{
+    const { error: errorReg } = await supabase.from('registros_punto_control').insert([{
       ronda_id: rondaActiva.value.id,
       punto_control_id: puntoActual.value.id,
       observacion: observacion.value.trim() || null
     }])
 
+    if (errorReg) throw errorReg
+
     if (puntoActual.value.es_punto_final) {
       const fechaFin = new Date()
       const fechaDescanso = new Date(fechaFin.getTime() + (60 * 60 * 1000)) 
 
-      await supabase.from('rondas_vigilancia').update({
+      const { error: errorUpdate } = await supabase.from('rondas_vigilancia').update({
         estado: 'completada',
         fin_ronda: fechaFin.toISOString(),
         descanso_hasta: fechaDescanso.toISOString()
       }).eq('id', rondaActiva.value.id)
 
-      alert("✅ Ronda Finalizada. Hora de descanso iniciada.")
-      await verificarEstado()
+      if (errorUpdate) throw errorUpdate
+
+      alert("✅ Ronda Finalizada con éxito. Inicia tu hora de descanso.")
+      await verificarEstado() 
     } else {
-      alert(`✅ Punto ${puntoActual.value.nombre} registrado.`)
+      alert(`✅ Punto ${puntoActual.value.nombre} registrado. Continúa la ronda.`)
     }
 
   } catch (error) {
-    alert("Error al guardar en la base de datos.")
+    console.error(error)
+    alert("⛔ Error al guardar: " + (error.message || JSON.stringify(error)))
   } finally {
     mostrandoModalObservacion.value = false
     puntoActual.value = null
@@ -216,7 +252,7 @@ const pintarMarcoQR = (detectedCodes, ctx) => {
   }
 }
 
-// Salir ahora solo te lleva al Home
+// Botón Salir devuelve a la pantalla principal sin pedir logs
 const cerrarSesion = () => {
   router.push('/')
 }
