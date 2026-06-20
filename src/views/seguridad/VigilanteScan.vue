@@ -96,26 +96,7 @@ const observacion = ref('')
 const procesandoQR = ref(false)
 
 // 1. INICIALIZAR SESIÓN (CON LOGIN REAL SUPABASE Y RUTAS)
-const inicializar = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) { 
-    router.push('/login-privado') 
-    return 
-  }
-
-  const { data: perfil } = await supabase
-    .from('perfiles')
-    .select('nombre')
-    .eq('id', user.id)
-    .single()
-  
-  nombreVigilante.value = perfil?.nombre || "Vigilante"
-  vigilanteId.value = user.id 
-
-  await verificarEstado()
-}
-
+ 
 // 2. VERIFICAR SI ESTÁ EN RONDA O EN DESCANSO
 const verificarEstado = async () => {
   // Buscar la ronda más reciente de este vigilante
