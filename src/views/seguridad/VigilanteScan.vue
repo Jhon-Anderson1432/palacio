@@ -125,12 +125,14 @@ const guardarRegistro = async () => {
   }
 
   try {
-    // Insertamos solo el punto, el nombre y la observación. 
-    // Supabase registrará la hora exacta automáticamente de forma nativa.
+    // Capturamos la hora exacta del celular en este instante para forzar el guardado
+    const horaExacta = new Date().toISOString()
+
     const { error } = await supabase.from('registros_punto_control').insert([{
       punto_control_id: puntoActual.value.id,
       nombre_vigilante: nombreVigilante.value.trim(),
-      observacion: observacion.value.trim() || 'Sin novedad'
+      observacion: observacion.value.trim() || 'Sin novedad',
+      hora_registro: horaExacta // Aquí forzamos el envío de la hora a Supabase
     }])
 
     if (error) throw error
