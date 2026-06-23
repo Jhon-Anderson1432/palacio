@@ -16,8 +16,6 @@ import TerminalPos from '../views/gastronimia/TerminalPos.vue'
 
 // Vistas Seguridad (Nuevas)
 import VigilanteScan from '../views/seguridad/VigilanteScan.vue'
-import PanelSeguridad from '../views/PanelSeguridad.vue' // <-- Añadido
-
 const routes = [
   {
     path: '/',
@@ -43,12 +41,6 @@ const routes = [
     path: '/adminpanel02402110',
     name: 'Adminpanel02402110',
     component: Adminpanel02402110,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/panel-seguridad', // <-- Nueva ruta protegida
-    name: 'PanelSeguridad',
-    component: PanelSeguridad,
     meta: { requiresAuth: true }
   },
   {

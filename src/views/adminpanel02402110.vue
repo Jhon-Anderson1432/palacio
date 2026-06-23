@@ -295,7 +295,7 @@
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
               <h1 class="text-3xl md:text-4xl font-serif text-white">Vigilancia Diaria</h1>
-              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Control de Recorridos y Puntos QR</p>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Control de Puntos QR</p>
             </div>
             
             <div class="flex items-center gap-3">
@@ -306,14 +306,10 @@
           <div v-if="cargandoSeguridad" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Cargando registros...</div>
 
           <div v-else class="max-w-6xl mx-auto space-y-8">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div class="bg-neutral-900 p-5 rounded-3xl border border-white/10 flex flex-col justify-between h-32">
-                <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Total Rondas Hoy</span>
-                <span class="text-4xl font-serif text-white">{{ statsSeguridad.totalRondas }}</span>
-              </div>
-              <div class="bg-neutral-900 p-5 rounded-3xl border border-green-500/20 flex flex-col justify-between h-32">
-                <span class="text-[10px] text-green-500 uppercase tracking-widest font-bold">Rondas Completadas</span>
-                <span class="text-4xl font-serif text-green-400">{{ statsSeguridad.completadas }}</span>
+                <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Total Escaneos (Hoy)</span>
+                <span class="text-4xl font-serif text-white">{{ statsSeguridad.totalEscaneos }}</span>
               </div>
               <div class="bg-neutral-900 p-5 rounded-3xl border border-orange-500/20 flex flex-col justify-between h-32 relative">
                 <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Observaciones Reportadas</span>
@@ -322,58 +318,38 @@
             </div>
 
             <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8">
-              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Detalle de Recorridos</h3>
+              <h3 class="text-base md:text-lg font-serif text-[#D4AF37] mb-6 border-b border-white/10 pb-4">Detalle de Escaneos</h3>
               
-              <div v-if="rondasSeguridad.length > 0" class="space-y-6">
-                <div v-for="ronda in rondasSeguridad" :key="ronda.id" class="bg-black/50 border border-white/10 rounded-2xl p-5 md:p-6 transition-all hover:border-white/20">
-                  <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 border-b border-white/5 pb-4">
-                    <div>
-                      <h4 class="text-lg font-serif text-white flex items-center gap-2">
-                        {{ ronda.perfiles?.nombre || 'Vigilante' }}
-                      </h4>
-                      <p class="text-xs text-neutral-400 mt-1">Inicio: {{ new Date(ronda.inicio_ronda).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</p>
-                    </div>
-                    
-                    <div class="text-right flex flex-col items-end gap-2">
-                      <span :class="['px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border', ronda.estado === 'completada' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50 animate-pulse']">
-                        {{ ronda.estado.replace('_', ' ') }}
-                      </span>
-                      <p v-if="ronda.estado === 'completada'" class="text-xs font-bold mt-1">
-                        Duración: 
-                        <span :class="ronda.minutos > 40 ? 'text-red-500' : 'text-neutral-300'">
-                          {{ ronda.minutos }} min
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="space-y-3 pl-2">
-                    <div v-if="!ronda.registros_punto_control || ronda.registros_punto_control.length === 0" class="text-xs text-neutral-500 italic">
-                      No hay escaneos registrados aún.
-                    </div>
-                    
-                    <div v-for="(registro, idx) in ronda.registros_punto_control" :key="registro.id" class="relative pl-6 pb-2 border-l border-white/10 last:border-0 last:pb-0">
-                      <div class="absolute w-3 h-3 bg-[#D4AF37] rounded-full left-[-6px] top-1 border-2 border-black"></div>
-                      
-                      <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                        <span class="text-xs font-bold text-[#D4AF37] w-16">
-                          {{ new Date(registro.hora_registro).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
-                        </span>
-                        <span class="text-sm text-white flex-1">
-                          {{ registro.puntos_control?.nombre }} (Piso {{ registro.puntos_control?.piso }})
-                        </span>
-                      </div>
-                      
-                      <div v-if="registro.observacion" class="mt-2 ml-0 md:ml-20 bg-orange-500/10 border border-orange-500/20 p-3 rounded-xl flex items-start gap-2">
-                        <span class="text-orange-500">⚠️</span>
-                        <p class="text-xs text-orange-200 italic leading-relaxed">{{ registro.observacion }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div v-if="registrosSeguridad.length === 0" class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
+                No hay escaneos registrados recientes.
               </div>
-              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl">
-                No hay recorridos registrados en la fecha seleccionada.
+
+              <div v-else class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-white/10 text-xs uppercase tracking-widest text-neutral-400">
+                      <th class="pb-4 font-bold">Hora</th>
+                      <th class="pb-4 font-bold">Vigilante</th>
+                      <th class="pb-4 font-bold">Punto</th>
+                      <th class="pb-4 font-bold">Observación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="registro in registrosSeguridad" :key="registro.id" class="border-b border-white/5 hover:bg-white/5">
+                      <td class="py-4 text-[#D4AF37] font-bold">{{ formatearHora(registro.hora_registro) }}</td>
+                      <td class="py-4 text-white">
+                        <span class="bg-[#D4AF37]/10 text-[#D4AF37] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                          {{ registro.nombre_vigilante || 'N/A' }}
+                        </span>
+                      </td>
+                      <td class="py-4 text-white">
+                        {{ registro.puntos_control?.nombre }} 
+                        <span class="text-xs text-neutral-500 block mt-1">Piso: {{ registro.puntos_control?.piso }}</span>
+                      </td>
+                      <td class="py-4 text-neutral-300 text-sm max-w-xs truncate" :title="registro.observacion">{{ registro.observacion }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -816,9 +792,9 @@ const localAsignado = ref(null)
 // ============================================
 // NUEVO: ESTADOS Y LÓGICA DE SEGURIDAD (VIGILANTES)
 // ============================================
-const rondasSeguridad = ref([])
+const registrosSeguridad = ref([])
 const cargandoSeguridad = ref(false)
-const statsSeguridad = reactive({ totalRondas: 0, completadas: 0, observaciones: 0 })
+const statsSeguridad = reactive({ totalEscaneos: 0, observaciones: 0 })
 const puntosDeControl = ref([])
 
 const fetchPuntosControl = async () => {
@@ -835,45 +811,37 @@ const fetchSeguridad = async () => {
   const finDia = new Date(yyyy, mm - 1, dd, 23, 59, 59, 999).toISOString()
 
   const { data, error } = await supabase
-    .from('rondas_vigilancia')
+    .from('registros_punto_control')
     .select(`
-      *,
-      perfiles ( nombre ),
-      registros_punto_control (
-        id, hora_registro, observacion,
-        puntos_control ( piso, nombre )
-      )
+      id,
+      hora_registro,
+      nombre_vigilante,
+      observacion,
+      puntos_control ( nombre, piso )
     `)
-    .gte('created_at', inicioDia)
-    .lte('created_at', finDia)
-    .order('created_at', { ascending: false })
+    .gte('hora_registro', inicioDia)
+    .lte('hora_registro', finDia)
+    .order('hora_registro', { ascending: false })
     
   if (!error && data) {
-    let obsCount = 0;
-    
-    const rondasFormateadas = data.map(ronda => {
-      let minutos = 0;
-      if (ronda.fin_ronda) {
-        const diff = new Date(ronda.fin_ronda) - new Date(ronda.inicio_ronda);
-        minutos = Math.floor(diff / 60000);
-      }
-
-      if (ronda.registros_punto_control) {
-        ronda.registros_punto_control.sort((a, b) => new Date(a.hora_registro) - new Date(b.hora_registro));
-        ronda.registros_punto_control.forEach(reg => {
-          if (reg.observacion) obsCount++;
-        });
-      }
-
-      return { ...ronda, minutos };
-    });
-
-    rondasSeguridad.value = rondasFormateadas;
-    statsSeguridad.totalRondas = rondasFormateadas.length;
-    statsSeguridad.completadas = rondasFormateadas.filter(r => r.estado === 'completada').length;
-    statsSeguridad.observaciones = obsCount;
+    registrosSeguridad.value = data
+    statsSeguridad.totalEscaneos = data.length
+    statsSeguridad.observaciones = data.filter(r => r.observacion && r.observacion !== 'Sin novedad').length
+  } else {
+    registrosSeguridad.value = []
+    statsSeguridad.totalEscaneos = 0
+    statsSeguridad.observaciones = 0
   }
   cargandoSeguridad.value = false
+}
+
+const formatearHora = (fechaISO) => {
+  if (!fechaISO) return 'Sin hora'
+  return new Date(fechaISO).toLocaleTimeString('es-CO', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    hour12: true 
+  })
 }
 
 // CAJA REGISTRADORA Y NUEVO FILTRO DE ESTADO

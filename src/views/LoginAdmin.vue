@@ -56,7 +56,7 @@ const handleLogin = async () => {
     errorMensaje.value = "Acceso denegado. Utiliza el Portal POS para meseras."
     await supabase.auth.signOut() 
   } else if (perfil.rol === 'admin_seguridad') {
-    router.push('/panel-seguridad')
+    router.push('/adminpanel02402110') // Redirige al panel de seguridads
   } else {
     // Es Superadmin o Admin -> Entra a la interfaz unificada sin problemas
     router.push('/adminpanel02402110')
