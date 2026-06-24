@@ -321,7 +321,7 @@ const obtenerTraduccion = (item, campoBase) => {
 const abrirWhatsApp = () => {
   const telefonos = {
     'chao-pescado': '573001111111', 
-    'sky-bar': '573002222222',      
+    'sky-bar': '573212865949',      
     'chao-cafe': '573003333333'        
   }
   const numeroTelefono = telefonos[localActual.value] || '573000000000'
