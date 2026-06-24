@@ -120,9 +120,9 @@ import { idiomaGlobal } from '../../lib/supabase' // Importamos el estado global
 
 // Importación de todos los logos necesarios
 import logoPalacio from '@/assets/logon.png' 
-import logoCafe from '@/assets/logons.png'
+import logoCafe from '@/assets/logonc.png'
 import logoPescado from '@/assets/logonp.png'
-import logoSky from '@/assets/logonc.png'
+import logoSky from '@/assets/logons.png'
 
 const router = useRouter()
 
