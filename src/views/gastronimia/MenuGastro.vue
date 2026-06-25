@@ -374,7 +374,7 @@ const abrirUbicacion = () => {
   let ubicacion = 'Palacio Nacional, Medellín'
   
   if (localActual.value === 'sky-bar') {
-    ubicacion = 'Skybarcafémedellin, nodo central, Cra. 52 #48-45 5to piso, La Candelaria, Medellín, Antioquia'
+    ubicacion = 'Sky Bar Café Medellin, nodo central, Cra. 52 #48-45 5to piso, La Candelaria, Medellín, Antioquia'
   }
   
   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ubicacion)}`
