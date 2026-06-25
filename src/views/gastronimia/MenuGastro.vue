@@ -61,7 +61,11 @@
           <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
             {{ t.btnOpinion }}
           </button>
-          <button class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm">
+          
+          <button 
+            @click="abrirUbicacion"
+            class="w-full py-3.5 border border-[#D4AF37]/60 text-white bg-transparent hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300 rounded-[2rem] text-sm font-medium tracking-wide shadow-sm"
+          >
             {{ t.btnUbicacion }}
           </button>
         </div>
@@ -195,6 +199,40 @@ const configLocal = computed(() => {
 })
 
 // =====================================
+// Inyección Dinámica de SEO
+// =====================================
+const actualizarSEO = () => {
+  let titulo = ""
+  let descripcion = ""
+
+  if (localActual.value === 'sky-bar') {
+    titulo = "Sky Bar | Terraza Bar en el Centro de Medellín"
+    descripcion = "¿Buscas un bar en Medellín? Disfruta de una terraza única con los mejores cócteles, licores y ambiente diurno de 9 am a 7 pm en el Palacio Nacional."
+  } 
+  else if (localActual.value === 'chao-pescado') {
+    titulo = "Chao Pescao | Restaurante en el Centro de Medellín"
+    descripcion = "Prueba la mejor comida en nuestro restaurante Chao Pescao en Medellín. Menú ejecutivo, platos a la carta y el mejor sabor dentro del Palacio Nacional."
+  } 
+  else {
+    // Por defecto será Chao Cafe
+    titulo = "Chao Café | La Mejor Cafetería en el Centro de Medellín"
+    descripcion = "Tómate un excelente café colombiano en Chao Café, Medellín. Disfruta de bebidas calientes, repostería y un ambiente tranquilo en el Palacio Nacional."
+  }
+
+  // 1. Cambiar Título de la pestaña
+  document.title = titulo
+
+  // 2. Cambiar Descripción oculta para Google
+  let metaDescription = document.querySelector('meta[name="description"]')
+  if (!metaDescription) {
+    metaDescription = document.createElement('meta')
+    metaDescription.name = "description"
+    document.head.appendChild(metaDescription)
+  }
+  metaDescription.content = descripcion
+}
+
+// =====================================
 // Estado y Supabase
 // =====================================
 const mostrarMenu = ref(false)
@@ -252,10 +290,12 @@ const formatPrecio = (precio) => {
 // Escuchar cambios en la ruta dinámicamente
 watch(localActual, () => {
   cargarMenu()
+  actualizarSEO()
 })
 
 onMounted(() => {
   cargarMenu()
+  actualizarSEO()
 })
 
 const menuFiltrado = computed(() => {
@@ -328,6 +368,17 @@ const abrirWhatsApp = () => {
   const mensaje = `Hola, me gustaría hacer una reserva en ${configLocal.value.titulo} en el Palacio Nacional.`
   const urlWhatsApp = `https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`
   window.open(urlWhatsApp, '_blank')
+}
+
+const abrirUbicacion = () => {
+  let ubicacion = 'Palacio Nacional, Medellín'
+  
+  if (localActual.value === 'sky-bar') {
+    ubicacion = 'Skybarcafémedellin, nodo central, Cra. 52 #48-45 5to piso, La Candelaria, Medellín, Antioquia'
+  }
+  
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ubicacion)}`
+  window.open(url, '_blank')
 }
 
 // =====================================

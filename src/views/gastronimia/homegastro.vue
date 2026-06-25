@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { idiomaGlobal } from '../../lib/supabase' // Importamos el estado global de tu proyecto
 
@@ -125,6 +125,26 @@ import logoPescado from '@/assets/logonp.png'
 import logoSky from '@/assets/logons.png'
 
 const router = useRouter()
+
+// ==========================================
+// INYECCIÓN DE SEO (HOME GASTRO)
+// ==========================================
+onMounted(() => {
+  // 1. Cambiar el título de la pestaña
+  document.title = "Café, Restaurante y Bar en Medellín | Palacio Nacional"
+  
+  // 2. Buscar o crear la etiqueta <meta name="description">
+  let metaDescription = document.querySelector('meta[name="description"]')
+  if (!metaDescription) {
+    metaDescription = document.createElement('meta')
+    metaDescription.name = "description"
+    document.head.appendChild(metaDescription)
+  }
+  
+  // 3. Asignar el texto SEO
+  metaDescription.content = "Descubre la mejor oferta gastronómica en el centro de Medellín. Visita nuestro café, restaurante y terraza bar ubicados en el icónico Palacio Nacional."
+})
+// ==========================================
 
 const navegarA = (ruta) => {
   router.push(`/${ruta}`)
