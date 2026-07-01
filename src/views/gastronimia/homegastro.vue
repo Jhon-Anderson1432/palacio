@@ -1,27 +1,33 @@
 <template>
-  <main class="min-h-screen w-full bg-black text-[#D4AF37] font-sans flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#D4AF37] selection:text-black">
+  <main 
+    class="min-h-screen w-full bg-black text-[#D4AF37] font-sans flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#D4AF37] selection:text-black antialiased"
+    role="main"
+    aria-label="Portal Gastronómico Palacio Nacional"
+  >
     
     <div class="absolute top-6 left-6 z-50">
       <button 
         @click="toggleDropdown"
-        class="flex items-center gap-2 px-4 py-2 border border-[#D4AF37]/20 rounded-full bg-black/40 backdrop-blur-md text-[#D4AF37]/80 hover:text-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
+        class="flex items-center gap-2 px-4 py-2 border border-[#D4AF37]/20 rounded-full bg-black/40 backdrop-blur-md text-[#D4AF37]/80 hover:text-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40"
+        :aria-expanded="dropdownOpen"
+        aria-haspopup="true"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <span class="text-sm font-medium tracking-wider uppercase">{{ idiomaGlobal }}</span>
-        <svg class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': dropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': dropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
 
-      <transition name="fade-down">
-        <div v-if="dropdownOpen" class="absolute top-full left-0 mt-3 w-40 bg-[#0a0a0a]/95 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden">
+      <transition name="dropdown-fade">
+        <div v-if="dropdownOpen" class="absolute top-full left-0 mt-3 w-40 bg-[#0a0a0a]/95 backdrop-blur-xl border border-[#D4AF37]/20 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden py-1">
           <button 
             v-for="lang in idiomas" 
             :key="lang.code"
             @click="seleccionarIdioma(lang.code)"
-            class="w-full text-left px-5 py-3 text-sm text-gray-400 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors duration-200 border-b border-white/5 last:border-none"
+            class="w-full text-left px-5 py-3 text-sm text-gray-400 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors duration-200 border-b border-white/5 last:border-none focus:outline-none focus:bg-[#D4AF37]/10 focus:text-[#D4AF37]"
             :class="{ 'text-[#D4AF37] bg-[#D4AF37]/5': idiomaGlobal === lang.code }"
           >
             {{ lang.label }}
@@ -32,10 +38,11 @@
 
     <button 
       @click="router.push('/')" 
-      class="absolute top-6 right-6 z-50 p-2 border border-[#D4AF37]/20 rounded-full text-[#D4AF37]/50 hover:text-[#D4AF37] hover:border-[#D4AF37] hover:scale-110 transition-all duration-300"
+      class="absolute top-6 right-6 z-50 p-2 border border-[#D4AF37]/20 rounded-full text-[#D4AF37]/50 hover:text-[#D4AF37] hover:border-[#D4AF37] hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40"
       title="Volver al Palacio"
+      aria-label="Volver a la página de inicio del Palacio"
     >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
@@ -43,29 +50,32 @@
     <div class="w-full max-w-7xl px-6 py-16 flex flex-col items-center z-10">
       
       <header class="text-center mb-16 md:mb-24 flex flex-col items-center">
+        <h1 class="sr-only">Restaurantes, Bares y Cafés en el Centro de Medellín | Palacio Nacional</h1>
+        
         <img 
           :src="logoPalacio" 
-          alt="Palacio Nacional" 
+          alt="Palacio Nacional Medellín - Centro Cultural y Gastronómico" 
           class="w-48 md:w-64 mb-6 object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]"
         />
         
         <div class="flex items-center gap-4 mb-4">
-          <div class="h-px w-16 bg-[#D4AF37]/30"></div>
-          <p class="text-[11px] md:text-xs tracking-[0.4em] text-gray-500 uppercase font-medium">
+          <div class="h-px w-16 bg-[#D4AF37]/30" aria-hidden="true"></div>
+          <p class="text-[11px] md:text-xs tracking-[0.4em] text-gray-400 uppercase font-medium select-none">
             {{ t.subtitulo }}
           </p>
-          <div class="h-px w-16 bg-[#D4AF37]/30"></div>
+          <div class="h-px w-16 bg-[#D4AF37]/30" aria-hidden="true"></div>
         </div>
       </header>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 w-full">
+      <nav class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 w-full" aria-label="Locales Gastronómicos del Piso 5">
         
         <button 
           @click="navegarA('gastronomia/chao-cafe')" 
-          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer"
+          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer focus:outline-none focus:border-[#D4AF37]"
+          aria-label="Visitar el menú de Chao Café - Cafetería Artesanal en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-36 md:h-36 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#050505] p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 transition-colors duration-500">
-            <img :src="logoCafe" alt="Chao Cafe Logo" class="w-full h-full object-contain" />
+            <img :src="logoCafe" alt="Logo de Chao Café Artesanal" class="w-full h-full object-contain" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors">
@@ -78,10 +88,11 @@
 
         <button 
           @click="navegarA('gastronomia/chao-pescado')" 
-          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer"
+          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer focus:outline-none focus:border-[#D4AF37]"
+          aria-label="Visitar el menú de Chao Pescao - Restaurante y Bar en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-36 md:h-36 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#050505] p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 transition-colors duration-500">
-            <img :src="logoPescado" alt="Chao Pescado Logo" class="w-full h-full object-contain" />
+            <img :src="logoPescado" alt="Logo de Chao Pescao Restaurante" class="w-full h-full object-contain" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors">
@@ -94,10 +105,11 @@
 
         <button 
           @click="navegarA('gastronomia/sky-bar')" 
-          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer"
+          class="group flex flex-col items-center justify-center p-8 md:p-12 border border-[#D4AF37]/30 bg-black rounded-3xl transition-all duration-500 hover:border-[#D4AF37] hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(212,175,55,0.3)] cursor-pointer focus:outline-none focus:border-[#D4AF37]"
+          aria-label="Visitar el menú de Sky Bar - Terraza y Cócteles de Autor en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-36 md:h-36 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#050505] p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 transition-colors duration-500">
-            <img :src="logoSky" alt="Sky Bar Logo" class="w-full h-full object-contain" />
+            <img :src="logoSky" alt="Logo de Sky Bar Café Medellín" class="w-full h-full object-contain" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors">
@@ -108,7 +120,7 @@
           </p>
         </button>
 
-      </div>
+      </nav>
     </div>
   </main>
 </template>
@@ -116,42 +128,38 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { idiomaGlobal } from '../../lib/supabase' // Importamos el estado global de tu proyecto
+import { idiomaGlobal } from '../../lib/supabase'
 
-// Importación de todos los logos necesarios
+// Logos
 import logoPalacio from '@/assets/logon.png' 
 import logoCafe from '@/assets/logonc.png'
 import logoPescado from '@/assets/logonp.png'
 import logoSky from '@/assets/logons.png'
 
 const router = useRouter()
+const dropdownOpen = ref(false)
 
-// ==========================================
-// INYECCIÓN DE SEO (HOME GASTRO)
-// ==========================================
-onMounted(() => {
-  // 1. Cambiar el título de la pestaña
-  document.title = "Café, Restaurante y Bar en Medellín | Palacio Nacional"
-  
-  // 2. Buscar o crear la etiqueta <meta name="description">
-  let metaDescription = document.querySelector('meta[name="description"]')
-  if (!metaDescription) {
-    metaDescription = document.createElement('meta')
-    metaDescription.name = "description"
-    document.head.appendChild(metaDescription)
-  }
-  
-  // 3. Asignar el texto SEO
-  metaDescription.content = "Descubre la mejor oferta gastronómica en el centro de Medellín. Visita nuestro café, restaurante y terraza bar ubicados en el icónico Palacio Nacional."
-})
-// ==========================================
+// RENDIMIENTO: Arreglo de idiomas inmutable declarado de forma estática
+const idiomas = [
+  { code: 'es', label: 'Español' },
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'ja', label: '日本語' }
+]
+
+// RENDIMIENTO: Diccionario fuera del ciclo reactivo para evitar recalculación innecesaria en memoria
+const traducciones = {
+  es: { subtitulo: 'Piso 5 • Gastronomía', descCafe: 'Cafetería Artesanal', descPescado: 'Restaurante & Bar', descSky: 'Cócteles de Autor' },
+  en: { subtitulo: '5th Floor • Gastronomy', descCafe: 'Artisanal Coffee Shop', descPescado: 'Restaurant & Bar', descSky: 'Signature Cocktails' },
+  fr: { subtitulo: '5ème Étage • Gastronomie', descCafe: 'Café Artisanal', descPescado: 'Restaurant & Bar', descSky: 'Cocktails Signature' },
+  ja: { subtitulo: '5階 • ガストロノミー', descCafe: '職人技のカフェ', descPescado: 'レストラン＆バー', descSky: 'シグネチャーカクテル' }
+}
+
+const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
 
 const navegarA = (ruta) => {
   router.push(`/${ruta}`)
 }
-
-// Lógica del Dropdown de Idiomas
-const dropdownOpen = ref(false)
 
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
@@ -162,58 +170,100 @@ const seleccionarIdioma = (codigo) => {
   dropdownOpen.value = false
 }
 
-const idiomas = [
-  { code: 'es', label: 'Español' },
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'ja', label: '日本語' }
-]
-
-// Diccionario de Traducciones
-const traducciones = {
-  es: {
-    subtitulo: 'Piso 5 • Gastronomía',
-    descCafe: 'Cafetería Artesanal',
-    descPescado: 'Restaurante & Bar',
-    descSky: 'Cócteles de Autor'
-  },
-  en: {
-    subtitulo: '5th Floor • Gastronomy',
-    descCafe: 'Artisanal Coffee Shop',
-    descPescado: 'Restaurant & Bar',
-    descSky: 'Signature Cocktails'
-  },
-  fr: {
-    subtitulo: '5ème Étage • Gastronomie',
-    descCafe: 'Café Artisanal',
-    descPescado: 'Restaurant & Bar',
-    descSky: 'Cocktails Signature'
-  },
-  ja: {
-    subtitulo: '5階 • ガストロノミー',
-    descCafe: '職人技のカフェ',
-    descPescado: 'レストラン＆バー',
-    descSky: 'シグネチャーカクテル'
+// ==========================================
+// PILLAR SEO: Estrategia de Tentáculos (Silo Indexing)
+// ==========================================
+onMounted(() => {
+  // 1. Metaetiquetas Semánticas de Localización Cruzada
+  document.title = "Bares, Restaurantes y Cafés en el Centro de Medellín | Palacio Nacional"
+  
+  let metaDescription = document.querySelector('meta[name="description"]')
+  if (!metaDescription) {
+    metaDescription = document.createElement('meta')
+    metaDescription.name = "description"
+    document.head.appendChild(metaDescription)
   }
-}
+  metaDescription.content = "Vive una experiencia única en el centro de Medellín. Disfruta del mejor café artesanal, almuerza en nuestro restaurante o relájate con cócteles en el bar del piso 5 del Palacio Nacional mientras admiras galerías de arte históricas."
 
-// Computed property para reactividad en las traducciones
-const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
+  // 2. Inyección de JSON-LD estructurado multi-propósito para indexar /homegastro de manera independiente
+  let schemaScript = document.getElementById('schema-homegastro')
+  if (schemaScript) schemaScript.remove()
+
+  const schemaCluster = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "name": "Zona Gastronómica Palacio Nacional Medellín",
+    "description": "Un ecosistema cultural y gastronómico en el piso 5 del Palacio Nacional donde se unen la cafetería de especialidad, restaurantes de alta cocina, terrazas de cócteles y galerías de arte.",
+    "url": "https://palacionacionalmedellin.com/homegastro",
+    "image": "https://palacionacionalmedellin.com/logon.png",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Cra. 52 #48-45 Piso 5, La Candelaria",
+      "addressLocality": "Medellín",
+      "addressRegion": "Antioquia",
+      "addressCountry": "CO"
+    },
+    "containsPlace": [
+      {
+        "@type": "CafeOrCoffeeShop",
+        "name": "Chao Café",
+        "description": "Cafetería artesanal de especialidad en el centro de Medellín."
+      },
+      {
+        "@type": "Restaurant",
+        "name": "Chao Pescao",
+        "description": "Restaurante gourmet con opciones a la carta y menú ejecutivo de alta calidad."
+      },
+      {
+        "@type": "BarOrPub",
+        "name": "Sky Bar",
+        "description": "Terraza bar con coctelería de autor y ambiente exclusivo en el corazón de la ciudad."
+      }
+    ]
+  }
+
+  schemaScript = document.createElement('script')
+  schemaScript.id = 'schema-homegastro'
+  schemaScript.type = 'application/ld+json'
+  schemaScript.text = JSON.stringify(schemaCluster)
+  document.head.appendChild(schemaScript)
+})
 </script>
 
 <style scoped>
+/* ESTILOS: Optimización de renderizado tipográfico por Hardware GPU */
+.antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 h1, h2 {
   text-rendering: optimizeLegibility;
 }
 
-/* Animación para el menú desplegable */
-.fade-down-enter-active,
-.fade-down-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+/* Ocultar elementos visualmente manteniendo la lectura de los robots de Google (Accessibility/SEO) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
-.fade-down-enter-from,
-.fade-down-leave-to {
+
+/* Transición fluida con aceleración nativa para el dropdown */
+.dropdown-fade-enter-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-fade-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.7, 0, 0.84, 0), transform 0.15s cubic-bezier(0.7, 0, 0.84, 0);
+}
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px);
 }
 </style>
