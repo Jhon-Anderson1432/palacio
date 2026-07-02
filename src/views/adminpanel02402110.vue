@@ -790,12 +790,13 @@ const rolUsuario = ref('superadmin')
 const localAsignado = ref(null)
 
 // ============================================
-// NUEVO: ESTADOS Y LÓGICA DE SEGURIDAD (VIGILANTES)
+// LÓGICA DE SEGURIDAD (VIGILANTES)
 // ============================================
 const registrosSeguridad = ref([])
 const cargandoSeguridad = ref(false)
 const statsSeguridad = reactive({ totalEscaneos: 0, observaciones: 0 })
 const puntosDeControl = ref([])
+let subscripcionSeguridad = null // <-- NUEVO: Para el realtime de seguridad
 
 const fetchPuntosControl = async () => {
   const { data, error } = await supabase.from('puntos_control').select('*').order('created_at', { ascending: false })
@@ -842,6 +843,22 @@ const formatearHora = (fechaISO) => {
     minute: '2-digit', 
     hour12: true 
   })
+}
+
+// <-- NUEVO: Función para actualizar seguridad en tiempo real
+const inicializarRealtimeSeguridad = () => {
+  if (subscripcionSeguridad) return; 
+  subscripcionSeguridad = supabase
+    .channel('seguridad_changes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'registros_punto_control' }, (payload) => {
+      fetchSeguridad(); // Refrescar silenciosamente cuando el guarda escanee
+    })
+    .subscribe((status) => {
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+         subscripcionSeguridad = null;
+         setTimeout(() => inicializarRealtimeSeguridad(), 3000);
+      }
+    });
 }
 
 // CAJA REGISTRADORA Y NUEVO FILTRO DE ESTADO
@@ -956,6 +973,7 @@ const cargarPerfilYDatos = async () => {
     } else if (perfil.rol === 'admin_seguridad') {
       pestañaActiva.value = 'seguridad'
       fetchSeguridad()
+      inicializarRealtimeSeguridad() // <-- Inicializa realtime solo si es admin_seguridad
     } else {
       // SUPERADMIN carga todo
       pestañaActiva.value = 'inventario'
@@ -964,6 +982,7 @@ const cargarPerfilYDatos = async () => {
       fetchOrdenesCaja()
       fetchSeguridad()
       inicializarRealtime() 
+      inicializarRealtimeSeguridad() // <-- Inicializa realtime para superadmin
     }
   } else {
       fetchObras()
@@ -971,6 +990,7 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
+// <-- MEJORADO: Realtime robusto para POS (Captura INSERT, UPDATE, DELETE)
 const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
@@ -999,10 +1019,10 @@ const inicializarRealtime = () => {
              fetchOrdenesCaja(false);
           }
         };
-
         setTimeout(() => intentarImprimir(1), 1000);
 
       } else {
+        // En UPDATE o DELETE (Ej. se anula una orden, o se cobra), recarga silenciosa instantánea
         setTimeout(() => { fetchOrdenesCaja(false); }, 1000);
       }
     })
@@ -1208,6 +1228,162 @@ const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = false
 }
 
+// <-- MODIFICADO Y MEJORADO: TICKET Y FACTURAS PREMIUM
+const imprimirTicket = (orden, tipo = 'comanda') => {
+  const esFactura = tipo === 'factura' || orden.estado === 'pagado';
+  const tituloDocumento = esFactura ? 'DOCUMENTO EQUIVALENTE POS' : 'TICKET DE COCINA (COMANDA)';
+
+  let contenido = `
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: 'Courier New', Courier, monospace !important; font-weight: 700 !important; }
+      body { width: 280px; padding: 15px 5px 40px 5px; font-size: 14px; text-transform: uppercase; line-height: 1.4; }
+      .header { text-align: center; margin-bottom: 15px; }
+      .header h2 { font-size: 22px; margin-bottom: 4px; font-weight: 900 !important; }
+      .header p { font-size: 13px; margin-bottom: 3px; }
+      .divider { border-top: 2px dashed #000; margin: 15px 0; }
+      .info-client p { font-size: 13px; margin-bottom: 4px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
+      th { text-align: left; padding-bottom: 10px; border-bottom: 2px dashed #000; font-size: 14px; }
+      td { vertical-align: top; padding-top: 10px; padding-bottom: 5px; }
+      .text-right { text-align: right; }
+      .total-section { font-size: 20px; font-weight: 900 !important; text-align: right; margin-top: 15px; margin-bottom: 20px; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
+      .footer-info p { font-size: 13px; margin-bottom: 4px; }
+      .legal-text { font-size: 11px; text-align: center; margin-top: 30px; font-weight: 600 !important; line-height: 1.3; }
+      .kitchen-title { font-size: 28px; text-align: center; margin: 10px 0; font-weight: 900 !important; background: #000; color: #fff !important; padding: 10px; border-radius: 4px;}
+    </style>
+  `;
+
+  if (esFactura) {
+    contenido += `
+    <div class="header">
+      <h2>HACIENDA EL PORTAL S.A.S</h2>
+      <p>NIT. 800.145.761-1</p>
+      <p>TELEFONO: 5134422</p>
+      <p>CR 52 # 48-45 PISO 5 MEDELLIN</p>
+      <p>NO SOMOS AUTORETENEDORES DE IVA</p>
+      <p>SOMOS RESPONSABLES DE IVA</p>
+      <div class="divider"></div>
+      <h3 style="font-size: 18px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
+      <p style="font-size: 14px; margin-top: 5px;">${tituloDocumento}</p>
+    </div>
+
+    <div class="info-client">
+      <p><strong>Cliente:</strong> CONSUMIDOR FINAL</p>
+      <p><strong>Documento:</strong> 22222222222-3</p>
+      <p><strong>Dirección:</strong> CRA 52 # 48-45 PISO 5</p>
+      <p><strong>Mesa:</strong> ${orden.mesa}</p>
+    </div>
+
+    <div class="divider"></div>
+    `;
+  } else {
+    contenido += `
+    <div class="header">
+      <div class="kitchen-title">MESA: ${orden.mesa}</div>
+      <h3 style="font-size: 16px; margin-top: 5px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
+      <p style="font-size: 16px; margin-top: 5px; border: 2px solid #000; padding: 4px; display: inline-block;">${tituloDocumento}</p>
+    </div>
+
+    <div class="info-client">
+      <p><strong>Mesera:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+      <p><strong>Hora de pedido:</strong> ${new Date(orden.created_at).toLocaleTimeString()}</p>
+    </div>
+
+    <div class="divider"></div>
+    `;
+  }
+
+  contenido += `
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Cant.</th>
+          <th style="width: ${esFactura ? '50%' : '85%'};">Descripción</th>
+          ${esFactura ? '<th style="width: 35%;" class="text-right">Valor</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  orden.pos_orden_items.forEach(item => {
+    const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
+    // Aumentamos el tamaño de la fuente para las comandas de cocina
+    const fSize = esFactura ? '14px' : '18px';
+    contenido += `
+      <tr>
+        <td><strong style="font-size: ${fSize};">${item.cantidad}</strong></td>
+        <td><strong style="font-size: ${fSize};">${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</strong></td>
+        ${esFactura ? `<td class="text-right">$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</td>` : ''}
+      </tr>
+    `;
+    if (item.notas) {
+      contenido += `
+        <tr>
+          <td colspan="${esFactura ? '3' : '2'}" style="font-size: 14px; padding-left: 15px; font-style: italic; border-left: 2px solid #000; margin-bottom: 5px; display: block;">
+            -> NOTA: ${item.notas.toUpperCase()}
+          </td>
+          </tr>
+      `;
+    }
+  });
+  
+  contenido += `
+      </tbody>
+    </table>
+  `;
+
+  if (esFactura) {
+    contenido += `
+    <div class="total-section">
+      TOTAL: $${orden.total.toLocaleString('es-CO')}
+    </div>
+
+    <div class="footer-info">
+      <p><strong>Vendedor:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
+      <p><strong>Fecha expedición:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
+    </div>
+
+    <div class="legal-text">
+      <p>Esta factura de venta es un titulo valor en virtud de la ley 1 de julio 2008, los intereses moratorios que se causen seran cobrados mensualmente acorde con las variaciones que sufren las tasas de interés certificadas por la superintendencia financiera de conformidad con el artículo 111 de la ley 510</p>
+      <p style="margin-top: 10px; font-size: 13px;">*** COPIA DE CLIENTE ***</p>
+    </div>
+    `;
+  } else {
+    contenido += `
+    <div class="divider"></div>
+    <div class="legal-text">
+      <p style="margin-top: 10px; font-size: 14px;">*** COPIA DE COCINA ***</p>
+    </div>
+    `;
+  }
+  
+  let iframe = document.getElementById('impresora-oculta');
+  
+  if (iframe) {
+    document.body.removeChild(iframe);
+  }
+  
+  iframe = document.createElement('iframe');
+  iframe.id = 'impresora-oculta';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(`
+    <html>
+      <head><title>Impresión</title></head>
+      <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
+    </html>
+  `);
+  iframe.contentDocument.close();
+}
+
+// <-- RESTAURADO: CIERRE DE CAJA ORIGINAL
 const imprimirCierreCaja = () => {
   const [y, m, d] = fechaFiltroMetricas.value.split('-');
   const fechaImpresion = new Date(y, m - 1, d).toLocaleDateString();
@@ -1300,157 +1476,6 @@ const imprimirCierreCaja = () => {
   iframe.contentDocument.write(`
     <html>
       <head><title>Impresión Cierre</title></head>
-      <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
-    </html>
-  `);
-  iframe.contentDocument.close();
-}
-
-const imprimirTicket = (orden, tipo = 'comanda') => {
-  const esFactura = tipo === 'factura' || orden.estado === 'pagado';
-  const tituloDocumento = esFactura ? 'DOCUMENTO EQUIVALENTE POS' : 'TICKET DE COCINA (COMANDA)';
-
-  let contenido = `
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-family: Arial, Helvetica, sans-serif !important; font-weight: 700 !important; }
-      body { width: 280px; padding: 15px 5px 40px 5px; font-size: 14px; text-transform: uppercase; line-height: 1.4; }
-      .header { text-align: center; margin-bottom: 15px; }
-      .header h2 { font-size: 22px; margin-bottom: 4px; font-weight: 900 !important; }
-      .header p { font-size: 13px; margin-bottom: 3px; }
-      .divider { border-top: 2px dashed #000; margin: 15px 0; }
-      .info-client p { font-size: 13px; margin-bottom: 4px; }
-      table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
-      th { text-align: left; padding-bottom: 10px; border-bottom: 2px dashed #000; }
-      td { vertical-align: top; padding-top: 10px; padding-bottom: 5px; }
-      .text-right { text-align: right; }
-      .total-section { font-size: 20px; font-weight: 900 !important; text-align: right; margin-top: 15px; margin-bottom: 20px; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
-      .footer-info p { font-size: 13px; margin-bottom: 4px; }
-      .legal-text { font-size: 11px; text-align: center; margin-top: 30px; font-weight: 600 !important; line-height: 1.3; }
-    </style>
-  `;
-
-  if (esFactura) {
-    contenido += `
-    <div class="header">
-      <h2>HACIENDA EL PORTAL S.A.S</h2>
-      <p>NIT. 800.145.761-1</p>
-      <p>TELEFONO: 5134422</p>
-      <p>CR 52 # 48-45 PISO 5 MEDELLIN</p>
-      <p>NO SOMOS AUTORETENEDORES DE IVA</p>
-      <p>SOMOS RESPONSABLES DE IVA</p>
-      <div class="divider"></div>
-      <h3 style="font-size: 18px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
-      <p style="font-size: 14px; margin-top: 5px;">${tituloDocumento}</p>
-    </div>
-
-    <div class="info-client">
-      <p><strong>Cliente:</strong> CONSUMIDOR FINAL</p>
-      <p><strong>Documento:</strong> 22222222222-3</p>
-      <p><strong>Dirección:</strong> CRA 52 # 48-45 PISO 5</p>
-      <p><strong>Mesa:</strong> ${orden.mesa}</p>
-    </div>
-
-    <div class="divider"></div>
-    `;
-  } else {
-    contenido += `
-    <div class="header">
-      <h2 style="font-size: 24px;">MESA: ${orden.mesa}</h2>
-      <h3 style="font-size: 16px; margin-top: 5px;">${orden.local.replace(/-/g, ' ').toUpperCase()}</h3>
-      <p style="font-size: 14px; margin-top: 5px; text-decoration: underline;">${tituloDocumento}</p>
-    </div>
-
-    <div class="info-client">
-      <p><strong>Mesera:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
-      <p><strong>Hora de pedido:</strong> ${new Date(orden.created_at).toLocaleTimeString()}</p>
-    </div>
-
-    <div class="divider"></div>
-    `;
-  }
-
-  contenido += `
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 15%;">Cant.</th>
-          <th style="width: ${esFactura ? '50%' : '85%'};">Descripción</th>
-          ${esFactura ? '<th style="width: 35%;" class="text-right">Valor</th>' : ''}
-        </tr>
-      </thead>
-      <tbody>
-  `;
-  
-  orden.pos_orden_items.forEach(item => {
-    const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
-    contenido += `
-      <tr>
-        <td><strong style="font-size: 16px;">${item.cantidad}</strong></td>
-        <td><strong style="font-size: 16px;">${codigo}${item.menu_gastronomia?.nombre || 'Plato'}</strong></td>
-        ${esFactura ? `<td class="text-right">$${(item.precio_unitario * item.cantidad).toLocaleString('es-CO')}</td>` : ''}
-      </tr>
-    `;
-    if (item.notas) {
-      contenido += `
-        <tr>
-          <td colspan="${esFactura ? '3' : '2'}" style="font-size: 14px; padding-left: 15px; font-style: italic; border-left: 2px solid #000; margin-bottom: 5px; display: block;">
-            -> NOTA: ${item.notas.toUpperCase()}
-          </td>
-          </tr>
-      `;
-    }
-  });
-  
-  contenido += `
-      </tbody>
-    </table>
-  `;
-
-  if (esFactura) {
-    contenido += `
-    <div class="total-section">
-      TOTAL: $${orden.total.toLocaleString('es-CO')}
-    </div>
-
-    <div class="footer-info">
-      <p><strong>Vendedor:</strong> ${orden.perfiles?.nombre || 'Desconocida'}</p>
-      <p><strong>Fecha expedición:</strong> ${new Date(orden.created_at).toLocaleString()}</p>
-    </div>
-
-    <div class="legal-text">
-      <p>Esta factura de venta es un titulo valor en virtud de la ley 1 de julio 2008, los intereses moratorios que se causen seran cobrados mensualmente acorde con las variaciones que sufren las tasas de interés certificadas por la superintendencia financiera de conformidad con el artículo 111 de la ley 510</p>
-      <p style="margin-top: 10px;">*** COPIA DE CLIENTE ***</p>
-    </div>
-    `;
-  } else {
-    contenido += `
-    <div class="divider"></div>
-    <div class="legal-text">
-      <p style="margin-top: 10px; font-size: 14px;">*** COPIA DE COCINA ***</p>
-    </div>
-    `;
-  }
-  
-  let iframe = document.getElementById('impresora-oculta');
-  
-  if (iframe) {
-    document.body.removeChild(iframe);
-  }
-  
-  iframe = document.createElement('iframe');
-  iframe.id = 'impresora-oculta';
-  iframe.style.position = 'fixed';
-  iframe.style.right = '0';
-  iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = '0';
-  document.body.appendChild(iframe);
-
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(`
-    <html>
-      <head><title>Impresión</title></head>
       <body onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000)">${contenido}</body>
     </html>
   `);
@@ -1754,9 +1779,7 @@ const handleLogout = async () => {
   router.push('/login-privado')
 }
 
-// ============================================
-// LÓGICA DEL GENERADOR DE CÓDIGOS QR
-// ============================================
+// <-- RESTAURADO: CÓDIGOS QR ORIGINALES
 const mostrandoModalQR = ref(false)
 const nuevoQRGuardado = ref(null)
 const generandoQR = ref(false)
@@ -1823,7 +1846,7 @@ const generarYGuardarQR = async () => {
     }
 
     nuevoQRGuardado.value = data
-    fetchPuntosControl() // <-- LA LISTA SE ACTUALIZA AQUÍ
+    fetchPuntosControl() 
   } catch (error) {
     console.error(error)
     alert('Error al procesar el punto de control: ' + error.message)
@@ -1887,13 +1910,17 @@ const imprimirQRActual = () => {
 
 onMounted(() => { 
   cargarPerfilYDatos()
-  fetchPuntosControl() // <-- Y AQUÍ CARGA LOS QR AL INICIAR
+  fetchPuntosControl() 
 })
 
 onUnmounted(() => {
   if (subscripcionPos) {
     supabase.removeChannel(subscripcionPos)
     subscripcionPos = null
+  }
+  if (subscripcionSeguridad) {
+    supabase.removeChannel(subscripcionSeguridad)
+    subscripcionSeguridad = null
   }
 })
 </script>
