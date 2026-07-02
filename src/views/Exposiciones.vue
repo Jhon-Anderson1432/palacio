@@ -1,63 +1,87 @@
 <template>
-  <div class="min-h-screen bg-neutral-950 text-white pt-24 px-6 pb-20 overflow-x-hidden">
+  <!-- ESTRUCTURA & SEO: Uso de <main> e inclusión de atributos aria para accesibilidad -->
+  <main class="min-h-screen bg-neutral-950 text-white pt-24 px-6 pb-20 overflow-x-hidden selection:bg-[#D4AF37] selection:text-black">
     
     <Navbar />
 
-    <div class="max-w-7xl mx-auto mb-8 flex flex-wrap justify-center gap-4 mt-4">
+    <!-- SEO: Un <h1> visible pero sumamente elegante. Es CRUCIAL para que Google entienda de qué va la página -->
+    <header class="text-center max-w-4xl mx-auto mt-6 mb-8 flex flex-col items-center">
+      <h1 class="text-3xl md:text-5xl font-serif text-[#D4AF37] uppercase tracking-[0.15em] drop-shadow-lg mb-4">
+        {{ t.seoTitle }}
+      </h1>
+      <p class="text-neutral-400 text-xs md:text-sm tracking-[0.2em] uppercase font-light max-w-2xl">
+        {{ t.seoSubtitle }}
+      </p>
+    </header>
+
+    <div class="w-full flex justify-center mb-10">
+      <img 
+        src="@/assets/logon.png" 
+        alt="Logotipo Galería Palacio Nacional Medellín" 
+        class="w-40 md:w-48 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(212,175,55,0.15)]" 
+        fetchpriority="high"
+      />
+    </div>
+
+    <!-- Navegación de Filtros Semántica -->
+    <nav aria-label="Filtros de exposición" class="max-w-7xl mx-auto mb-10 flex flex-wrap justify-center gap-4">
       <button 
         @click="cambiarFiltro('Todos')" 
-        :class="filtroTipo === 'Todos' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
-        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
+        :class="filtroTipo === 'Todos' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/60 hover:bg-white/5'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group active:scale-95"
       >
         <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterAll }}</span>
       </button>
 
       <button 
         @click="cambiarFiltro('Pintura')" 
-        :class="filtroTipo === 'Pintura' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
-        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
+        :class="filtroTipo === 'Pintura' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/60 hover:bg-white/5'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group active:scale-95"
       >
         <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterPaintings }}</span>
       </button>
 
       <button 
         @click="cambiarFiltro('Escultura')" 
-        :class="filtroTipo === 'Escultura' ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/50'"
-        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group"
+        :class="filtroTipo === 'Escultura' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/60 hover:bg-white/5'"
+        class="px-8 py-3 rounded-full transition-all duration-300 flex items-center group active:scale-95"
       >
         <span class="text-xs font-bold uppercase tracking-widest">{{ t.filterSculptures }}</span>
       </button>
-    </div>
+    </nav>
 
-    <div class="w-full flex justify-center mb-12">
-      <img src="@/assets/logon.png" alt="Palacio Logo" class="w-40 md:w-56 object-contain opacity-90 drop-shadow-[0_0_15px_rgba(212,175,55,0.2)]" />
-    </div>
-
-    <div v-if="searchQuery" class="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5 gap-4">
-      <p class="text-sm text-neutral-400">
+    <div v-if="searchQuery" class="max-w-7xl mx-auto mb-10 flex flex-col sm:flex-row items-center justify-between bg-white/[0.02] backdrop-blur-sm p-4 rounded-xl border border-white/10 gap-4 shadow-lg">
+      <p class="text-sm text-neutral-400 tracking-wide">
         {{ t.filteringBy }}
-        <span class="text-white font-bold text-base ml-1">"{{ searchQuery }}"</span>
+        <span class="text-[#D4AF37] font-bold text-base ml-1">"{{ searchQuery }}"</span>
       </p>
-      <button @click="limpiarBusqueda" class="text-[#D4AF37] hover:text-white transition-colors text-xs uppercase tracking-widest font-bold">
-        {{ t.clearFilter }}
+      <button @click="limpiarBusqueda" class="text-neutral-500 hover:text-[#D4AF37] transition-colors text-xs uppercase tracking-widest font-bold flex items-center gap-2">
+        <span class="text-lg leading-none">×</span> {{ t.clearFilter }}
       </button>
     </div>
 
-    <div v-if="cargandoInicial" class="flex flex-col items-center justify-center py-20 space-y-4 text-neutral-500">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4AF37]"></div>
-      <span class="uppercase tracking-widest text-xs">{{ t.syncing }}</span>
+    <div v-if="cargandoInicial" class="flex flex-col items-center justify-center py-20 space-y-4 text-[#D4AF37]">
+      <div class="animate-spin rounded-full h-10 w-10 border-2 border-current border-t-transparent"></div>
+      <span class="uppercase tracking-[0.2em] text-xs font-bold animate-pulse">{{ t.syncing }}</span>
     </div>
 
-    <div v-else-if="obrasFiltradas.length > 0" class="max-w-7xl mx-auto flex flex-col">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
+    <!-- SEO: section general que agrupa los artículos (obras) -->
+    <section v-else-if="obrasFiltradas.length > 0" class="max-w-7xl mx-auto flex flex-col" aria-label="Catálogo de Obras de Arte">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 mb-12">
         
-        <div v-for="obra in obrasFiltradas" :key="obra.id" class="group bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-[#D4AF37]/40 transition-all duration-500 flex flex-col relative">
+        <!-- SEO: Cada tarjeta es un <article> con su itemscope de VisualArtwork -->
+        <article 
+          v-for="(obra, index) in obrasFiltradas" 
+          :key="obra.id" 
+          itemscope itemtype="https://schema.org/VisualArtwork"
+          class="obra-card group bg-neutral-900/40 border border-white/5 rounded-2xl overflow-hidden hover:border-[#D4AF37]/50 hover:bg-neutral-900/80 hover:shadow-[0_10px_30px_rgba(212,175,55,0.1)] transition-all duration-500 flex flex-col relative"
+        >
           
-          <div class="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs text-white font-bold uppercase tracking-widest">
+          <div class="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest">
             {{ obra.tipo === 'Escultura' ? t.sculptureLabel : t.paintingLabel }}
           </div>
 
-          <div class="relative aspect-square overflow-hidden bg-black">
+          <figure class="relative aspect-square overflow-hidden bg-black/50">
             <swiper
               :modules="modules"
               :slides-per-view="1"
@@ -66,78 +90,92 @@
               effect="fade"
               class="w-full h-full"
             >
-              <swiper-slide v-if="obra.imagen_1"><img :src="obra.imagen_1" class="w-full h-full object-cover"></swiper-slide>
-              <swiper-slide v-if="obra.imagen_2"><img :src="obra.imagen_2" class="w-full h-full object-cover"></swiper-slide>
-              <swiper-slide v-if="obra.imagen_3"><img :src="obra.imagen_3" class="w-full h-full object-cover"></swiper-slide>
+              <!-- RENDIMIENTO & SEO: Atributos alt detallados y lazy loading para imágenes fuera de la vista -->
+              <swiper-slide v-if="obra.imagen_1">
+                <img :src="obra.imagen_1" :alt="`${obtenerTitulo(obra)} - Venta de Arte en Medellín`" itemprop="image" :loading="index < 3 ? 'eager' : 'lazy'" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+              </swiper-slide>
+              <swiper-slide v-if="obra.imagen_2">
+                <img :src="obra.imagen_2" :alt="`Detalle de ${obtenerTitulo(obra)}`" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+              </swiper-slide>
+              <swiper-slide v-if="obra.imagen_3">
+                <img :src="obra.imagen_3" :alt="`Perspectiva de ${obtenerTitulo(obra)}`" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+              </swiper-slide>
               
               <swiper-slide v-if="!obra.imagen_1 && !obra.imagen_2 && !obra.imagen_3">
-                <div class="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-500">Sin Imagen</div>
+                <div class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-600 text-xs uppercase tracking-widest">Sin Imagen</div>
               </swiper-slide>
             </swiper>
-            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80 pointer-events-none z-10"></div>
-          </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent opacity-90 pointer-events-none z-10"></div>
+          </figure>
 
-          <div class="p-6 flex-1 flex flex-col">
-            <div class="text-center mb-4">
-              <h3 class="text-3xl font-serif text-white mb-1 group-hover:text-[#D4AF37] transition-colors lowercase capitalize">
+          <div class="p-6 flex-1 flex flex-col relative z-20 -mt-16">
+            <div class="text-center mb-6">
+              <h3 itemprop="name" class="text-2xl md:text-3xl font-serif text-white mb-2 group-hover:text-[#D4AF37] transition-colors lowercase capitalize drop-shadow-md line-clamp-2">
                 {{ obtenerTitulo(obra) }}
               </h3>
-              <p class="text-neutral-400 text-sm italic lowercase capitalize">{{ t.by }} {{ obra.autor }}</p>
+              <p itemprop="creator" itemscope itemtype="https://schema.org/Person" class="text-neutral-300 text-sm italic lowercase capitalize">
+                {{ t.by }} <span itemprop="name">{{ obra.autor }}</span>
+              </p>
             </div>
 
-            <div class="py-4 border-y border-white/5 mb-6 flex-1 flex flex-col justify-center">
+            <div class="py-4 border-y border-white/10 mb-6 flex-1 flex flex-col justify-center bg-black/20 rounded-xl px-4">
               <div class="grid grid-cols-2 gap-4 items-start">
                 
                 <div class="text-left pr-2">
-                  <span class="text-[10px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.techniqueLabel }}</span>
-                  <p class="text-sm text-neutral-300 font-medium line-clamp-2 leading-tight capitalize">
+                  <span class="text-[9px] uppercase text-[#D4AF37] tracking-[0.2em] font-bold block mb-1">{{ t.techniqueLabel }}</span>
+                  <p itemprop="artMedium" class="text-xs text-neutral-300 font-medium line-clamp-2 leading-relaxed capitalize">
                     {{ obtenerTecnica(obra) }}
                   </p>
                 </div>
                 
                 <div class="text-left border-l border-white/10 pl-4">
-                  <span class="text-[10px] uppercase text-[#D4AF37]/70 tracking-widest block mb-1">{{ t.dimensionsLabel }}</span>
-                  <p class="text-sm text-neutral-300 font-medium line-clamp-2 leading-tight lowercase">{{ obra.medidas }}</p>
+                  <span class="text-[9px] uppercase text-[#D4AF37] tracking-[0.2em] font-bold block mb-1">{{ t.dimensionsLabel }}</span>
+                  <p itemprop="artDimensions" class="text-xs text-neutral-300 font-medium line-clamp-2 leading-relaxed lowercase">{{ obra.medidas }}</p>
                 </div>
 
               </div>
             </div>
 
-            <div class="mt-auto flex items-center justify-between pt-2">
-              <span class="text-2xl font-mono text-white tracking-tighter flex items-baseline">
+            <div class="mt-auto flex items-center justify-between">
+              <!-- SEO: itemprop="offers" oculto pero válido para Google -->
+              <span itemprop="offers" itemscope itemtype="https://schema.org/Offer" class="text-xl md:text-2xl font-serif text-white tracking-wider flex items-baseline">
+                <meta itemprop="priceCurrency" content="USD" />
+                <meta itemprop="price" :content="isNaN(obra.precio) ? '0' : String(obra.precio).replace(/[^0-9.]/g, '')" />
                 {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
-                <span class="text-xs text-neutral-500 ml-1">USD</span>
+                <span class="text-[10px] text-neutral-500 ml-1 font-sans font-bold uppercase tracking-widest">USD</span>
               </span>
 
               <router-link 
                 :to="'/DetalleObra/' + obra.id" 
-                class="flex items-center justify-center px-6 py-3 bg-white text-black rounded-full hover:bg-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-xl"
+                class="flex items-center justify-center px-6 py-3 border border-white/20 bg-white/5 text-white rounded-full hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black transition-all duration-300 shadow-lg"
               >
-                <span class="text-xs font-bold uppercase tracking-widest leading-none">{{ t.detailsBtn }}</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest leading-none">{{ t.detailsBtn }}</span>
               </router-link>
             </div>
           </div>
-        </div>
+        </article>
       </div>
 
       <div v-if="hayMasObras" class="w-full flex justify-center pb-8">
-        <button @click="cargarMasObras" :disabled="cargandoMas" class="flex flex-col items-center justify-center px-8 py-3 bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span v-if="cargandoMas" class="flex items-center gap-2">
-            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-[#D4AF37]"></div>
-            <span class="text-xs uppercase tracking-widest">{{ t.loading }}</span>
+        <button @click="cargarMasObras" :disabled="cargandoMas" class="group flex flex-col items-center justify-center px-10 py-4 bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-full transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.05)] hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+          <span v-if="cargandoMas" class="flex items-center gap-3">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+            <span class="text-xs uppercase tracking-widest font-bold">{{ t.loading }}</span>
           </span>
-          <span v-else class="text-xs font-bold uppercase tracking-widest">
+          <span v-else class="text-xs font-bold uppercase tracking-widest transition-transform group-hover:scale-105">
             {{ t.loadMore }}
           </span>
         </button>
       </div>
+    </section>
+
+    <div v-else class="max-w-7xl mx-auto text-center py-32 space-y-4">
+      <div class="text-4xl mb-4 opacity-50">🖼️</div>
+      <p class="text-neutral-400 font-serif text-xl italic">{{ t.noResults }}</p>
+      <button @click="limpiarBusqueda" class="text-[#D4AF37] hover:text-white uppercase tracking-widest text-xs font-bold mt-4 transition-colors">Ver todas las obras</button>
     </div>
 
-    <div v-else class="max-w-7xl mx-auto text-center py-24 space-y-2">
-      <p class="text-neutral-500 italic text-lg">{{ t.noResults }}</p>
-    </div>
-
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -153,10 +191,10 @@ const modules = [Autoplay, EffectFade];
 
 
 const traducciones = {
-  es: { filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: '✕ Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
-  en: { filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: '✕ Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.' },
-  fr: { filterAll: 'Toutes', filterPaintings: 'Peintures', filterSculptures: 'Sculptures', filteringBy: 'Filtrage par:', clearFilter: '✕ Effacer le filtre', syncing: 'Synchronisation...', paintingLabel: 'Peinture', sculptureLabel: 'Sculpture', by: 'Par', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'Voir les détails', loadMore: 'Découvrir plus d\'œuvres', loading: 'Chargement...', noResults: 'Aucune œuvre trouvée.' },
-  ja: { filterAll: 'すべて', filterPaintings: '絵画', filterSculptures: '彫刻', filteringBy: 'フィルター:', clearFilter: '✕ フィルター解除', syncing: 'ギャラリーを同期中...', paintingLabel: '絵画', sculptureLabel: '彫刻', by: '作', techniqueLabel: '手法', dimensionsLabel: '寸法', detailsBtn: '詳細を見る', loadMore: 'もっと作品を見る', loading: '読み込み中...', noResults: '条件に一致する作品はありません。' }
+  es: { seoTitle: 'Galería de Arte', seoSubtitle: 'Exposiciones, Museo y Venta de Obras en Medellín', filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: 'Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
+  en: { seoTitle: 'Art Gallery', seoSubtitle: 'Exhibitions, Museum and Art Sales in Medellin', filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: 'Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.' },
+  fr: { seoTitle: 'Galerie d\'Art', seoSubtitle: 'Expositions, Musée et Vente d\'Art à Medellín', filterAll: 'Toutes', filterPaintings: 'Peintures', filterSculptures: 'Sculptures', filteringBy: 'Filtrage par:', clearFilter: 'Effacer le filtre', syncing: 'Synchronisation...', paintingLabel: 'Peinture', sculptureLabel: 'Sculpture', by: 'Par', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'Voir les détails', loadMore: 'Découvrir plus d\'œuvres', loading: 'Chargement...', noResults: 'Aucune œuvre trouvée.' },
+  ja: { seoTitle: 'アートギャラリー', seoSubtitle: 'メデジンの展覧会、美術館、アート販売', filterAll: 'すべて', filterPaintings: '絵画', filterSculptures: '彫刻', filteringBy: 'フィルター:', clearFilter: 'フィルター解除', syncing: 'ギャラリーを同期中...', paintingLabel: '絵画', sculptureLabel: '彫刻', by: '作', techniqueLabel: '手法', dimensionsLabel: '寸法', detailsBtn: '詳細を見る', loadMore: 'もっと作品を見る', loading: '読み込み中...', noResults: '条件に一致する作品はありません。' }
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
@@ -183,6 +221,57 @@ const filtroTipo = ref('Todos')
 const limitePorPagina = 12
 const paginaActual = ref(0)
 const hayMasObras = ref(true)
+
+// === INYECCIÓN SEO MAESTRA ===
+const inyectarSEO = () => {
+  // 1. Title y Meta Description Dinámicos
+  document.title = "Galerías de Arte en Medellín | Venta de Obras y Museo | Palacio Nacional";
+  
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta');
+    metaDesc.name = "description";
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.content = "Descubre la mejor galería de arte en Medellín en el Palacio Nacional. Venta de obras de arte, pinturas, esculturas y exposiciones en un museo histórico.";
+
+  // 2. Canonical URL estricta
+  let canonical = document.querySelector("link[rel='canonical']");
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.setAttribute("rel", "canonical");
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute("href", "https://palacionacionalmedellin.com/exposiciones");
+
+  // 3. Schema.org de ArtGallery (Esto es lo que lee Google para clasificar el sitio)
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "ArtGallery",
+    "name": "Galería de Arte Palacio Nacional Medellín",
+    "description": "Galería de arte, museo y venta de pinturas y esculturas en Medellín.",
+    "url": "https://palacionacionalmedellin.com/exposiciones",
+    "image": "https://palacionacionalmedellin.com/logon.png",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Carrera 52 # 52-43",
+      "addressLocality": "Medellín",
+      "addressRegion": "Antioquia",
+      "addressCountry": "CO"
+    },
+    "keywords": "galerias de arte en medellin, museos de arte, venta de obras de arte, galeria palacio nacional"
+  };
+
+  const scriptId = 'schema-exposiciones';
+  const existingScript = document.getElementById(scriptId);
+  if (existingScript) existingScript.remove();
+
+  const script = document.createElement('script');
+  script.id = scriptId;
+  script.setAttribute('type', 'application/ld+json');
+  script.textContent = JSON.stringify(schemaData);
+  document.head.appendChild(script);
+}
 
 const fetchObras = async (esCargaInicial = true) => {
   try {
@@ -251,7 +340,10 @@ watch(searchQuery, () => {
   fetchObras(true)
 })
 
-onMounted(() => fetchObras(true))
+onMounted(() => {
+  inyectarSEO()
+  fetchObras(true)
+})
 
 const obrasFiltradas = computed(() => todasLasObras.value)
 </script>
@@ -263,12 +355,26 @@ const obrasFiltradas = computed(() => todasLasObras.value)
   font-family: 'Playfair Display', serif;
 }
 
-.group {
-  animation: slideUp 0.8s ease-out forwards;
+/* ESTILOS: Animación de entrada en cascada para las tarjetas */
+.obra-card {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.obra-card:nth-child(1) { animation-delay: 0.1s; }
+.obra-card:nth-child(2) { animation-delay: 0.2s; }
+.obra-card:nth-child(3) { animation-delay: 0.3s; }
+.obra-card:nth-child(4) { animation-delay: 0.4s; }
+.obra-card:nth-child(5) { animation-delay: 0.5s; }
+.obra-card:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes slideUpFade {
+  from { 
+    opacity: 0; 
+    transform: translateY(40px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 </style>

@@ -1,10 +1,10 @@
 User-agent: *
 Allow: /
 
-# Bloquear acceso al panel administrativo y login
+# SEGURIDAD: Bloqueo estricto a paneles administrativos y logins
 Disallow: /login-privado
+Disallow: /loginadmin
 Disallow: /adminpanel02402110
 
-# Evitar rastreo de rutas dinámicas internas si no son necesarias en Google
-Disallow: /DetalleObra/
-Disallow: /gastronomia/
+# ENLACE DIRECTO AL MAPA PARA GOOGLEBOT (Obligatorio para SEO)
+Sitemap: https://palacionacionalmedellin.com/sitemap.xml
