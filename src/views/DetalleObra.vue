@@ -34,27 +34,20 @@
           <div class="absolute -inset-1 bg-[#D4AF37]/10 blur-2xl opacity-50 transition-opacity duration-700 group-hover:opacity-80"></div>
           
           <div class="relative w-full aspect-square md:aspect-[4/3] z-10 bg-neutral-950">
+            <!-- FIX NAVEGACIÓN BLINDADA: Swiper solo se monta si el componente está activo en el DOM -->
             <swiper
+              v-if="componenteActivo"
               :modules="modules"
               :slides-per-view="1"
-              :loop="true"
-              :autoplay="{ delay: 4000, disableOnInteraction: false }"
+              :loop="obra.listaImagenes.length > 1"
+              :autoplay="obra.listaImagenes.length > 1 ? { delay: 4000, disableOnInteraction: false } : false"
               effect="fade"
               class="w-full h-full"
             >
-              <!-- RENDIMIENTO Y SEO: fetchpriority="high" para la primera imagen (LCP), loading="lazy" para las demás. itemprop="image" -->
-              <swiper-slide v-if="obra.imagen_1">
-                <img :src="obra.imagen_1" :alt="`${tituloPrincipal} por ${obra.autor}`" itemprop="image" fetchpriority="high" class="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 hover:scale-105">
-              </swiper-slide>
-              <swiper-slide v-if="obra.imagen_2">
-                <img :src="obra.imagen_2" :alt="`Detalle 1 de ${tituloPrincipal}`" loading="lazy" decoding="async" class="w-full h-full object-contain drop-shadow-2xl">
-              </swiper-slide>
-              <swiper-slide v-if="obra.imagen_3">
-                <img :src="obra.imagen_3" :alt="`Detalle 2 de ${tituloPrincipal}`" loading="lazy" decoding="async" class="w-full h-full object-contain drop-shadow-2xl">
-              </swiper-slide>
-              
-              <swiper-slide v-if="!obra.imagen_1 && !obra.imagen_2 && !obra.imagen_3">
-                <div class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-500 uppercase tracking-widest text-xs">Sin Imagen Disponible</div>
+              <!-- FIX RENDIMIENTO: Iteración sobre el array estático de memoria -->
+              <swiper-slide v-for="(img, idx) in obra.listaImagenes" :key="idx" class="w-full h-full bg-neutral-950 overflow-hidden relative flex items-center justify-center">
+                <img v-if="img !== 'sin-imagen'" :src="img" :alt="`${tituloPrincipal} por ${obra.autor}`" itemprop="image" :fetchpriority="idx === 0 ? 'high' : 'auto'" :loading="idx === 0 ? 'eager' : 'lazy'" decoding="async" class="w-full h-full object-contain object-center block drop-shadow-2xl transition-transform duration-700 hover:scale-105">
+                <div v-else class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-500 uppercase tracking-widest text-xs">Sin Imagen Disponible</div>
               </swiper-slide>
             </swiper>
           </div>
@@ -82,7 +75,8 @@
           </p>
           <p class="text-sm flex justify-between pb-2">
             <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.valueLabel }}</span> 
-            <span class="text-[#D4AF37] font-bold text-lg">{{ isNaN(obra.precio) ? obra.precio : Number(obra.precio).toLocaleString() }} USD</span>
+            <!-- PRECIO CON PUNTO DE MILES -->
+            <span class="text-[#D4AF37] font-bold text-lg">{{ isNaN(obra.precio) ? obra.precio : Number(obra.precio).toLocaleString('es-CO') }} USD</span>
           </p>
           
           <div class="mt-6 pt-6 border-t border-[#D4AF37]/20 flex flex-col gap-2">
@@ -110,8 +104,8 @@
 
     </article>
 
-    <!-- Loader Optimizado -->
-    <div v-else class="h-screen flex flex-col items-center justify-center bg-black absolute inset-0 z-50">
+    <!-- FIX LOADER: Contenedor estático que respeta el flujo sin interferir con el router -->
+    <div v-else class="min-h-[70vh] flex flex-col items-center justify-center bg-black w-full py-32 z-10 relative">
       <div class="relative w-16 h-16">
         <div class="absolute inset-0 border-2 border-[#D4AF37]/20 rounded-full"></div>
         <div class="absolute inset-0 border-2 border-[#D4AF37] border-t-transparent animate-spin rounded-full"></div>
@@ -123,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue' 
 import { supabase, idiomaGlobal } from '../lib/supabase'
@@ -136,6 +130,8 @@ const modules = [Autoplay, EffectFade];
 
 const route = useRoute()
 const obra = ref(null)
+// FIX: Flag reactivo que apaga Swiper antes de desmontar el componente al ir hacia atrás
+const componenteActivo = ref(true)
 
 const traducciones = {
   es: { acquireBtn: 'Solicitar Adquisición', techniqueLabel: 'Técnica', dimensionsLabel: 'Dimensión', valueLabel: 'Valor', contactLabel: 'Contacto', infoLabel: 'Info detallada' },
@@ -164,10 +160,8 @@ const tecnicaPrincipal = computed(() => {
 
 // === INYECCIÓN SEO DINÁMICA ===
 const inyectarSEO = (datosObra) => {
-  // 1. Etiqueta Title Dinámica para Google
   document.title = `${datosObra.titulo} por ${datosObra.autor} | Galería Palacio Nacional`;
 
-  // 2. Canonical dinámico
   let canonical = document.querySelector("link[rel='canonical']");
   if (!canonical) {
     canonical = document.createElement("link");
@@ -176,7 +170,6 @@ const inyectarSEO = (datosObra) => {
   }
   canonical.setAttribute("href", window.location.href);
 
-  // 3. Schema.org de Obra de Arte Visual
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "VisualArtwork",
@@ -190,7 +183,7 @@ const inyectarSEO = (datosObra) => {
     "artDimensions": datosObra.medidas,
     "offers": {
       "@type": "Offer",
-      "price": String(datosObra.precio).replace(/[^0-9.]/g, ''), // Extrae solo los números
+      "price": String(datosObra.precio).replace(/[^0-9.]/g, ''),
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock",
       "url": window.location.href
@@ -208,8 +201,7 @@ const inyectarSEO = (datosObra) => {
   document.head.appendChild(script);
 }
 
-const obtenerDetalleObra = async () => {
-  const idBusca = route.params.id
+const obtenerDetalleObra = async (idBusca) => {
   try {
     const { data, error } = await supabase
       .from('obras')
@@ -218,9 +210,12 @@ const obtenerDetalleObra = async () => {
       .single()
 
     if (error) throw error
-    obra.value = data
     
-    // Llamamos a la función de SEO en cuanto tenemos los datos
+    // FIX CRITICO: Pre-procesamiento de imágenes fijo en memoria
+    const imgs = [data.imagen_1, data.imagen_2, data.imagen_3].filter(Boolean);
+    data.listaImagenes = imgs.length > 0 ? imgs : ['sin-imagen'];
+    
+    obra.value = data
     inyectarSEO(data)
   } catch (err) {
     console.trace("Error al obtener la obra:", err.message)
@@ -232,7 +227,7 @@ const preguntarPorWhatsApp = () => {
 
   const dominio = window.location.origin
   const urlDetalle = `${dominio}/DetalleObra/${obra.value.id}`
-  const precioFormat = isNaN(obra.value.precio) ? obra.value.precio : '$' + Number(obra.value.precio).toLocaleString() + ' USD'
+  const precioFormat = isNaN(obra.value.precio) ? obra.value.precio : '$' + Number(obra.value.precio).toLocaleString('es-CO') + ' USD'
   
   const multimediaInfo = obra.value.imagen_1 ? `\n📸 *Imagen:* ${obra.value.imagen_1}` : ''
   const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n🔗 *Enlace:* ${urlDetalle}${multimediaInfo}`
@@ -242,9 +237,21 @@ const preguntarPorWhatsApp = () => {
 }
 
 onMounted(() => {
-  window.scrollTo(0, 0)
-  obtenerDetalleObra()
+  componenteActivo.value = true
 })
+
+// FIX BLINDAJE: Apagamos Swiper al iniciar la navegación saliente
+onBeforeUnmount(() => {
+  componenteActivo.value = false
+})
+
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    obra.value = null;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    obtenerDetalleObra(newId);
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
@@ -280,5 +287,25 @@ p[itemprop="creator"] {
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(20px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* RENDIMIENTO & FIX DE SOLAPAMIENTO DE IMÁGENES: Aislamiento GPU para evitar superposición */
+.swiper-slide {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  position: relative;
+}
+
+.swiper-slide img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 </style>

@@ -82,27 +82,20 @@
           </div>
 
           <figure class="relative aspect-square overflow-hidden bg-black/50">
+            <!-- FIX NAVEGACIÓN BLINDADA: Swiper solo se renderiza si el componente está activo en el DOM -->
             <swiper
+              v-if="componenteActivo"
               :modules="modules"
               :slides-per-view="1"
-              :loop="true"
-              :autoplay="{ delay: 3500, disableOnInteraction: false }"
+              :loop="obra.listaImagenes.length > 1"
+              :autoplay="obra.listaImagenes.length > 1 ? { delay: 3500, disableOnInteraction: false } : false"
               effect="fade"
               class="w-full h-full"
             >
-              <!-- RENDIMIENTO & SEO: Atributos alt detallados y lazy loading para imágenes fuera de la vista -->
-              <swiper-slide v-if="obra.imagen_1">
-                <img :src="obra.imagen_1" :alt="`${obtenerTitulo(obra)} - Venta de Arte en Medellín`" itemprop="image" :loading="index < 3 ? 'eager' : 'lazy'" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-              </swiper-slide>
-              <swiper-slide v-if="obra.imagen_2">
-                <img :src="obra.imagen_2" :alt="`Detalle de ${obtenerTitulo(obra)}`" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-              </swiper-slide>
-              <swiper-slide v-if="obra.imagen_3">
-                <img :src="obra.imagen_3" :alt="`Perspectiva de ${obtenerTitulo(obra)}`" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-              </swiper-slide>
-              
-              <swiper-slide v-if="!obra.imagen_1 && !obra.imagen_2 && !obra.imagen_3">
-                <div class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-600 text-xs uppercase tracking-widest">Sin Imagen</div>
+              <!-- FIX RENDIMIENTO: Iteramos sobre el array fijo en memoria sin generar funciones infinitas -->
+              <swiper-slide v-for="(img, idx) in obra.listaImagenes" :key="idx" class="w-full h-full bg-neutral-950 overflow-hidden relative flex items-center justify-center">
+                <img v-if="img !== 'sin-imagen'" :src="img" :alt="`${obtenerTitulo(obra)} - Venta de Arte en Medellín`" itemprop="image" :loading="index < 3 ? 'eager' : 'lazy'" :fetchpriority="index < 3 ? 'high' : 'auto'" decoding="async" class="w-full h-full object-cover object-center block transition-transform duration-1000 group-hover:scale-105">
+                <div v-else class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-600 text-xs uppercase tracking-widest">Sin Imagen</div>
               </swiper-slide>
             </swiper>
             <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent opacity-90 pointer-events-none z-10"></div>
@@ -137,11 +130,11 @@
             </div>
 
             <div class="mt-auto flex items-center justify-between">
-              <!-- SEO: itemprop="offers" oculto pero válido para Google -->
+              <!-- SEO: itemprop="offers" oculto pero válido para Google. PRECIO CON PUNTO DE MILES -->
               <span itemprop="offers" itemscope itemtype="https://schema.org/Offer" class="text-xl md:text-2xl font-serif text-white tracking-wider flex items-baseline">
                 <meta itemprop="priceCurrency" content="USD" />
                 <meta itemprop="price" :content="isNaN(obra.precio) ? '0' : String(obra.precio).replace(/[^0-9.]/g, '')" />
-                {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString() }}
+                {{ isNaN(obra.precio) ? obra.precio : '$' + Number(obra.precio).toLocaleString('es-CO') }}
                 <span class="text-[10px] text-neutral-500 ml-1 font-sans font-bold uppercase tracking-widest">USD</span>
               </span>
 
@@ -179,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import Navbar from '../components/Navbar.vue' 
 import { supabase, searchQuery, idiomaGlobal } from '../lib/supabase'
 
@@ -189,6 +182,8 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 const modules = [Autoplay, EffectFade];
 
+// FIX: Flag reactivo que apaga Swiper antes de que Vue Router desmonte la página
+const componenteActivo = ref(true)
 
 const traducciones = {
   es: { seoTitle: 'Galería de Arte', seoSubtitle: 'Exposiciones, Museo y Venta de Obras en Medellín', filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: 'Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
@@ -224,7 +219,6 @@ const hayMasObras = ref(true)
 
 // === INYECCIÓN SEO MAESTRA ===
 const inyectarSEO = () => {
-  // 1. Title y Meta Description Dinámicos
   document.title = "Galerías de Arte en Medellín | Venta de Obras y Museo | Palacio Nacional";
   
   let metaDesc = document.querySelector('meta[name="description"]');
@@ -235,7 +229,6 @@ const inyectarSEO = () => {
   }
   metaDesc.content = "Descubre la mejor galería de arte en Medellín en el Palacio Nacional. Venta de obras de arte, pinturas, esculturas y exposiciones en un museo histórico.";
 
-  // 2. Canonical URL estricta
   let canonical = document.querySelector("link[rel='canonical']");
   if (!canonical) {
     canonical = document.createElement("link");
@@ -244,7 +237,6 @@ const inyectarSEO = () => {
   }
   canonical.setAttribute("href", "https://palacionacionalmedellin.com/exposiciones");
 
-  // 3. Schema.org de ArtGallery (Esto es lo que lee Google para clasificar el sitio)
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "ArtGallery",
@@ -306,10 +298,19 @@ const fetchObras = async (esCargaInicial = true) => {
     if (error) throw error
 
     if (data) {
+      // FIX CRITICO: Pre-procesamos las imágenes de antemano para no generar arrays infinitos al navegar
+      const obrasProcesadas = data.map(o => {
+        const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean);
+        return {
+          ...o,
+          listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen']
+        };
+      });
+
       if (esCargaInicial) {
-        todasLasObras.value = data
+        todasLasObras.value = obrasProcesadas
       } else {
-        todasLasObras.value = [...todasLasObras.value, ...data]
+        todasLasObras.value = [...todasLasObras.value, ...obrasProcesadas]
       }
       hayMasObras.value = todasLasObras.value.length < count
     }
@@ -341,8 +342,15 @@ watch(searchQuery, () => {
 })
 
 onMounted(() => {
+  componenteActivo.value = true
+  window.scrollTo({ top: 0, behavior: 'instant' })
   inyectarSEO()
   fetchObras(true)
+})
+
+// FIX BLINDAJE: Al salir de la ruta, apagamos Swiper limpiamente antes de que el router destruya el DOM
+onBeforeUnmount(() => {
+  componenteActivo.value = false
 })
 
 const obrasFiltradas = computed(() => todasLasObras.value)
@@ -376,5 +384,25 @@ const obrasFiltradas = computed(() => todasLasObras.value)
     opacity: 1; 
     transform: translateY(0); 
   }
+}
+
+/* RENDIMIENTO & FIX DE SOLAPAMIENTO DE IMÁGENES: Aislamiento GPU para evitar superposición */
+.swiper-slide {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  position: relative;
+}
+
+.swiper-slide img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 </style>
