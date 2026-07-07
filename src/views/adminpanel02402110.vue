@@ -18,12 +18,13 @@
       </div>
       
       <nav class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
-        <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
+        <!-- MODIFICADO: Agregado asistente_galeria y ocultadas las métricas para él -->
+        <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'asistente_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
           <button @click="pestañaActiva = 'inventario'; menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
              <span class="font-medium text-sm uppercase tracking-widest">Inventario Arte</span>
           </button>
 
-          <button @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+          <button v-if="rolUsuario !== 'asistente_galeria'" @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
              <span class="font-medium text-sm uppercase tracking-widest">Métricas Arte</span>
           </button>
         </div>
@@ -299,7 +300,7 @@
             </div>
             
             <div class="flex items-center gap-3">
-              <input type="date" v-model="fechaFiltroSeguridad" @change="fetchSeguridad" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
+              <input type="date" v-model="fechaFiltroSeguridad" @change="fetchSeguridad()" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
             </div>
           </header>
 
@@ -344,7 +345,8 @@
                       </td>
                       <td class="py-4 text-white">
                         {{ registro.puntos_control?.nombre }} 
-                        <span class="text-xs text-neutral-500 block mt-1">Piso: {{ registro.puntos_control?.piso }}</span>
+                        <!-- MODIFICADO: Piso sin paréntesis y mostrando texto plano -->
+                        <span class="text-xs text-neutral-500 block mt-1">{{ registro.puntos_control?.piso }}</span>
                       </td>
                       <td class="py-4 text-neutral-300 text-sm max-w-xs truncate" :title="registro.observacion">{{ registro.observacion }}</td>
                     </tr>
@@ -368,7 +370,8 @@
                       {{ punto.nombre }}
                       <span v-if="punto.es_punto_final" class="w-2 h-2 rounded-full bg-red-500" title="Punto Final"></span>
                     </p>
-                    <p class="text-[10px] text-neutral-400 uppercase tracking-widest">Piso {{ punto.piso }}</p>
+                    <!-- MODIFICADO: Piso sin paréntesis y mostrando texto plano -->
+                    <p class="text-[10px] text-neutral-400 uppercase tracking-widest">{{ punto.piso }}</p>
                   </div>
                   <div class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-[#D4AF37] transition-all" @click="mostrarQRGrande(punto)" title="Ver QR en grande">
                     <qrcode-vue :value="punto.codigo_qr" :size="48" level="L" />
@@ -730,9 +733,10 @@
             <input v-model="formQR.nombre" type="text" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] transition-colors uppercase text-sm">
           </div>
 
+          <!-- MODIFICADO: Piso como texto libre para permitir nombres de niveles o números -->
           <div>
-            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Piso / Nivel</label>
-            <input v-model="formQR.piso" type="number" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] transition-colors text-sm">
+            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Piso / Nivel (Ej: Piso 1, Mezzanine, Sótano)</label>
+            <input v-model="formQR.piso" type="text" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] transition-colors text-sm uppercase">
           </div>
 
           <div class="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 mt-2">
@@ -744,7 +748,7 @@
           </div>
 
           <button type="submit" :disabled="generandoQR" class="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:opacity-50 text-xs uppercase tracking-widest transition-colors mt-6 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-            {{ generandoQR ? 'Procesando...' : (qrEditandoId ? 'Actualizar Punto' : 'Generar Código QR') }}
+            {{ generatingQR ? 'Procesando...' : (qrEditandoId ? 'Actualizar Punto' : 'Generar Código QR') }}
           </button>
         </form>
 
@@ -753,7 +757,8 @@
             <qrcode-vue :value="nuevoQRGuardado.codigo_qr" :size="200" level="H" />
           </div>
           <p class="text-white text-sm font-bold uppercase tracking-widest text-center">{{ nuevoQRGuardado.nombre }}</p>
-          <p class="text-neutral-400 text-xs uppercase tracking-widest mt-1">Piso {{ nuevoQRGuardado.piso }}</p>
+          <!-- MODIFICADO: Piso sin paréntesis ni texto extra -->
+          <p class="text-neutral-400 text-xs uppercase tracking-widest mt-1">{{ nuevoQRGuardado.piso }}</p>
           
           <span v-if="nuevoQRGuardado.es_punto_final" class="mt-3 bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
             Punto de Descanso
@@ -796,15 +801,16 @@ const registrosSeguridad = ref([])
 const cargandoSeguridad = ref(false)
 const statsSeguridad = reactive({ totalEscaneos: 0, observaciones: 0 })
 const puntosDeControl = ref([])
-let subscripcionSeguridad = null // <-- NUEVO: Para el realtime de seguridad
+let subscripcionSeguridad = null
 
 const fetchPuntosControl = async () => {
   const { data, error } = await supabase.from('puntos_control').select('*').order('created_at', { ascending: false })
   if (!error) puntosDeControl.value = data || []
 }
 
-const fetchSeguridad = async () => {
-  cargandoSeguridad.value = true
+// MODIFICADO: Permite recarga silenciosa en segundo plano igual al POS
+const fetchSeguridad = async (mostrarLoader = true) => {
+  if (mostrarLoader) cargandoSeguridad.value = true
   
   if (!fechaFiltroSeguridad.value) fechaFiltroSeguridad.value = getHoyStr()
   const [yyyy, mm, dd] = fechaFiltroSeguridad.value.split('-')
@@ -833,7 +839,7 @@ const fetchSeguridad = async () => {
     statsSeguridad.totalEscaneos = 0
     statsSeguridad.observaciones = 0
   }
-  cargandoSeguridad.value = false
+  if (mostrarLoader) cargandoSeguridad.value = false
 }
 
 const formatearHora = (fechaISO) => {
@@ -845,13 +851,13 @@ const formatearHora = (fechaISO) => {
   })
 }
 
-// <-- NUEVO: Función para actualizar seguridad en tiempo real
+// MODIFICADO: Refresco silencioso idéntico al POS para no parpadear al escanear
 const inicializarRealtimeSeguridad = () => {
   if (subscripcionSeguridad) return; 
   subscripcionSeguridad = supabase
     .channel('seguridad_changes')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'registros_punto_control' }, (payload) => {
-      fetchSeguridad(); // Refrescar silenciosamente cuando el guarda escanee
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'registros_punto_control' }, (payload) => {
+      fetchSeguridad(false); // Refresco en segundo plano sin indicador de carga
     })
     .subscribe((status) => {
       if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
@@ -967,13 +973,14 @@ const cargarPerfilYDatos = async () => {
       fetchOrdenesCaja()
       inicializarRealtime() 
       fetchGastronomia()
-    } else if (perfil.rol === 'admin_galeria') {
+    // MODIFICADO: Se incluye asistente_galeria para que cargue solo el inventario
+    } else if (perfil.rol === 'admin_galeria' || perfil.rol === 'asistente_galeria') {
       pestañaActiva.value = 'inventario'
       fetchObras()
     } else if (perfil.rol === 'admin_seguridad') {
       pestañaActiva.value = 'seguridad'
       fetchSeguridad()
-      inicializarRealtimeSeguridad() // <-- Inicializa realtime solo si es admin_seguridad
+      inicializarRealtimeSeguridad()
     } else {
       // SUPERADMIN carga todo
       pestañaActiva.value = 'inventario'
@@ -982,7 +989,7 @@ const cargarPerfilYDatos = async () => {
       fetchOrdenesCaja()
       fetchSeguridad()
       inicializarRealtime() 
-      inicializarRealtimeSeguridad() // <-- Inicializa realtime para superadmin
+      inicializarRealtimeSeguridad()
     }
   } else {
       fetchObras()
@@ -990,7 +997,6 @@ const cargarPerfilYDatos = async () => {
   }
 }
 
-// <-- MEJORADO: Realtime robusto para POS (Captura INSERT, UPDATE, DELETE)
 const inicializarRealtime = () => {
   if (subscripcionPos) return; 
   subscripcionPos = supabase
@@ -1022,7 +1028,6 @@ const inicializarRealtime = () => {
         setTimeout(() => intentarImprimir(1), 1000);
 
       } else {
-        // En UPDATE o DELETE (Ej. se anula una orden, o se cobra), recarga silenciosa instantánea
         setTimeout(() => { fetchOrdenesCaja(false); }, 1000);
       }
     })
@@ -1228,7 +1233,6 @@ const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = false
 }
 
-// <-- MODIFICADO Y MEJORADO: TICKET Y FACTURAS PREMIUM
 const imprimirTicket = (orden, tipo = 'comanda') => {
   const esFactura = tipo === 'factura' || orden.estado === 'pagado';
   const tituloDocumento = esFactura ? 'DOCUMENTO EQUIVALENTE POS' : 'TICKET DE COCINA (COMANDA)';
@@ -1307,7 +1311,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   
   orden.pos_orden_items.forEach(item => {
     const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
-    // Aumentamos el tamaño de la fuente para las comandas de cocina
     const fSize = esFactura ? '14px' : '18px';
     contenido += `
       <tr>
@@ -1383,7 +1386,6 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
   iframe.contentDocument.close();
 }
 
-// <-- RESTAURADO: CIERRE DE CAJA ORIGINAL
 const imprimirCierreCaja = () => {
   const [y, m, d] = fechaFiltroMetricas.value.split('-');
   const fechaImpresion = new Date(y, m - 1, d).toLocaleDateString();
@@ -1868,6 +1870,7 @@ const deletePuntoControl = async (punto) => {
   }
 }
 
+// MODIFICADO: Piso y nombre sin paréntesis ni en el ticket del código QR
 const imprimirQRActual = () => {
   const canvas = document.querySelector('.qr-container canvas')
   if (!canvas) return
@@ -1876,7 +1879,7 @@ const imprimirQRActual = () => {
   let contenido = `
     <div style="text-align: center; font-family: Arial, sans-serif; padding: 20px;">
       <h2 style="margin: 0; font-size: 24px; font-weight: 900;">PALACIO NACIONAL</h2>
-      <h3 style="margin: 5px 0 15px 0; font-size: 18px;">Punto: ${nuevoQRGuardado.value.nombre} (Piso ${nuevoQRGuardado.value.piso})</h3>
+      <h3 style="margin: 5px 0 15px 0; font-size: 18px;">${nuevoQRGuardado.value.piso} Punto: ${nuevoQRGuardado.value.nombre}</h3>
       <img src="${imgData}" style="width: 200px; height: 200px;" />
       <p style="margin-top: 15px; font-weight: bold; font-size: 14px;">
         ${nuevoQRGuardado.value.es_punto_final ? '🔴 PUNTO FINAL DE RONDA' : '🟢 PUNTO DE CONTROL'}
