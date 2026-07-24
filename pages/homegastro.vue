@@ -78,7 +78,7 @@
           aria-label="Visitar el menú de Chao Café - Cafetería Artesanal en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-40 md:h-40 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#0a0a0a] p-4 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 group-hover:bg-black transition-colors duration-500">
-            <NuxtImg src="../assets/logonc.png" alt="Logo de Chao Café Artesanal" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+            <NuxtImg src="/logonc.png" alt="Logo de Chao Café Artesanal" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors drop-shadow-sm">
@@ -95,7 +95,7 @@
           aria-label="Visitar el menú de Chao Pescao - Restaurante y Bar en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-40 md:h-40 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#0a0a0a] p-4 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 group-hover:bg-black transition-colors duration-500">
-            <NuxtImg src="../assets/logonp.png" alt="Logo de Chao Pescao Restaurante" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+            <NuxtImg src="/logonp.png" alt="Logo de Chao Pescao Restaurante" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors drop-shadow-sm">
