@@ -1,27 +1,29 @@
-export default defineNuxtRouteMiddleware((to, from) => {
-  // 1. ARQUITECTURA: Usamos el composable nativo de Nuxt Supabase
-  // Es síncrono, súper rápido, y lee la sesión directamente de la cookie segura.
-  const user = useSupabaseUser();
+// middleware/auth.global.ts
+export default defineNuxtRouteMiddleware((to) => {
+  const user = useSupabaseUser()
+  const path = to.path.toLowerCase()
 
-  const currentPath = to.path.toLowerCase();
-
-  // 2. ROBUSTEZ: Usamos startsWith() para asegurar que CUALQUIER sub-ruta 
-  // dentro de estos paneles también esté estrictamente protegida.
-  const esRutaAdmin = currentPath.startsWith('/adminpanel02402110');
-  const esRutaPos = currentPath.startsWith('/terminal-pos');
-
-  // 3. LÓGICA DE PROTECCIÓN Y REDIRECCIÓN
-  if (esRutaAdmin || esRutaPos) {
-    
-    // Si no hay un usuario autenticado (la cookie de sesión no existe o expiró)
-    if (!user.value) {
-      if (esRutaPos) {
-        return navigateTo('/login-pos');
-      } else {
-        return navigateTo('/loginadmin');
-      }
-    }
-    
-    // Aquí puedes agregar roles en el futuro (ej. si user.value.role !== 'admin')
+  // 1. Si ya estamos en una página de login, no hacemos nada (Evita bucles)
+  if (path === '/loginadmin' || path === '/login-meseras') {
+    return
   }
-});
+
+  // 2. Si es la página principal u otra pública, dejamos pasar libremente
+  if (path === '/' || path.startsWith('/historia') || path.startsWith('/exposiciones') || path.startsWith('/homegastro')) {
+    return
+  }
+
+  // 3. Detectar rutas protegidas
+  const esRutaAdmin = path.startsWith('/adminpanel02402110')
+  const esRutaPos = path.startsWith('/terminal-pos')
+
+  // 4. Si intenta entrar a administración sin sesión -> Forzar /loginadmin (NUNCA a /)
+  if (esRutaAdmin && !user.value) {
+    return navigateTo('/loginadmin')
+  }
+
+  // 5. Si intenta entrar al POS sin sesión -> Forzar login de meseras
+  if (esRutaPos && !user.value) {
+    return navigateTo('/login-meseras')
+  }
+})

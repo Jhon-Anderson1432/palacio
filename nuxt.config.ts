@@ -7,22 +7,24 @@ export default defineNuxtConfig({
     '@nuxt/image'
   ],
 
-  supabase: {
+supabase: {
     redirectOptions: {
-      // 👇 Redirige a las meseras a su login por defecto si no están autenticadas
+      // Ruta por defecto para usuarios no autenticados
       login: '/login-meseras', 
       callback: '/confirm',
+      // Lista blanca: rutas que CUALQUIER persona puede visitar sin iniciar sesión
       exclude: [
-        '/', 
-        '/historia', 
-        '/contactos', 
+        '/',
+        '/historia',
+        '/contactos',
         '/exposiciones',
-        '/DetalleObra/*', // 🛡️ Evita que pida login al ver una obra
-        '/homegastro', 
-        '/gastronomia/*', 
-        '/loginadmin', // 🛡️ Permite que los admins lleguen a su pantalla de login
-        '/vigilante-scan' // 🛡️ Permite acceso directo al escáner sin iniciar sesión
-      ] 
+        '/DetalleObra/*', 
+        '/homegastro',
+        '/gastronomia/*',
+        '/loginadmin',
+        '/login-meseras',
+        '/vigilante-scan'
+      ]
     }
   },
 
