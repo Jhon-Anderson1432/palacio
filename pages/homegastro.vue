@@ -112,7 +112,7 @@
           aria-label="Visitar el menú de Sky Bar - Terraza y Cócteles de Autor en el Centro de Medellín"
         >
           <div class="w-28 h-28 md:w-40 md:h-40 mb-8 rounded-full border border-[#D4AF37]/20 bg-[#0a0a0a] p-4 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37]/60 group-hover:bg-black transition-colors duration-500">
-            <NuxtImg src="../assets/logons.png" alt="Logo de Sky Bar Café Medellín" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+           <NuxtImg src="/logons.png" alt="Logo de Sky Bar Café Medellín" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
           </div>
           
           <h2 class="text-2xl md:text-3xl font-serif tracking-[0.15em] uppercase text-white group-hover:text-[#D4AF37] transition-colors drop-shadow-sm">
