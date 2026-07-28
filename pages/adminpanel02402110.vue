@@ -787,6 +787,7 @@ definePageMeta({
 })
 
 import QrcodeVue from 'qrcode.vue'
+import imageCompression from 'browser-image-compression'
 
 // Auto-imports listos para usar
 const router = useRouter()
@@ -955,7 +956,6 @@ const cargarPerfilYDatos = async () => {
   if (import.meta.server) return;
   
   const { data: { user } } = await supabase.auth.getUser()
-  // FIX REDIRECT: Enviar de manera estricta a la URL de LoginAdmin
   if (!user) { router.push('/LoginAdmin'); return }
 
   const { data: perfil } = await supabase.from('perfiles').select('*').eq('id', user.id).single()
@@ -1087,8 +1087,53 @@ const ordenesPendientes = computed(() => {
 });
 
 const ordenesFacturadas = computed(() => {
-  return ordenesCaja.value.filter(orden => orden.estado === 'pagado')
-})
+  const pagadas = [...ordenesCaja.value]
+    .filter(orden => orden.estado === 'pagado')
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  const gruposPorMesa = {};
+  
+  pagadas.forEach(orden => {
+    const mesa = orden.mesa;
+    if (!gruposPorMesa[mesa]) {
+      gruposPorMesa[mesa] = [];
+    }
+    
+    const ordenTime = new Date(orden.created_at).getTime();
+    
+    let grupoEncontrado = gruposPorMesa[mesa].find(g => {
+       const firstTime = new Date(g.created_at).getTime();
+       return (ordenTime - firstTime) < 6 * 60 * 60 * 1000;
+    });
+    
+    if (grupoEncontrado) {
+      grupoEncontrado.ids_asociados.push(orden.id);
+      grupoEncontrado.pos_orden_items_anadidos.push(...(orden.pos_orden_items || []));
+      grupoEncontrado.total_combinado += orden.total;
+    } else {
+      gruposPorMesa[mesa].push({
+        ...orden,
+        ids_asociados: [orden.id],
+        pos_orden_items_originales: [...(orden.pos_orden_items || [])],
+        pos_orden_items_anadidos: [],
+        total_combinado: orden.total
+      });
+    }
+  });
+
+  const resultado = [];
+  Object.values(gruposPorMesa).forEach(grupos => {
+    grupos.forEach(grupo => {
+      resultado.push({
+        ...grupo,
+        total: grupo.total_combinado,
+        pos_orden_items: [...grupo.pos_orden_items_originales, ...grupo.pos_orden_items_anadidos]
+      });
+    });
+  });
+
+  return resultado.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+});
 
 const ordenesCajaFiltradas = computed(() => {
   return estadoCaja.value === 'pendiente' ? ordenesPendientes.value : ordenesFacturadas.value
@@ -1522,10 +1567,20 @@ const openForm = (obra = null) => {
 
 const uploadImageAndGetUrl = async (file) => {
   if (!file) return null
-  const fileExt = file.name.split('.').pop()
-  const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-  const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, file)
+
+  const opcionesCompresion = {
+    maxSizeMB: 0.3,
+    maxWidthOrHeight: 1200,
+    useWebWorker: true,
+    fileType: 'image/webp'
+  }
+
+  const compressedFile = await imageCompression(file, opcionesCompresion)
+
+  const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.webp`
+  const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, compressedFile)
   if (uploadError) throw uploadError
+  
   const { data: { publicUrl } } = supabase.storage.from('obras-imagenes').getPublicUrl(fileName)
   return publicUrl
 }
@@ -1771,7 +1826,6 @@ const deleteProductoGastro = async (item) => {
 
 const handleLogout = async () => {
   await supabase.auth.signOut()
-  // FIX REDIRECT: Aseguramos la ruta correcta al salir
   router.push('/LoginAdmin')
 }
 

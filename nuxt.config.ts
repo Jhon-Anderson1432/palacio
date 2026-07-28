@@ -1,11 +1,6 @@
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: [
-    '@nuxtjs/tailwindcss',
-    '@nuxtjs/supabase',
-    '@pinia/nuxt',
-    '@nuxt/image'
-  ],
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase', '@pinia/nuxt', '@nuxt/image', "@nuxtjs/seo"],
 
 supabase: {
     redirectOptions: {
@@ -30,7 +25,6 @@ supabase: {
 
   css: [
     '~/assets/css/main.css',
-    '~/assets/css/style.css' 
   ],
 
   app: {
@@ -87,7 +81,7 @@ supabase: {
               {
                 "@type": "FoodEstablishment",
                 "@id": "https://palacionacionalmedellin.com/#gastronomia",
-                "name": "Zona Gastronómica Palacio Nacional",
+                "name": "Zona Gastrongit checkout -b legacy-vueómica Palacio Nacional",
                 "url": "https://palacionacionalmedellin.com/homegastro",
                 "description": "La mejor oferta gastronómica en el centro de Medellín."
               },
