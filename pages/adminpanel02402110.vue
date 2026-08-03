@@ -527,6 +527,7 @@
 
         <div v-if="pestañaActiva === 'estadisticas'">
           <div class="max-w-5xl mx-auto space-y-8">
+            
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
                 <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Catálogo</span>
@@ -539,6 +540,41 @@
               <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
                 <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Esculturas</span>
                 <span class="text-4xl md:text-5xl font-serif text-white">{{ stats.esculturas }}</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
+              <div class="absolute -right-10 -top-10 bg-[#D4AF37]/5 w-40 h-40 rounded-full blur-3xl"></div>
+              
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/10 pb-4 relative z-10">
+                <div>
+                  <h3 class="text-base md:text-lg font-serif text-[#D4AF37]">Rendimiento y Honorarios</h3>
+                  <p class="text-[10px] text-neutral-400 uppercase tracking-widest mt-1">
+                    Ciclo iniciado: {{ fechaInicioCobro ? fechaInicioCobro.toLocaleDateString() : '...' }}
+                  </p>
+                </div>
+                <button @click="marcarCobrado" class="mt-4 md:mt-0 bg-green-500/20 text-green-500 border border-green-500/50 hover:bg-green-500 hover:text-black px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
+                  Marcar como Cobrado
+                </button>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                  <span class="text-[9px] text-neutral-500 uppercase tracking-widest block mb-1">Obras Hoy</span>
+                  <span class="text-2xl font-bold text-white">{{ statsActividad.hoy }}</span>
+                </div>
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                  <span class="text-[9px] text-neutral-500 uppercase tracking-widest block mb-1">Obras (7 Días)</span>
+                  <span class="text-2xl font-bold text-white">{{ statsActividad.semana }}</span>
+                </div>
+                <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                  <span class="text-[9px] text-[#D4AF37]/70 uppercase tracking-widest block mb-1">Obras (Este Ciclo)</span>
+                  <span class="text-2xl font-bold text-[#D4AF37]">{{ statsActividad.ciclo }}</span>
+                </div>
+                <div class="bg-[#D4AF37]/10 p-4 rounded-xl border border-[#D4AF37]/30">
+                  <span class="text-[9px] text-[#D4AF37] uppercase tracking-widest font-bold block mb-1">Total a Cobrar</span>
+                  <span class="text-2xl font-serif text-[#D4AF37]">${{ statsActividad.pago.toLocaleString('es-CO') }}</span>
+                </div>
               </div>
             </div>
 
@@ -889,6 +925,8 @@ const form = ref({
 })
 
 const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
+const statsActividad = reactive({ hoy: 0, semana: 0, ciclo: 0, pago: 0 })
+const fechaInicioCobro = ref(null)
 const logsActividad = ref([])
 
 const statsPos = reactive({ totalVentasDia: 0, totalMesasDia: 0, desgloseMeseras: [] })
@@ -1540,6 +1578,56 @@ const calcularEstadisticas = () => {
     const fecha = new Date(obra.created_at || Date.now())
     return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   })
+
+  if (import.meta.client) {
+    const storedDate = localStorage.getItem('fechaInicioCobroGaleria')
+    if (storedDate) {
+      fechaInicioCobro.value = new Date(storedDate)
+    } else {
+      const d = new Date()
+      d.setDate(d.getDate() - 14)
+      fechaInicioCobro.value = d
+      localStorage.setItem('fechaInicioCobroGaleria', d.toISOString())
+    }
+  } else {
+    if (!fechaInicioCobro.value) {
+      const d = new Date()
+      d.setDate(d.getDate() - 14)
+      fechaInicioCobro.value = d
+    }
+  }
+
+  const ahora = new Date()
+  const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())
+  const inicioSemana = new Date(inicioHoy)
+  inicioSemana.setDate(inicioSemana.getDate() - 7)
+
+  let cuentaHoy = 0
+  let cuentaSemana = 0
+  let cuentaCiclo = 0
+
+  todasLasObras.value.forEach(obra => {
+    const fechaObra = new Date(obra.created_at)
+    if (fechaObra >= inicioHoy) cuentaHoy++
+    if (fechaObra >= inicioSemana) cuentaSemana++
+    if (fechaInicioCobro.value && fechaObra >= fechaInicioCobro.value) cuentaCiclo++
+  })
+
+  statsActividad.hoy = cuentaHoy
+  statsActividad.semana = cuentaSemana
+  statsActividad.ciclo = cuentaCiclo
+  statsActividad.pago = cuentaCiclo * 3000
+}
+
+const marcarCobrado = () => {
+  if (confirm(`¿Confirmas que se ha cobrado el monto de $${statsActividad.pago.toLocaleString('es-CO')}? Se reiniciará el contador del ciclo.`)) {
+    const ahora = new Date()
+    fechaInicioCobro.value = ahora
+    if (import.meta.client) {
+      localStorage.setItem('fechaInicioCobroGaleria', ahora.toISOString())
+    }
+    calcularEstadisticas()
+  }
 }
 
 const obrasFiltradas = computed(() => {

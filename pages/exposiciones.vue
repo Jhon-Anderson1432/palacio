@@ -21,8 +21,8 @@
       />
     </div>
 
-    <!-- Navegación de Filtros -->
-    <nav aria-label="Filtros de exposición" class="max-w-7xl mx-auto mb-10 flex flex-wrap justify-center gap-4">
+    <!-- Navegación de Filtros Principales -->
+    <nav aria-label="Filtros de exposición" class="max-w-7xl mx-auto mb-6 flex flex-wrap justify-center gap-4">
       <button 
         @click="cambiarFiltro('Todos')" 
         :class="filtroTipo === 'Todos' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-transparent border border-white/20 text-white hover:border-[#D4AF37]/60 hover:bg-white/10'"
@@ -48,6 +48,37 @@
       </button>
     </nav>
 
+    <!-- Filtros Secundarios (Artista y Precio) -->
+    <div class="max-w-7xl mx-auto mb-10 flex flex-col sm:flex-row justify-center gap-4 px-4">
+      <div class="relative">
+        <select 
+          v-model="filtroArtista" 
+          @change="aplicarFiltrosAdicionales"
+          class="w-full sm:w-auto bg-transparent border border-white/20 text-white px-6 py-3 rounded-full focus:outline-none focus:border-[#D4AF37] hover:border-[#D4AF37]/60 transition-colors appearance-none cursor-pointer text-xs uppercase tracking-widest font-bold pr-10"
+        >
+          <option value="Todos" class="bg-neutral-900 text-white">{{ t.allArtists }}</option>
+          <option v-for="artista in listaArtistas" :key="artista" :value="artista" class="bg-neutral-900 text-white">
+            {{ artista }}
+          </option>
+        </select>
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#D4AF37]">▼</span>
+      </div>
+
+      <div class="relative">
+        <select 
+          v-model="filtroPrecio" 
+          @change="aplicarFiltrosAdicionales"
+          class="w-full sm:w-auto bg-transparent border border-white/20 text-white px-6 py-3 rounded-full focus:outline-none focus:border-[#D4AF37] hover:border-[#D4AF37]/60 transition-colors appearance-none cursor-pointer text-xs uppercase tracking-widest font-bold pr-10"
+        >
+          <option value="Todos" class="bg-neutral-900 text-white">{{ t.allPrices }}</option>
+          <option value="bajo" class="bg-neutral-900 text-white">{{ t.priceLow }}</option>
+          <option value="medio" class="bg-neutral-900 text-white">{{ t.priceMed }}</option>
+          <option value="alto" class="bg-neutral-900 text-white">{{ t.priceHigh }}</option>
+        </select>
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#D4AF37]">▼</span>
+      </div>
+    </div>
+
     <div v-if="searchQuery" class="max-w-7xl mx-auto mb-10 flex flex-col sm:flex-row items-center justify-between bg-white/[0.03] backdrop-blur-md p-5 rounded-2xl border border-white/10 gap-4 shadow-xl">
       <p class="text-sm text-neutral-400 tracking-wide">
         {{ t.filteringBy }}
@@ -58,7 +89,7 @@
       </button>
     </div>
 
-    <div v-if="cargandoInicial" class="flex flex-col items-center justify-center py-20 space-y-4 text-[#D4AF37]">
+    <div v-if="cargando" class="flex flex-col items-center justify-center py-20 space-y-4 text-[#D4AF37]">
       <div class="animate-spin rounded-full h-10 w-10 border-2 border-current border-t-transparent"></div>
       <span class="uppercase tracking-[0.2em] text-xs font-bold animate-pulse">{{ t.syncing }}</span>
     </div>
@@ -150,15 +181,26 @@
         </article>
       </div>
 
-      <div v-if="hayMasObras" class="w-full flex justify-center pb-8">
-        <button @click="cargarMasObras" :disabled="cargandoMas" class="group flex flex-col items-center justify-center px-10 py-4 bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-full transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.05)] hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/20">
-          <span v-if="cargandoMas" class="flex items-center gap-3">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-            <span class="text-xs uppercase tracking-widest font-bold">{{ t.loading }}</span>
-          </span>
-          <span v-else class="text-xs font-bold uppercase tracking-widest transition-transform group-hover:scale-105">
-            {{ t.loadMore }}
-          </span>
+      <!-- Sistema de Paginación -->
+      <div v-if="totalPaginas > 1" class="w-full flex justify-center items-center gap-6 pb-8">
+        <button 
+          @click="irAPagina(paginaActual - 1)" 
+          :disabled="paginaActual === 1" 
+          class="px-6 py-3 border border-white/20 bg-transparent text-white rounded-full hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:border-white/20 transition-all duration-300 focus:outline-none active:scale-95"
+        >
+          <span class="text-xs font-bold uppercase tracking-widest">{{ t.prevPage }}</span>
+        </button>
+        
+        <span class="text-sm text-neutral-400 font-sans tracking-widest uppercase">
+          {{ t.page }} <span class="text-[#D4AF37] font-bold">{{ paginaActual }}</span> {{ t.of }} {{ totalPaginas }}
+        </span>
+
+        <button 
+          @click="irAPagina(paginaActual + 1)" 
+          :disabled="paginaActual === totalPaginas" 
+          class="px-6 py-3 border border-white/20 bg-transparent text-white rounded-full hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white disabled:hover:border-white/20 transition-all duration-300 focus:outline-none active:scale-95"
+        >
+          <span class="text-xs font-bold uppercase tracking-widest">{{ t.nextPage }}</span>
         </button>
       </div>
     </section>
@@ -182,20 +224,18 @@ import 'swiper/css/effect-fade';
 
 const modules = [Autoplay, EffectFade];
 
-// CLIENTE NATIVE SUPABASE PARA NUXT 3 (Evita el error useNuxtApp fuera de contexto)
 const supabase = useSupabaseClient()
 
-// ESTADO GLOBAL NUXT
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 const searchQuery = useState('searchQuery', () => '')
 
 const componenteActivo = ref(true)
 
 const traducciones = {
-  es: { seoTitle: 'Galería de Arte', seoSubtitle: 'Exposiciones, Museo y Venta de Obras en Medellín', filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: 'Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.' },
-  en: { seoTitle: 'Art Gallery', seoSubtitle: 'Exhibitions, Museum and Art Sales in Medellin', filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: 'Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.' },
-  fr: { seoTitle: 'Galerie d\'Art', seoSubtitle: 'Expositions, Musée et Vente d\'Art à Medellín', filterAll: 'Toutes', filterPaintings: 'Peintures', filterSculptures: 'Sculptures', filteringBy: 'Filtrage par:', clearFilter: 'Effacer le filtre', syncing: 'Synchronisation...', paintingLabel: 'Peinture', sculptureLabel: 'Sculpture', by: 'Par', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'Voir les détails', loadMore: 'Découvrir plus d\'œuvres', loading: 'Chargement...', noResults: 'Aucune œuvre trouvée.' },
-  ja: { seoTitle: 'アートギャラリー', seoSubtitle: 'メデジンの展覧会、美術館、アート販売', filterAll: 'すべて', filterPaintings: '絵画', filterSculptures: '彫刻', filteringBy: 'フィルター:', clearFilter: 'フィルター解除', syncing: 'ギャラリーを同期中...', paintingLabel: '絵画', sculptureLabel: '彫刻', by: '作', techniqueLabel: '手法', dimensionsLabel: '寸法', detailsBtn: '詳細を見る', loadMore: 'もっと作品を見る', loading: '読み込み中...', noResults: '条件に一致する作品はありません。' }
+  es: { seoTitle: 'Galería de Arte', seoSubtitle: 'Exposiciones, Museo y Venta de Obras en Medellín', filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: 'Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.', allArtists: 'Todos los Artistas', allPrices: 'Todos los Precios', priceLow: 'Menos de $1,000 USD', priceMed: '$1,000 - $5,000 USD', priceHigh: 'Más de $5,000 USD', prevPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', of: 'de' },
+  en: { seoTitle: 'Art Gallery', seoSubtitle: 'Exhibitions, Museum and Art Sales in Medellin', filterAll: 'All', filterPaintings: 'Paintings', filterSculptures: 'Sculptures', filteringBy: 'Filtering by:', clearFilter: 'Clear Filter', syncing: 'Syncing gallery...', paintingLabel: 'Painting', sculptureLabel: 'Sculpture', by: 'By', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'View details', loadMore: 'Discover more artworks', loading: 'Loading...', noResults: 'No artworks found matching these parameters.', allArtists: 'All Artists', allPrices: 'All Prices', priceLow: 'Under $1,000 USD', priceMed: '$1,000 - $5,000 USD', priceHigh: 'Over $5,000 USD', prevPage: 'Previous', nextPage: 'Next', page: 'Page', of: 'of' },
+  fr: { seoTitle: 'Galerie d\'Art', seoSubtitle: 'Expositions, Musée et Vente d\'Art à Medellín', filterAll: 'Toutes', filterPaintings: 'Peintures', filterSculptures: 'Sculptures', filteringBy: 'Filtrage par:', clearFilter: 'Effacer le filtre', syncing: 'Synchronisation...', paintingLabel: 'Peinture', sculptureLabel: 'Sculpture', by: 'Par', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', detailsBtn: 'Voir les détails', loadMore: 'Découvrir plus d\'œuvres', loading: 'Chargement...', noResults: 'Aucune œuvre trouvée.', allArtists: 'Tous les Artistes', allPrices: 'Tous les Prix', priceLow: 'Moins de 1 000 $ USD', priceMed: '1 000 $ - 5 000 $ USD', priceHigh: 'Plus de 5 000 $ USD', prevPage: 'Précédent', nextPage: 'Suivant', page: 'Page', of: 'sur' },
+  ja: { seoTitle: 'アートギャラリー', seoSubtitle: 'メデジンの展覧会、美術館、アート販売', filterAll: 'すべて', filterPaintings: '絵画', filterSculptures: '彫刻', filteringBy: 'フィルター:', clearFilter: 'フィルター解除', syncing: 'ギャラリーを同期中...', paintingLabel: '絵画', sculptureLabel: '彫刻', by: '作', techniqueLabel: '手法', dimensionsLabel: '寸法', detailsBtn: '詳細を見る', loadMore: 'もっと作品を見る', loading: '読み込み中...', noResults: '条件に一致する作品はありません。', allArtists: 'すべてのアーティスト', allPrices: 'すべての価格', priceLow: '1,000 USD未満', priceMed: '1,000 - 5,000 USD', priceHigh: '5,000 USD以上', prevPage: '前へ', nextPage: '次へ', page: 'ページ', of: '/' }
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
@@ -215,15 +255,18 @@ const obtenerTecnica = (obra) => {
 }
 
 const todasLasObras = ref([])
-const cargandoInicial = ref(true)
-const cargandoMas = ref(false)
+const cargando = ref(true) 
 const filtroTipo = ref('Todos')
 
-const limitePorPagina = 12
-const paginaActual = ref(0)
-const hayMasObras = ref(true)
+const filtroArtista = ref('Todos')
+const filtroPrecio = ref('Todos')
+const listaArtistas = ref([])
 
-// === SEO SSR CON NUXT 3 ===
+// Configuración de Paginación
+const limitePorPagina = 12
+const paginaActual = ref(1) 
+const totalPaginas = ref(1)
+
 useHead({
   title: "Galerías de Arte en Medellín | Venta de Obras y Museo | Palacio Nacional",
   meta: [
@@ -255,40 +298,78 @@ useHead({
   ]
 })
 
-const fetchObras = async (esCargaInicial = true) => {
+const cargarArtistas = async () => {
   try {
-    if (esCargaInicial) {
-      cargandoInicial.value = true
-      todasLasObras.value = []
-      paginaActual.value = 0
-    } else {
-      cargandoMas.value = true
+    const { data, error } = await supabase.from('obras').select('autor')
+    if (!error && data) {
+      const autoresUnicos = [...new Set(data.map(o => o.autor).filter(a => a && a.trim() !== ''))]
+      listaArtistas.value = autoresUnicos.sort()
     }
+  } catch (err) {
+    console.error("Error al cargar artistas:", err.message)
+  }
+}
 
-    const inicio = paginaActual.value * limitePorPagina
-    const fin = inicio + limitePorPagina - 1
+// Fusión: Filtrado Numérico en JS + Paginación (Página 1 de X)
+const fetchObras = async (reiniciarPaginacion = true) => {
+  try {
+    cargando.value = true
+    
+    if (reiniciarPaginacion) {
+      paginaActual.value = 1
+    }
 
     let query = supabase
       .from('obras')
-      .select('*', { count: 'exact' })
+      .select('*')
       .order('created_at', { ascending: false }) 
-      .range(inicio, fin)
 
     if (filtroTipo.value !== 'Todos') {
       query = query.eq('tipo', filtroTipo.value)
     }
 
-    if (searchQuery.value && searchQuery.value.trim() !== '') {
-      const termino = `%${searchQuery.value.trim()}%`
-      query = query.or(`titulo.ilike.${termino},autor.ilike.${termino},titulo_en.ilike.${termino}`)
+    if (filtroArtista.value !== 'Todos') {
+      query = query.eq('autor', filtroArtista.value)
     }
 
-    const { data, count, error } = await query
+    const { data, error } = await query
 
     if (error) throw error
 
     if (data) {
-      const obrasProcesadas = data.map(o => {
+      // 1. Filtrado numérico en JavaScript
+      const obrasFiltradasJS = data.filter(obra => {
+        let coincideBusqueda = true
+        if (searchQuery.value && searchQuery.value.trim() !== '') {
+          const termino = searchQuery.value.toLowerCase().trim()
+          coincideBusqueda = (
+            obra.titulo?.toLowerCase().includes(termino) ||
+            obra.autor?.toLowerCase().includes(termino) ||
+            obra.titulo_en?.toLowerCase().includes(termino)
+          )
+        }
+
+        let coincidePrecio = true
+        if (filtroPrecio.value !== 'Todos') {
+          const precioNumerico = Number(String(obra.precio).replace(/[^0-9.]/g, ''))
+          
+          if (filtroPrecio.value === 'bajo') {
+            coincidePrecio = precioNumerico < 1000
+          } else if (filtroPrecio.value === 'medio') {
+            coincidePrecio = precioNumerico >= 1000 && precioNumerico <= 5000
+          } else if (filtroPrecio.value === 'alto') {
+            coincidePrecio = precioNumerico > 5000
+          }
+        }
+
+        return coincideBusqueda && coincidePrecio
+      })
+
+      // 2. Calcular total de páginas según los resultados ya filtrados matemáticamente
+      totalPaginas.value = Math.ceil(obrasFiltradasJS.length / limitePorPagina) || 1
+
+      // 3. Procesar imágenes
+      const obrasProcesadas = obrasFiltradasJS.map(o => {
         const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean);
         return {
           ...o,
@@ -296,25 +377,28 @@ const fetchObras = async (esCargaInicial = true) => {
         };
       });
 
-      if (esCargaInicial) {
-        todasLasObras.value = obrasProcesadas
-      } else {
-        todasLasObras.value = [...todasLasObras.value, ...obrasProcesadas]
-      }
-      hayMasObras.value = todasLasObras.value.length < count
+      // 4. Aplicar paginación (Página 1, 2, etc.) sobre el array procesado
+      const inicio = (paginaActual.value - 1) * limitePorPagina
+      const fin = inicio + limitePorPagina
+      
+      todasLasObras.value = obrasProcesadas.slice(inicio, fin)
     }
 
   } catch (err) {
     console.error("Error al cargar obras:", err.message)
   } finally {
-    cargandoInicial.value = false
-    cargandoMas.value = false
+    cargando.value = false
   }
 }
 
-const cargarMasObras = () => {
-  paginaActual.value += 1
-  fetchObras(false)
+const irAPagina = (nuevaPagina) => {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina
+    fetchObras(false)
+    if (import.meta.client) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 }
 
 const cambiarFiltro = (nuevoTipo) => {
@@ -322,8 +406,14 @@ const cambiarFiltro = (nuevoTipo) => {
   fetchObras(true)
 }
 
+const aplicarFiltrosAdicionales = () => {
+  fetchObras(true)
+}
+
 const limpiarBusqueda = () => {
   searchQuery.value = ''
+  filtroArtista.value = 'Todos'
+  filtroPrecio.value = 'Todos'
 }
 
 watch(searchQuery, () => {
@@ -335,6 +425,7 @@ onMounted(() => {
   if (import.meta.client) {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
+  cargarArtistas() 
   fetchObras(true)
 })
 
@@ -344,9 +435,8 @@ onBeforeUnmount(() => {
 
 const obrasFiltradas = computed(() => todasLasObras.value)
 definePageMeta({
-  layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
+  layout: false 
 })
-// ... el resto de tu código ...
 </script>
 
 <style scoped>
@@ -395,5 +485,11 @@ definePageMeta({
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: translateZ(0);
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 </style>
