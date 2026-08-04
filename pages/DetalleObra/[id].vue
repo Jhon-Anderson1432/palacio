@@ -1,31 +1,28 @@
 <template>
   <main class="min-h-screen w-full bg-black text-white flex flex-col overflow-y-auto font-sans pb-20 relative pt-24 selection:bg-[#D4AF37] selection:text-black">
-    
     <Navbar :ocultarBuscador="true" rutaVolver="/exposiciones" />
     
     <div class="fixed bottom-0 right-0 w-32 h-32 z-0 pointer-events-none opacity-60">
       <div class="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tl from-[#D4AF37]/20 to-transparent"></div>
       <div class="absolute bottom-[-20px] right-[-40px] w-[150%] h-20 bg-black rotate-[-45deg] border-t border-[#D4AF37]/50 shadow-[0_0_40px_rgba(212,175,55,0.25)]"></div>
     </div>
-
-    <article 
-      v-if="obra" 
-      itemscope 
+    
+    <article
+      v-if="obra"
+      itemscope
       itemtype="https://schema.org/VisualArtwork"
       class="flex-1 flex flex-col max-w-xl mx-auto w-full relative z-10"
     >
-      
       <header class="w-full relative z-[100] border-b-[2px] border-b-[#D4AF37]/50 pt-6">
-        <NuxtImg 
-          src="/logoni.png" 
-          alt="Palacio Nacional Galería Header" 
+        <NuxtImg
+          src="/logoni.png"
+          alt="Palacio Nacional Galería Header"
           class="w-full h-auto block drop-shadow-lg"
           preload
         />
       </header>
-
+      
       <div class="flex-1 flex-col px-4 pt-6">
-
         <figure class="w-full relative bg-black my-4 group overflow-hidden rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.9)] border border-white/10">
           <div class="absolute -inset-1 bg-[#D4AF37]/10 blur-3xl opacity-40 transition-opacity duration-700 group-hover:opacity-70"></div>
           
@@ -40,13 +37,13 @@
               class="w-full h-full"
             >
               <swiper-slide v-for="(img, idx) in obra.listaImagenes" :key="idx" class="w-full h-full bg-neutral-950 overflow-hidden relative flex items-center justify-center">
-                <NuxtImg 
-                  v-if="img !== 'sin-imagen'" 
-                  :src="img" 
-                  :alt="`${tituloPrincipal} por ${obra.autor}`" 
-                  itemprop="image" 
-                  :preload="idx === 0" 
-                  :loading="idx === 0 ? 'eager' : 'lazy'" 
+                <NuxtImg
+                  v-if="img !== 'sin-imagen'"
+                  :src="img"
+                  :alt="`${tituloPrincipal} por ${obra.autor}`"
+                  itemprop="image"
+                  :preload="idx === 0"
+                  :loading="idx === 0 ? 'eager' : 'lazy'"
                   class="w-full h-full object-contain object-center block drop-shadow-2xl transition-transform duration-700 hover:scale-105"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-500 uppercase tracking-widest text-xs">Sin Imagen Disponible</div>
@@ -54,7 +51,7 @@
             </swiper>
           </div>
         </figure>
-
+        
         <div class="text-center space-y-3 mb-8 mt-8">
           <h1 itemprop="name" class="text-3xl md:text-5xl font-serif text-white leading-tight lowercase capitalize drop-shadow-2xl">
             {{ tituloPrincipal }}
@@ -63,46 +60,44 @@
             <span itemprop="name">{{ obra.autor }}</span>
           </p>
         </div>
-
+        
         <div class="max-w-sm mx-auto space-y-4 mb-10 border-t border-white/10 pt-8 text-center bg-white/[0.03] p-8 rounded-3xl backdrop-blur-md shadow-inner">
           <p class="text-sm flex justify-between border-b border-white/5 pb-3 transition-colors hover:text-[#D4AF37]">
-            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.techniqueLabel }}</span> 
+            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.techniqueLabel }}</span>
             <span itemprop="artMedium" class="text-white lowercase capitalize font-medium">{{ tecnicaPrincipal }}</span>
           </p>
           <p class="text-sm flex justify-between border-b border-white/5 pb-3 transition-colors hover:text-[#D4AF37]">
-            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.dimensionsLabel }}</span> 
+            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.dimensionsLabel }}</span>
             <span itemprop="artDimensions" class="text-white lowercase font-medium">{{ obra.medidas }}</span>
           </p>
           <p class="text-sm flex justify-between pb-3">
-            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.valueLabel }}</span> 
+            <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.valueLabel }}</span>
             <span class="text-[#D4AF37] font-bold text-xl drop-shadow-md">{{ isNaN(obra.precio) ? obra.precio : Number(obra.precio).toLocaleString('es-CO') }} USD</span>
           </p>
           
           <div class="mt-6 pt-6 border-t border-[#D4AF37]/20 flex flex-col gap-3">
             <p class="text-xs sm:text-sm flex justify-center items-center gap-3">
-              <span class="text-[#D4AF37]/70 uppercase tracking-widest text-[10px]">{{ t.contactLabel }}:</span> 
+              <span class="text-[#D4AF37]/70 uppercase tracking-widest text-[10px]">{{ t.contactLabel }}:</span>
               <span class="text-white font-mono tracking-wider font-medium">311 639 0177</span>
             </p>
             <p class="text-xs sm:text-sm flex justify-center items-center gap-3">
-              <span class="text-[#D4AF37]/70 uppercase tracking-widest text-[10px]">{{ t.infoLabel }}:</span> 
+              <span class="text-[#D4AF37]/70 uppercase tracking-widest text-[10px]">{{ t.infoLabel }}:</span>
               <span class="text-white font-mono tracking-wider font-medium">310 447 0369</span>
             </p>
           </div>
         </div>
-
+        
         <div class="mt-auto pb-8">
-          <button 
+          <button
             @click="preguntarPorWhatsApp"
             class="group flex items-center justify-center w-full py-4 bg-black border border-[#D4AF37] text-[#D4AF37] font-bold hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/30 transition-all duration-500 rounded-2xl shadow-[0_0_20px_rgba(212,175,55,0.1)] hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] active:scale-95"
           >
             <span class="uppercase tracking-[0.2em] text-xs transition-transform duration-300 group-hover:scale-105">{{ t.acquireBtn }}</span>
           </button>
         </div>
-
       </div>
-
     </article>
-
+    
     <div v-else class="min-h-[70vh] flex flex-col items-center justify-center bg-black w-full py-32 z-10 relative">
       <div class="relative w-16 h-16">
         <div class="absolute inset-0 border-2 border-[#D4AF37]/20 rounded-full"></div>
@@ -110,7 +105,6 @@
       </div>
       <p class="mt-6 text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] animate-pulse font-medium">Cargando Obra...</p>
     </div>
-
   </main>
 </template>
 
@@ -125,7 +119,6 @@ const route = useRoute();
 
 // CLIENTE NATIVE SUPABASE PARA NUXT 3
 const supabase = useSupabaseClient()
-
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 const obra = ref(null)
 const componenteActivo = ref(true)
@@ -134,7 +127,7 @@ const traducciones = {
   es: { acquireBtn: 'Solicitar Adquisición', techniqueLabel: 'Técnica', dimensionsLabel: 'Dimensión', valueLabel: 'Valor', contactLabel: 'Contacto', infoLabel: 'Info detallada' },
   en: { acquireBtn: 'Request Acquisition', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', valueLabel: 'Value', contactLabel: 'Contact', infoLabel: 'Detailed info' },
   fr: { acquireBtn: 'Demander l\'acquisition', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', valueLabel: 'Valeur', contactLabel: 'Contact', infoLabel: 'Infos détaillées' },
-  ja: { acquireBtn: '取得をリクエスト', techniqueLabel: '手法', dimensionsLabel: '寸法', valueLabel: '価格', contactLabel: '連絡先', infoLabel: '詳細情報' }
+  ja: { acquireBtn: '購入をリクエスト', techniqueLabel: '手法', dimensionsLabel: '寸法', valueLabel: '価値', contactLabel: '連絡先', infoLabel: '詳細情報' }
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
@@ -152,15 +145,31 @@ const tecnicaPrincipal = computed(() => {
   if (idiomaGlobal.value === 'en' && obra.value.medidas_en) return obra.value.medidas_en;
   if (idiomaGlobal.value === 'fr' && obra.value.medidas_fr) return obra.value.medidas_fr;
   if (idiomaGlobal.value === 'ja' && obra.value.medidas_ja) return obra.value.medidas_ja;
-  return obra.value.tecnica; 
+  return obra.value.tecnica;
 })
 
-// === SEO REACTIVO EN NUXT 3 ===
+// === SEO REACTIVO EN NUXT 3 (MAXIMIZADO PARA CONVERSIÓN Y CTR) ===
+useSeoMeta({
+  // Título dinámico optimizado para SERPs (apunta a máximo 60 caracteres)
+  title: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor}` : 'Adquirir Obra de Arte | Palacio Nacional',
+  
+  // Descripción transaccional persuasiva (< 155 caracteres)
+  description: () => obra.value ? `Adquiere "${tituloPrincipal.value}" de ${obra.value.autor}. Galería de Arte Palacio Nacional en Medellín. Técnica: ${tecnicaPrincipal.value}. Solicita información de compra aquí.` : 'Explora y adquiere obras de arte exclusivas en la Galería del Palacio Nacional, ubicada en el centro histórico de Medellín.',
+  
+  // Open Graph (Para previsualizaciones impactantes en WhatsApp y Facebook)
+  ogTitle: () => obra.value ? `🎨 ${tituloPrincipal.value} | Adquiere Arte en Medellín` : 'Galería de Arte | Palacio Nacional Medellín',
+  ogDescription: () => obra.value ? `Conoce los detalles de esta obra de ${obra.value.autor} (${tecnicaPrincipal.value}). Invierte en arte exclusivo. ¡Haz clic para contactarnos y adquirirla!` : 'Explora nuestra galería de arte contemporáneo en Medellín y adquiere obras exclusivas.',
+  ogImage: () => obra.value?.imagen_1 && obra.value.imagen_1 !== 'sin-imagen' ? obra.value.imagen_1 : 'https://palacionacionalmedellin.com/logon.png',
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
+// Mantenemos useHead exclusivamente para inyectar Schema JSON-LD y Etiquetas de Arquitectura base
 useHead(() => {
   if (!obra.value) return {}
   const currentUrl = `https://palacionacionalmedellin.com/DetalleObra/${route.params.id}`
   return {
-    title: `${obra.value.titulo} por ${obra.value.autor} | Galería Palacio Nacional`,
     link: [
       { rel: 'canonical', href: currentUrl }
     ],
@@ -198,7 +207,7 @@ const obtenerDetalleObra = async (idBusca) => {
       .select('*')
       .eq('id', idBusca)
       .single()
-
+      
     if (error) throw error
     
     const imgs = [data.imagen_1, data.imagen_2, data.imagen_3].filter(Boolean);
@@ -212,16 +221,12 @@ const obtenerDetalleObra = async (idBusca) => {
 
 const preguntarPorWhatsApp = () => {
   if (!obra.value) return
-
   const dominio = typeof window !== 'undefined' ? window.location.origin : 'https://palacionacionalmedellin.com'
   const urlDetalle = `${dominio}/DetalleObra/${obra.value.id}`
   const precioFormat = isNaN(obra.value.precio) ? obra.value.precio : '$' + Number(obra.value.precio).toLocaleString('es-CO') + ' USD'
-  
-  const multimediaInfo = obra.value.imagen_1 ? `\n📸 *Imagen:* ${obra.value.imagen_1}` : ''
-  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n🔗 *Enlace:* ${urlDetalle}${multimediaInfo}`
-
+  const multimediaInfo = obra.value.imagen_1 ? `\n*Imagen:* ${obra.value.imagen_1}` : ''
+  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n*Enlace:* ${urlDetalle}${multimediaInfo}`
   const urlWa = `https://wa.me/573116390177?text=${encodeURIComponent(texto)}`
-  
   if (typeof window !== 'undefined') {
     window.open(urlWa, '_blank')
   }
@@ -244,10 +249,10 @@ watch(() => route.params.id, (newId) => {
     obtenerDetalleObra(newId);
   }
 }, { immediate: true })
+
 definePageMeta({
-  layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
+  layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán
 })
-// ... el resto de tu código ...
 </script>
 
 <style scoped>

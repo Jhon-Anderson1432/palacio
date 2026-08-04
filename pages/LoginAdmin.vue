@@ -75,12 +75,22 @@ definePageMeta({
 
 // Auto-imports inyectados por Nuxt 3
 const router = useRouter()
+const route = useRoute()
 const supabase = useSupabaseClient()
 
 const username = ref('')
 const password = ref('')
 const cargando = ref(false)
 const errorMensaje = ref('') 
+
+// NUEVO: Interceptamos si el usuario viene redirigido con la orden de salir
+onMounted(async () => {
+  if (route.query.logout) {
+    await supabase.auth.signOut()
+    // Limpiamos la URL para que no quede el "?logout=true" visible
+    router.replace({ path: route.path })
+  }
+})
 
 // Blindaje Anti-SEO SSR (Renderizado desde el servidor)
 useHead({

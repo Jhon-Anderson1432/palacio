@@ -49,7 +49,7 @@
         </div>
       </nav>
       
-      <button @click="handleLogout" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all duration-300 text-[10px] font-bold uppercase tracking-widest mt-4 focus:outline-none focus:ring-2 focus:ring-red-500/50">
+      <button @click="cerrarSesionAdmin" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all duration-300 text-[10px] font-bold uppercase tracking-widest mt-4 focus:outline-none focus:ring-2 focus:ring-red-500/50">
         CERRAR SESIÓN
       </button>
       
@@ -1912,9 +1912,10 @@ const deleteProductoGastro = async (item) => {
   }
 }
 
-const handleLogout = async () => {
-  await supabase.auth.signOut()
-  router.push('/LoginAdmin')
+// En tu panel de administrador (donde está el botón de salir)
+const cerrarSesionAdmin = async () => {
+  // Solo navegamos, NO cerramos sesión aquí.
+  await navigateTo('/loginadmin?logout=true')
 }
 
 const mostrandoModalQR = ref(false)
