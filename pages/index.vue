@@ -73,6 +73,23 @@ definePageMeta({
   layout: false
 })
 
+// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y AUTORIDAD DE DOMINIO) ===
+useSeoMeta({
+  // Título raíz: Exactamente 52 caracteres (perfecto para las SERPs).
+  title: 'Palacio Nacional Medellín | Arte, Moda y Gastronomía',
+  
+  // Descripción enfocada en turismo local, intenciones comerciales e historia (151 caracteres)
+  description: 'Descubre el Palacio Nacional en el centro de Medellín. El lugar ideal donde convergen moda, galerías de arte, historia y la mejor oferta gastronómica.',
+  
+  // Open Graph (WhatsApp, Facebook, LinkedIn - Actuando como la carta de presentación principal)
+  ogTitle: '✨ Palacio Nacional Medellín | Arte, Historia y Cultura',
+  ogDescription: '¿Buscando qué hacer en el centro de Medellín? Explora galerías de arte, restaurantes, terrazas y moda en nuestro histórico monumento. ¡Visítanos hoy!',
+  ogImage: 'https://palacionacionalmedellin.com/logon.png',
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
 // INYECCIÓN DE ESTADO GLOBAL SEGURO PARA SSR
 const idiomaGlobal = useIdiomaGlobal()
 
@@ -114,16 +131,9 @@ const traducciones = {
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
 
-// LÓGICA SEO MAESTRA (La araña de Google)
+// === 2. SCHEMA LOCAL BUSINESS Y ARQUITECTURA BASE ===
 // useHead se encarga de inyectar todo en el <head> nativamente
 useHead({
-  title: "Palacio Nacional Medellín | Centro Comercial, Arte, Moda y Gastronomía",
-  meta: [
-    { 
-      name: "description", 
-      content: "Descubre el Palacio Nacional de Medellín. El epicentro donde la moda, el arte, la gastronomía y la historia convergen en el centro comercial más hermoso de la ciudad." 
-    }
-  ],
   link: [
     { rel: "canonical", href: "https://palacionacionalmedellin.com/" }
   ],

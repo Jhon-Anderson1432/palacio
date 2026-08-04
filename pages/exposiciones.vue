@@ -217,6 +217,23 @@
 </template>
 
 <script setup>
+// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y SEO DE CATÁLOGO) ===
+useSeoMeta({
+  // Título ajustado a 56 caracteres (preciso para no ser cortado por Google)
+  title: 'Catálogo de Obras de Arte en Medellín | Palacio Nacional',
+  
+  // Descripción transaccional con palabras clave locales y de intención (149 caracteres)
+  description: 'Explora nuestro catálogo de arte en Medellín. Filtra y adquiere pinturas y esculturas exclusivas de artistas locales en la Galería Palacio Nacional.',
+  
+  // Open Graph (Ideal para compartir el catálogo por WhatsApp a coleccionistas)
+  ogTitle: '🖼️ Catálogo de Obras de Arte | Galería Palacio Nacional',
+  ogDescription: '¿Buscas invertir en arte? Descubre nuestra colección exclusiva de pinturas y esculturas en el centro histórico de Medellín. ¡Explora el catálogo!',
+  ogImage: 'https://palacionacionalmedellin.com/logon.png',
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
@@ -267,12 +284,8 @@ const limitePorPagina = 12
 const paginaActual = ref(1) 
 const totalPaginas = ref(1)
 
+// === 2. SCHEMA Y ARQUITECTURA BASE ===
 useHead({
-  title: "Galerías de Arte en Medellín | Venta de Obras y Museo | Palacio Nacional",
-  meta: [
-    { name: 'description', content: 'Descubre la mejor galería de arte en Medellín en el Palacio Nacional. Venta de obras de arte, pinturas, esculturas y exposiciones en un museo histórico.' },
-    { name: 'keywords', content: 'galerias de arte en medellin, museos de arte, venta de obras de arte, galeria palacio nacional' }
-  ],
   link: [
     { rel: 'canonical', href: 'https://palacionacionalmedellin.com/exposiciones' }
   ],

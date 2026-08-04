@@ -137,7 +137,24 @@
 </template>
 
 <script setup>
-// 1. ESTADO GLOBAL MIGRADO A NUXT
+// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y SEO LOCAL) ===
+useSeoMeta({
+  // Título transaccional e informativo (47 caracteres - ¡Perfecto!)
+  title: 'Contacto y Ubicación | Palacio Nacional Medellín',
+  
+  // Descripción enfocada en la acción de contactar y ubicar físicamente el lugar (153 caracteres)
+  description: 'Encuentra la ubicación del Palacio Nacional en el centro de Medellín. Comunícate con nosotros por WhatsApp o correo y planea tu visita. ¡Escríbenos hoy!',
+  
+  // Open Graph (WhatsApp, Facebook, LinkedIn)
+  ogTitle: '📍 Contacto y Ubicación | Palacio Nacional Medellín',
+  ogDescription: '¿Necesitas información o quieres planear tu visita? Escríbenos directamente y descubre el epicentro del arte, moda y gastronomía en Medellín.',
+  ogImage: 'https://palacionacionalmedellin.com/logon.png',
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
+// === 2. ESTADO GLOBAL Y LÓGICA MIGRADA ===
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 
 const form = ref({ nombre: '', email: '', mensaje: '' })
@@ -173,7 +190,7 @@ const enviarMensaje = () => {
   window.open(url, '_blank')
 }
 
-// 2. SEO Y METADATOS OPTIMIZADOS PARA SSR EN NUXT 3
+// === 3. SCHEMA Y ARQUITECTURA BASE ===
 useHead({
   link: [
     { rel: 'canonical', href: 'https://palacionacionalmedellin.com/contactos' }
@@ -203,10 +220,10 @@ useHead({
     }
   ]
 })
+
 definePageMeta({
   layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
 })
-// ... el resto de tu código ...
 </script>
 
 <style scoped>

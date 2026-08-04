@@ -62,6 +62,24 @@
 </template>
 
 <script setup>
+// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR E INTENCIÓN INFORMATIVA/TURÍSTICA) ===
+useSeoMeta({
+  // Título ajustado a 50 caracteres (ideal para no ser truncado por Google)
+  title: 'Historia del Palacio Nacional Medellín | Monumento',
+  
+  // Descripción informativa persuasiva (147 caracteres)
+  description: 'Descubre la historia del Palacio Nacional en Medellín. De imponente Palacio de Justicia a Monumento Nacional, centro comercial y epicentro de arte.',
+  
+  // Open Graph (WhatsApp, Facebook, LinkedIn - ¡Magnético para turistas y curiosos!)
+  ogTitle: '🏛️ Historia y Secretos | Palacio Nacional Medellín',
+  ogDescription: '¿Conoces la historia del edificio más emblemático de Medellín? Explora su increíble transformación desde 1920 hasta hoy. ¡Descúbrelo aquí!',
+  ogImage: 'https://palacionacionalmedellin.com/pa1.jpg', // Usamos la foto histórica de 1920
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
+// === 2. LÓGICA REACTIVA ===
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 
 const textos = {
@@ -126,11 +144,9 @@ const timelineTranslated = computed(() => {
   }))
 })
 
-// === SEO REACTIVO CON NUXT 3 ===
+// === 3. SCHEMA Y ARQUITECTURA BASE (MANTENIDO INTACTO) ===
 useHead({
-  title: "Historia del Palacio Nacional de Medellín | Monumento y Centro Cultural",
   meta: [
-    { name: 'description', content: 'Descubre la fascinante historia del Palacio Nacional de Medellín. De ser el Palacio de Justicia a convertirse en Monumento Nacional, centro comercial y galería de arte.' },
     { name: 'keywords', content: 'historia del palacio nacional de medellin, palacio de justicia medellin, agustin goovaerts, monumento nacional colombia' }
   ],
   link: [
@@ -173,7 +189,6 @@ onMounted(() => {
 definePageMeta({
   layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
 })
-// ... el resto de tu código ...
 </script>
 
 <style scoped>

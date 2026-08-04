@@ -129,6 +129,23 @@
 </template>
 
 <script setup>
+// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y CONVERSIÓN GASTRONÓMICA) ===
+useSeoMeta({
+  // Título ultra-optimizado (56 caracteres). Indica lugar exacto y oferta comercial.
+  title: 'Restaurantes y Bares Centro Medellín | Palacio Nacional',
+  
+  // Descripción persuasiva con clara intención transaccional local (151 caracteres)
+  description: 'Reserva tu mesa en la mejor zona gastronómica del centro de Medellín. Disfruta de café de especialidad, mariscos y cocteles en nuestro Rooftop Bar.',
+  
+  // Open Graph (Ideal para grupos de WhatsApp y redes sociales)
+  ogTitle: '🍽️ Zona Gastronómica y Rooftop | Palacio Nacional Medellín',
+  ogDescription: '¿Buscando dónde comer o tomar algo en el centro de Medellín? Descubre nuestro café artesanal, restaurante y rooftop bar. ¡Mira nuestros menús!',
+  ogImage: 'https://palacionacionalmedellin.com/logon.png',
+  
+  // Twitter Cards (X)
+  twitterCard: 'summary_large_image',
+})
+
 const dropdownOpen = ref(false)
 
 // ESTADO GLOBAL SSR NUXT 3
@@ -159,11 +176,10 @@ const seleccionarIdioma = (codigo) => {
   dropdownOpen.value = false
 }
 
-// === SEO MAESTRO SSR ===
+// === 2. SCHEMA LOCAL BUSINESS Y ARQUITECTURA BASE ===
 useHead({
-  title: "Bares, Restaurantes y Cafés en el Centro de Medellín | Palacio Nacional",
-  meta: [
-    { name: 'description', content: 'Vive una experiencia única en el centro de Medellín. Disfruta del mejor café artesanal, almuerza en nuestro restaurante o relájate con cócteles en el bar del piso 5 del Palacio Nacional mientras admiras galerías de arte históricas.' }
+  link: [
+    { rel: 'canonical', href: 'https://palacionacionalmedellin.com/homegastro' }
   ],
   script: [
     {
@@ -203,10 +219,10 @@ useHead({
     }
   ]
 })
+
 definePageMeta({
   layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
 })
-// ... el resto de tu código ...
 </script>
 
 <style scoped>
