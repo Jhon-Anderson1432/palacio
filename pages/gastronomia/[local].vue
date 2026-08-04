@@ -331,7 +331,7 @@ const dropdownOpen = ref(false)
 
 const localActual = computed(() => route.params.local || 'chao-cafe')
 
-// Corrección de rutas dinámicas de imágenes para Nuxt 3 (Archivos deben estar en /public)
+// Rutas dinámicas de imágenes y configuración
 const configLocal = computed(() => {
   if (localActual.value === 'chao-pescado') return { titulo: 'Chao Pescao', logo: '/logonp.png', schemaType: 'Restaurant' }
   if (localActual.value === 'sky-bar') return { titulo: 'Sky Bar', logo: '/logons.png', schemaType: 'BarOrPub' }
@@ -342,17 +342,56 @@ const idiomas = IDIOMAS_DISPONIBLES
 const t = computed(() => TRADUCCIONES_UI[idiomaGlobal.value] || TRADUCCIONES_UI.es)
 
 // =====================================
-// SEO MAESTRO DINÁMICO NUXT 3 (SSR)
+// 1. FLUJO DE DATOS ASÍNCRONOS (SSR READY)
 // =====================================
-useHead(() => {
-  let titulo = ""
-  let descripcion = ""
-  let schemaData = {}
+// Al usar useAsyncData obligamos al servidor a consultar a Supabase antes de entregar el HTML
+const { data: fetchedMenu, pending: isPending } = await useAsyncData(
+  `menu-${route.params.local || 'chao-cafe'}`,
+  async () => {
+    const { data, error } = await supabase
+      .from('menu_gastronomia')
+      .select('*')
+      .ilike('local', `%${localActual.value}%`)
+      .order('nombre', { ascending: true })
+      
+    if (error) {
+      console.error('Error de carga en la carta:', error.message)
+      return []
+    }
+    return data || []
+  },
+  { watch: [localActual] }
+)
 
+// Sincronizamos los datos SSR con el estado reactivo de la UI (Mantiene tus funciones intactas)
+watchEffect(() => {
+  cargando.value = isPending.value
+  if (fetchedMenu.value && fetchedMenu.value.length > 0) {
+    menuData.value = fetchedMenu.value
+    const unicas = [...new Set(fetchedMenu.value.map(item => item.categoria))]
+    
+    unicas.sort((a, b) => {
+      let indexA = ORDEN_TARJETAS_ESTRICTO.indexOf(a)
+      let indexB = ORDEN_TARJETAS_ESTRICTO.indexOf(b)
+      return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB)
+    })
+    
+    categoriasBase.value = unicas
+    if (categoriaActiva.value !== 'todo' && !unicas.includes(categoriaActiva.value)) {
+      categoriaActiva.value = unicas.length > 0 ? unicas[0] : 'todo'
+    }
+  } else {
+    menuData.value = []
+    categoriasBase.value = []
+  }
+})
+
+// =====================================
+// 2. SEO MAESTRO DINÁMICO NUXT 3 (SSR)
+// =====================================
+const seoSchemaBase = computed(() => {
   if (localActual.value === 'sky-bar') {
-    titulo = "Sky Bar | Terraza Bar en el Centro de Medellín | Palacio Nacional"
-    descripcion = "Disfruta de la mejor terraza bar en el centro de Medellín. Cócteles de autor, cafés premium y licores exclusivos en el piso 5 del Palacio Nacional."
-    schemaData = {
+    return {
       "@context": "https://schema.org",
       "@type": "BarOrPub",
       "name": "Sky Bar Café Medellín",
@@ -361,9 +400,7 @@ useHead(() => {
       "address": { "@type": "PostalAddress", "streetAddress": "Cra. 52 #48-45 5to piso, Palacio Nacional", "addressLocality": "Medellín", "addressRegion": "Antioquia", "addressCountry": "CO" }
     }
   } else if (localActual.value === 'chao-pescado') {
-    titulo = "Chao Pescao | Restaurante en el Centro de Medellín | Palacio Nacional"
-    descripcion = "El mejor restaurante de comida gourmet y menús ejecutivos en el centro de Medellín. Sabor exclusivo en el piso 5 del Palacio Nacional del arte y la moda."
-    schemaData = {
+    return {
       "@context": "https://schema.org",
       "@type": "Restaurant",
       "name": "Chao Pescao",
@@ -371,74 +408,52 @@ useHead(() => {
       "telephone": "+573001111111",
       "address": { "@type": "PostalAddress", "streetAddress": "Cra. 52 #48-45 5to piso, Palacio Nacional", "addressLocality": "Medellín", "addressRegion": "Antioquia", "addressCountry": "CO" }
     }
-  } else {
-    titulo = "Chao Café | La Mejor Cafetería en el Centro de Medellín | Palacio Nacional"
-    descripcion = "Tómate un verdadero café de especialidad colombiano en el centro de Medellín. Repostería artesanal y tranquilidad en el piso 5 del histórico Palacio Nacional."
-    schemaData = {
-      "@context": "https://schema.org",
-      "@type": "CafeOrCoffeeShop",
-      "name": "Chao Café",
-      "url": "https://palacionacionalmedellin.com/gastronomia/chao-cafe",
-      "telephone": "+573003333333",
-      "address": { "@type": "PostalAddress", "streetAddress": "Cra. 52 #48-45 5to piso, Palacio Nacional", "addressLocality": "Medellín", "addressRegion": "Antioquia", "addressCountry": "CO" }
-    }
   }
-
   return {
-    title: titulo,
-    meta: [
-      { name: 'description', content: descripcion }
-    ],
-    script: [
-      {
-        type: 'application/ld+json',
-        innerHTML: JSON.stringify(schemaData)
-      }
-    ]
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    "name": "Chao Café",
+    "url": "https://palacionacionalmedellin.com/gastronomia/chao-cafe",
+    "telephone": "+573003333333",
+    "address": { "@type": "PostalAddress", "streetAddress": "Cra. 52 #48-45 5to piso, Palacio Nacional", "addressLocality": "Medellín", "addressRegion": "Antioquia", "addressCountry": "CO" }
   }
 })
 
-// =====================================
-// FLUJO DE DATOS ASÍNCRONOS
-// =====================================
-const cargarMenu = async () => {
-  cargando.value = true
-  try {
-    const { data, error } = await supabase
-      .from('menu_gastronomia')
-      .select('*')
-      .ilike('local', `%${localActual.value}%`)
-      .order('nombre', { ascending: true })
-      
-    if (error) throw error
+const defaultDesc = computed(() => {
+  if (localActual.value === 'sky-bar') return "Disfruta de la mejor terraza bar en el centro de Medellín. Cócteles de autor, cafés premium y licores exclusivos en el piso 5 del Palacio Nacional."
+  if (localActual.value === 'chao-pescado') return "El mejor restaurante de comida gourmet y menús ejecutivos en el centro de Medellín. Sabor exclusivo en el piso 5 del Palacio Nacional del arte y la moda."
+  return "Tómate un verdadero café de especialidad colombiano en el centro de Medellín. Repostería artesanal y tranquilidad en el piso 5 del histórico Palacio Nacional."
+})
 
-    if (data && data.length > 0) {
-      menuData.value = data
-      const unicas = [...new Set(data.map(item => item.categoria))]
-      
-      unicas.sort((a, b) => {
-        let indexA = ORDEN_TARJETAS_ESTRICTO.indexOf(a)
-        let indexB = ORDEN_TARJETAS_ESTRICTO.indexOf(b)
-        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB)
-      })
-      
-      categoriasBase.value = unicas
-      if (categoriaActiva.value !== 'todo') {
-        categoriaActiva.value = unicas.length > 0 ? unicas[0] : 'todo'
-      }
-    } else {
-      menuData.value = []
-      categoriasBase.value = []
+useSeoMeta({
+  // Título transaccional con marca.
+  title: () => `${configLocal.value.titulo} | Menú y Reservas | Palacio Nacional Medellín`,
+  
+  description: () => {
+    // Si Supabase ya nos devolvió las categorías (SSR Exitoso), armamos una descripción enriquecida dinámicamente con los platos reales que lee de la Base de Datos
+    if (categoriasBase.value.length > 0) {
+      const topCats = categoriasBase.value.slice(0, 3).map(c => DICT_CATEGORIAS.es[c] || c).join(', ')
+      return `Explora el menú de ${configLocal.value.titulo} en el Palacio Nacional Medellín. Disfruta de excelentes opciones de ${topCats.toLowerCase()}. ¡Reserva tu mesa hoy mismo!`
     }
-  } catch (error) {
-    console.error('Error de carga estructural en la carta:', error)
-  } finally {
-    cargando.value = false
-  }
-}
+    // Fallback de seguridad
+    return defaultDesc.value
+  },
+  
+  // Open Graph (WhatsApp, Facebook)
+  ogTitle: () => `🍽️ Menú de ${configLocal.value.titulo} | Palacio Nacional Medellín`,
+  ogDescription: () => `¿Buscando la mejor oferta gastronómica en Medellín? Conoce la carta de ${configLocal.value.titulo} y haz tu reserva. ¡Descúbrela aquí!`,
+  ogImage: () => `https://palacionacionalmedellin.com${configLocal.value.logo}`,
+  
+  twitterCard: 'summary_large_image',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: `https://palacionacionalmedellin.com/gastronomia/${localActual.value}` }],
+  script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(seoSchemaBase.value) }]
+}))
 
 // =====================================
-// LÓGICA DE CATEGORÍAS
+// LÓGICA DE CATEGORÍAS (UI)
 // =====================================
 const menuFiltrado = computed(() => {
   return menuData.value.filter(item => item.categoria === categoriaActiva.value)
@@ -552,15 +567,6 @@ const abrirUbicacion = () => {
   }
   if (import.meta.client) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ubicacion)}`, '_blank')
 }
-
-// SINCRONIZACIÓN REACTIVA
-watch(localActual, () => {
-  cargarMenu()
-})
-
-onMounted(() => {
-  cargarMenu()
-})
 </script>
 
 <style scoped>

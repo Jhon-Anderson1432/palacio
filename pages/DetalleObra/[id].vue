@@ -120,8 +120,7 @@ const route = useRoute();
 // CLIENTE NATIVE SUPABASE PARA NUXT 3
 const supabase = useSupabaseClient()
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
-const obra = ref(null)
-const componenteActivo = ref(true)
+const componenteActivo = ref(false) // Se cambia a false inicial para evitar errores de hidratación con Swiper
 
 const traducciones = {
   es: { acquireBtn: 'Solicitar Adquisición', techniqueLabel: 'Técnica', dimensionsLabel: 'Dimensión', valueLabel: 'Valor', contactLabel: 'Contacto', infoLabel: 'Info detallada' },
@@ -131,6 +130,35 @@ const traducciones = {
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
+
+// === 1. ARQUITECTURA SSR: FETCH ASÍNCRONO SEGURO CON NUXT ===
+// Adaptamos tu función original para que retorne los datos al servidor antes de renderizar
+const obtenerDetalleObra = async (idBusca) => {
+  try {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('*')
+      .eq('id', idBusca)
+      .single()
+      
+    if (error) throw error
+    
+    const imgs = [data.imagen_1, data.imagen_2, data.imagen_3].filter(Boolean);
+    data.listaImagenes = imgs.length > 0 ? imgs : ['sin-imagen'];
+    
+    return data
+  } catch (err) {
+    console.error("Error al obtener la obra:", err.message)
+    return null
+  }
+}
+
+// useAsyncData garantiza que el SEO y el HTML estén listos antes de entregarse al navegador
+const { data: obra } = await useAsyncData(
+  `obra-${route.params.id}`,
+  () => obtenerDetalleObra(route.params.id),
+  { watch: [() => route.params.id] } // Actualiza si la ruta cambia sin recargar la página
+)
 
 const tituloPrincipal = computed(() => {
   if (!obra.value) return '';
@@ -148,24 +176,24 @@ const tecnicaPrincipal = computed(() => {
   return obra.value.tecnica;
 })
 
-// === SEO REACTIVO EN NUXT 3 (MAXIMIZADO PARA CONVERSIÓN Y CTR) ===
+// === 2. SEO DINÁMICO REACTIVO (ALIMENTADO POR SUPABASE) ===
 useSeoMeta({
-  // Título dinámico optimizado para SERPs (apunta a máximo 60 caracteres)
-  title: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor}` : 'Adquirir Obra de Arte | Palacio Nacional',
+  // Inyección de variables con template strings + marca (Ej: "La Monalisa de Da Vinci | Palacio Nacional Medellín")
+  title: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor} | Palacio Nacional Medellín` : 'Obra de Arte | Palacio Nacional Medellín',
   
-  // Descripción transaccional persuasiva (< 155 caracteres)
-  description: () => obra.value ? `Adquiere "${tituloPrincipal.value}" de ${obra.value.autor}. Galería de Arte Palacio Nacional en Medellín. Técnica: ${tecnicaPrincipal.value}. Solicita información de compra aquí.` : 'Explora y adquiere obras de arte exclusivas en la Galería del Palacio Nacional, ubicada en el centro histórico de Medellín.',
+  description: () => obra.value ? `Adquiere la obra exclusiva "${tituloPrincipal.value}" creada por ${obra.value.autor}. Técnica: ${tecnicaPrincipal.value}. Galería de Arte Palacio Nacional Medellín.` : 'Explora y adquiere obras de arte exclusivas en la Galería del Palacio Nacional, ubicada en Medellín.',
   
-  // Open Graph (Para previsualizaciones impactantes en WhatsApp y Facebook)
-  ogTitle: () => obra.value ? `🎨 ${tituloPrincipal.value} | Adquiere Arte en Medellín` : 'Galería de Arte | Palacio Nacional Medellín',
-  ogDescription: () => obra.value ? `Conoce los detalles de esta obra de ${obra.value.autor} (${tecnicaPrincipal.value}). Invierte en arte exclusivo. ¡Haz clic para contactarnos y adquirirla!` : 'Explora nuestra galería de arte contemporáneo en Medellín y adquiere obras exclusivas.',
+  // Open Graph optimizado para CTR (Redes sociales y WhatsApp)
+  ogTitle: () => obra.value ? `🎨 ${tituloPrincipal.value} | Arte en Palacio Nacional Medellín` : 'Galería de Arte | Palacio Nacional Medellín',
+  ogDescription: () => obra.value ? `Descubre los detalles, medidas y precio de esta fascinante obra (${tecnicaPrincipal.value}) de ${obra.value.autor}. Haz clic e invierte en arte.` : 'Explora nuestra galería de arte contemporáneo en Medellín y adquiere obras exclusivas.',
+  
+  // La imagen dinámica extraída de la DB. Si no existe, usamos el logo como Fallback.
   ogImage: () => obra.value?.imagen_1 && obra.value.imagen_1 !== 'sin-imagen' ? obra.value.imagen_1 : 'https://palacionacionalmedellin.com/logon.png',
   
-  // Twitter Cards (X)
   twitterCard: 'summary_large_image',
 })
 
-// Mantenemos useHead exclusivamente para inyectar Schema JSON-LD y Etiquetas de Arquitectura base
+// === 3. SCHEMA LOCAL Y ESTRUCTURA DINÁMICA ===
 useHead(() => {
   if (!obra.value) return {}
   const currentUrl = `https://palacionacionalmedellin.com/DetalleObra/${route.params.id}`
@@ -200,25 +228,6 @@ useHead(() => {
   }
 })
 
-const obtenerDetalleObra = async (idBusca) => {
-  try {
-    const { data, error } = await supabase
-      .from('obras')
-      .select('*')
-      .eq('id', idBusca)
-      .single()
-      
-    if (error) throw error
-    
-    const imgs = [data.imagen_1, data.imagen_2, data.imagen_3].filter(Boolean);
-    data.listaImagenes = imgs.length > 0 ? imgs : ['sin-imagen'];
-    
-    obra.value = data
-  } catch (err) {
-    console.trace("Error al obtener la obra:", err.message)
-  }
-}
-
 const preguntarPorWhatsApp = () => {
   if (!obra.value) return
   const dominio = typeof window !== 'undefined' ? window.location.origin : 'https://palacionacionalmedellin.com'
@@ -240,18 +249,8 @@ onBeforeUnmount(() => {
   componenteActivo.value = false
 })
 
-watch(() => route.params.id, (newId) => {
-  if (newId) {
-    obra.value = null;
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    }
-    obtenerDetalleObra(newId);
-  }
-}, { immediate: true })
-
 definePageMeta({
-  layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán
+  layout: false // Apaga el layout maestro
 })
 </script>
 
