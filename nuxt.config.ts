@@ -2,6 +2,45 @@
 export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase', '@pinia/nuxt', '@nuxt/image', "@nuxtjs/seo"],
 
+  // ==========================================
+  // 1. CONFIGURACIÓN DEL DOMINIO PARA SEO
+  // ==========================================
+  site: {
+    url: 'https://palacionacionalmedellin.com',
+    name: 'Palacio Nacional Medellín',
+  },
+
+  // ==========================================
+  // 2. CONFIGURACIÓN DEL SITEMAP DINÁMICO
+  // ==========================================
+  sitemap: {
+    // Aquí le decimos que consuma tu base de datos mediante el endpoint que crearemos
+    sources: [
+      '/api/sitemap-rutas'
+    ],
+    // SEGURIDAD: Rutas que JAMÁS deben aparecer en Google
+    exclude: [
+      '/login-meseras',
+      '/loginadmin',
+      '/vigilante-scan',
+      '/confirm'
+    ]
+  },
+
+  // ==========================================
+  // 3. CONFIGURACIÓN DEL ROBOTS.TXT (El Guardián)
+  // ==========================================
+  robots: {
+    // Bloqueamos físicamente el rastreo a tus sistemas operativos internos y endpoints
+    disallow: [
+      '/login-meseras',
+      '/loginadmin',
+      '/vigilante-scan',
+      '/confirm',
+      '/api' 
+    ],
+  },
+
   supabase: {
     redirectOptions: {
       // Ruta por defecto para usuarios no autenticados
