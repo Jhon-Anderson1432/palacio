@@ -16,8 +16,10 @@ export default defineNuxtConfig({
   // Borra estas rutas del sitemap y bloquea a Google a nivel de servidor
   // ==========================================
   routeRules: {
+    '/adminpanel02402110': { index: false },
+    '/LoginAdmin': { index: false },
+    '/terminal-pos': { index: false },
     '/login-meseras': { index: false },
-    '/loginadmin': { index: false },
     '/vigilante-scan': { index: false },
     '/confirm': { index: false },
     '/api/**': { index: false } // Oculta todos los endpoints de datos crudos
@@ -29,6 +31,14 @@ export default defineNuxtConfig({
   sitemap: {
     sources: [
       '/api/sitemap-rutas'
+    ],
+    exclude: [
+      '/adminpanel02402110',
+      '/LoginAdmin',
+      '/terminal-pos',
+      '/login-meseras',
+      '/vigilante-scan',
+      '/confirm'
     ]
   },
 
@@ -37,8 +47,10 @@ export default defineNuxtConfig({
   // ==========================================
   robots: {
     disallow: [
+      '/adminpanel02402110',
+      '/LoginAdmin',
+      '/terminal-pos',
       '/login-meseras',
-      '/loginadmin',
       '/vigilante-scan',
       '/confirm',
       '/api' 
@@ -59,7 +71,9 @@ export default defineNuxtConfig({
         '/DetalleObra/*', 
         '/homegastro',
         '/gastronomia/*',
-        '/loginadmin',
+        '/adminpanel02402110',
+        '/LoginAdmin',
+        '/terminal-pos',
         '/login-meseras',
         '/vigilante-scan'
       ]
