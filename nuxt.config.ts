@@ -8,30 +8,34 @@ export default defineNuxtConfig({
   site: {
     url: 'https://palacionacionalmedellin.com',
     name: 'Palacio Nacional Medellín',
+    indexable: true // Garantiza que el servidor permita la indexación pública
   },
 
   // ==========================================
-  // 2. CONFIGURACIÓN DEL SITEMAP DINÁMICO
+  // 2. EL BÚNKER DE SEGURIDAD (Route Rules)
+  // Borra estas rutas del sitemap y bloquea a Google a nivel de servidor
+  // ==========================================
+  routeRules: {
+    '/login-meseras': { index: false },
+    '/loginadmin': { index: false },
+    '/vigilante-scan': { index: false },
+    '/confirm': { index: false },
+    '/api/**': { index: false } // Oculta todos los endpoints de datos crudos
+  },
+
+  // ==========================================
+  // 3. CONFIGURACIÓN DEL SITEMAP DINÁMICO
   // ==========================================
   sitemap: {
-    // Aquí le decimos que consuma tu base de datos mediante el endpoint que crearemos
     sources: [
       '/api/sitemap-rutas'
-    ],
-    // SEGURIDAD: Rutas que JAMÁS deben aparecer en Google
-    exclude: [
-      '/login-meseras',
-      '/loginadmin',
-      '/vigilante-scan',
-      '/confirm'
     ]
   },
 
   // ==========================================
-  // 3. CONFIGURACIÓN DEL ROBOTS.TXT (El Guardián)
+  // 4. CONFIGURACIÓN DEL ROBOTS.TXT (El Guardián)
   // ==========================================
   robots: {
-    // Bloqueamos físicamente el rastreo a tus sistemas operativos internos y endpoints
     disallow: [
       '/login-meseras',
       '/loginadmin',
