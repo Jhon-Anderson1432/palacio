@@ -73,6 +73,7 @@ export default defineNuxtConfig({
         '/gastronomia/*',
         '/adminpanel02402110',
         '/LoginAdmin',
+        '/loginadmin', // <--- SALVAVIDAS AGREGADO AQUÍ
         '/terminal-pos',
         '/login-meseras',
         '/vigilante-scan'
