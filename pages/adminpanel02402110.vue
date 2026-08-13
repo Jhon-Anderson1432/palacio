@@ -1001,6 +1001,15 @@ const cargarPerfilYDatos = async () => {
     rolUsuario.value = perfil.rol
     localAsignado.value = perfil.local_asignado
 
+    // REEMPLAZO DEL LOCALSTORAGE: AHORA LEEMOS LA FECHA DESDE SUPABASE
+    if (perfil.fecha_inicio_cobro) {
+      fechaInicioCobro.value = new Date(perfil.fecha_inicio_cobro)
+    } else if (!fechaInicioCobro.value) {
+      const d = new Date()
+      d.setDate(d.getDate() - 14)
+      fechaInicioCobro.value = d
+    }
+
     if (perfil.rol === 'admin_cafe') {
       pestañaActiva.value = 'caja'
       fetchOrdenesCaja()
@@ -1579,22 +1588,12 @@ const calcularEstadisticas = () => {
     return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   })
 
-  if (import.meta.client) {
-    const storedDate = localStorage.getItem('fechaInicioCobroGaleria')
-    if (storedDate) {
-      fechaInicioCobro.value = new Date(storedDate)
-    } else {
-      const d = new Date()
-      d.setDate(d.getDate() - 14)
-      fechaInicioCobro.value = d
-      localStorage.setItem('fechaInicioCobroGaleria', d.toISOString())
-    }
-  } else {
-    if (!fechaInicioCobro.value) {
-      const d = new Date()
-      d.setDate(d.getDate() - 14)
-      fechaInicioCobro.value = d
-    }
+  // ELIMINADO EL LOCALSTORAGE DE ESTE BLOQUE. YA SE CARGA DESDE EL PERFIL DE SUPABASE
+
+  if (!fechaInicioCobro.value) {
+    const d = new Date()
+    d.setDate(d.getDate() - 14)
+    fechaInicioCobro.value = d
   }
 
   const ahora = new Date()
@@ -1619,13 +1618,17 @@ const calcularEstadisticas = () => {
   statsActividad.pago = cuentaCiclo * 3000
 }
 
-const marcarCobrado = () => {
+const marcarCobrado = async () => {
   if (confirm(`¿Confirmas que se ha cobrado el monto de $${statsActividad.pago.toLocaleString('es-CO')}? Se reiniciará el contador del ciclo.`)) {
     const ahora = new Date()
     fechaInicioCobro.value = ahora
-    if (import.meta.client) {
-      localStorage.setItem('fechaInicioCobroGaleria', ahora.toISOString())
+    
+    // GUARDADO EN SUPABASE EN VEZ DEL LOCALSTORAGE
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('perfiles').update({ fecha_inicio_cobro: ahora.toISOString() }).eq('id', user.id)
     }
+
     calcularEstadisticas()
   }
 }
