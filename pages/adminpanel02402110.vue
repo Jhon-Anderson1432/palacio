@@ -1001,13 +1001,22 @@ const cargarPerfilYDatos = async () => {
     rolUsuario.value = perfil.rol
     localAsignado.value = perfil.local_asignado
 
-    // REEMPLAZO DEL LOCALSTORAGE: AHORA LEEMOS LA FECHA DESDE SUPABASE
+    // 🚨 RESCATE Y MIGRACIÓN DE FECHA
     if (perfil.fecha_inicio_cobro) {
       fechaInicioCobro.value = new Date(perfil.fecha_inicio_cobro)
-    } else if (!fechaInicioCobro.value) {
-      const d = new Date()
-      d.setDate(d.getDate() - 14)
-      fechaInicioCobro.value = d
+    } else {
+      // Si Supabase está vacío, rescatamos la fecha que tenías en el navegador
+      const fechaLocal = localStorage.getItem('fechaInicioCobroGaleria') || localStorage.getItem('fechaInicioCobro') || localStorage.getItem('fecha_inicio_cobro');
+      
+      if (fechaLocal) {
+        fechaInicioCobro.value = new Date(fechaLocal)
+        // La guardamos en la nube silenciosamente para no volver a perderla
+        await supabase.from('perfiles').update({ fecha_inicio_cobro: new Date(fechaLocal).toISOString() }).eq('id', user.id)
+      } else {
+         // Fallback seguro: si no hay nada en absoluto, seteamos a inicio de mes
+         const d = new Date();
+         fechaInicioCobro.value = new Date(d.getFullYear(), d.getMonth(), 1);
+      }
     }
 
     if (perfil.rol === 'admin_cafe') {
@@ -1588,13 +1597,8 @@ const calcularEstadisticas = () => {
     return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   })
 
-  // ELIMINADO EL LOCALSTORAGE DE ESTE BLOQUE. YA SE CARGA DESDE EL PERFIL DE SUPABASE
-
-  if (!fechaInicioCobro.value) {
-    const d = new Date()
-    d.setDate(d.getDate() - 14)
-    fechaInicioCobro.value = d
-  }
+  // Evitamos que sobreescriba la fecha con datos erróneos
+  if (!fechaInicioCobro.value) return;
 
   const ahora = new Date()
   const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())
@@ -1609,7 +1613,7 @@ const calcularEstadisticas = () => {
     const fechaObra = new Date(obra.created_at)
     if (fechaObra >= inicioHoy) cuentaHoy++
     if (fechaObra >= inicioSemana) cuentaSemana++
-    if (fechaInicioCobro.value && fechaObra >= fechaInicioCobro.value) cuentaCiclo++
+    if (fechaObra >= fechaInicioCobro.value) cuentaCiclo++
   })
 
   statsActividad.hoy = cuentaHoy
