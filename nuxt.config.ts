@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     '/login-meseras': { index: false },
     '/vigilante-scan': { index: false },
     '/confirm': { index: false },
-    '/api/**': { index: false } // Oculta todos los endpoints de datos crudos
+    '/api/**': { index: false }, // Oculta todos los endpoints de datos crudos
+    '/DetalleObra/**': { index: false }
   },
 
   // ==========================================
@@ -38,7 +39,8 @@ export default defineNuxtConfig({
       '/terminal-pos',
       '/login-meseras',
       '/vigilante-scan',
-      '/confirm'
+      '/confirm',
+      '/DetalleObra/**'
     ]
   },
 
@@ -53,7 +55,8 @@ export default defineNuxtConfig({
       '/login-meseras',
       '/vigilante-scan',
       '/confirm',
-      '/api' 
+      '/api',
+      '/DetalleObra/**'
     ],
   },
 

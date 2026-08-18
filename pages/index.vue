@@ -5,7 +5,7 @@
 
     <!-- SEO: H1 Oculto visualmente pero 100% visible para Google. -->
     <h1 class="sr-only">
-      Palacio Nacional Medellín - Centro Comercial, Arte, Moda, Gastronomía y Museo de Historia
+      Palacio Nacional Medellín - Arte, Historia y Gastronomía en un solo lugar.
     </h1>
 
     <video
@@ -96,7 +96,7 @@ const idiomaGlobal = useIdiomaGlobal()
 // LÓGICA DE NEGOCIO
 const traducciones = {
   es: {
-    mainTitle: 'El arte en movimiento',
+    mainTitle: 'Arte, Historia y Gastronomía en un solo lugar',
     btnGallery: 'Galería',
     btnGastro: 'Gastronomía',
     btnHistory: 'Nuestra Historia',
@@ -104,7 +104,7 @@ const traducciones = {
     btnContacts: 'Contactos'
   },
   en: {
-    mainTitle: 'Art in motion',
+    mainTitle: 'Art, History, and Gastronomy in one place',
     btnGallery: 'Gallery',
     btnGastro: 'Gastronomy',
     btnHistory: 'Our History',
@@ -112,7 +112,7 @@ const traducciones = {
     btnContacts: 'Contacts'
   },
   fr: {
-    mainTitle: 'L\'art en mouvement',
+    mainTitle: 'Art, Histoire et Gastronomie en un seul lieu',
     btnGallery: 'Galerie',
     btnGastro: 'Gastronomie',
     btnHistory: 'Notre Histoire',
@@ -120,7 +120,7 @@ const traducciones = {
     btnContacts: 'Contacts'
   },
   ja: {
-    mainTitle: '動く芸術',
+    mainTitle: '芸術、歴史、美食がひとつに',
     btnGallery: 'ギャラリー',
     btnGastro: 'ガストロノミー',
     btnHistory: '私たちの歴史',
