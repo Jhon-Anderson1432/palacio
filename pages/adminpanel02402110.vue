@@ -843,7 +843,8 @@ const puntosDeControl = ref([])
 let subscripcionSeguridad = null
 
 const fetchPuntosControl = async () => {
-  const { data, error } = await supabase.from('puntos_control').select('*').order('created_at', { ascending: false })
+  // 🔥 FIX: Añadido límite alto para evitar recortes de Supabase
+  const { data, error } = await supabase.from('puntos_control').select('*').order('created_at', { ascending: false }).limit(10000)
   if (!error) puntosDeControl.value = data || []
 }
 
@@ -1001,19 +1002,25 @@ const cargarPerfilYDatos = async () => {
     rolUsuario.value = perfil.rol
     localAsignado.value = perfil.local_asignado
 
-    // 🚨 RESCATE Y MIGRACIÓN DE FECHA
+    // 🚨 FIX CRÍTICO: RESCATE Y MIGRACIÓN DE FECHA AVANZADA (Previene fallos de RLS o desincronización)
+    const fechaLocalStr = localStorage.getItem('fechaInicioCobroGaleria') || localStorage.getItem('fechaInicioCobro') || localStorage.getItem('fecha_inicio_cobro');
+    const fechaLocal = fechaLocalStr ? new Date(fechaLocalStr) : null;
+
     if (perfil.fecha_inicio_cobro) {
-      fechaInicioCobro.value = new Date(perfil.fecha_inicio_cobro)
-    } else {
-      // Si Supabase está vacío, rescatamos la fecha que tenías en el navegador
-      const fechaLocal = localStorage.getItem('fechaInicioCobroGaleria') || localStorage.getItem('fechaInicioCobro') || localStorage.getItem('fecha_inicio_cobro');
-      
-      if (fechaLocal) {
-        fechaInicioCobro.value = new Date(fechaLocal)
-        // La guardamos en la nube silenciosamente para no volver a perderla
-        await supabase.from('perfiles').update({ fecha_inicio_cobro: new Date(fechaLocal).toISOString() }).eq('id', user.id)
+      const fechaDB = new Date(perfil.fecha_inicio_cobro);
+      // Si la base de datos falló en actualizarse pero el localStorage sí tiene el cobro nuevo, le creemos al local
+      if (fechaLocal && fechaLocal > fechaDB) {
+        fechaInicioCobro.value = fechaLocal;
+        supabase.from('perfiles').update({ fecha_inicio_cobro: fechaLocal.toISOString() }).eq('id', user.id).then();
       } else {
-         // Fallback seguro: si no hay nada en absoluto, seteamos a inicio de mes
+        fechaInicioCobro.value = fechaDB;
+        if (fechaDB) localStorage.setItem('fechaInicioCobroGaleria', fechaDB.toISOString());
+      }
+    } else {
+      if (fechaLocal) {
+        fechaInicioCobro.value = fechaLocal
+        await supabase.from('perfiles').update({ fecha_inicio_cobro: fechaLocal.toISOString() }).eq('id', user.id)
+      } else {
          const d = new Date();
          fechaInicioCobro.value = new Date(d.getFullYear(), d.getMonth(), 1);
       }
@@ -1580,7 +1587,8 @@ const imprimirCierreCaja = () => {
 
 const fetchObras = async () => {
   cargando.value = true
-  const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false })
+  // 🔥 FIX: Añadimos .limit(10000) porque Supabase corta las respuestas a 1000 por defecto.
+  const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false }).limit(10000)
   todasLasObras.value = data || []
   cargando.value = false
   calcularEstadisticas()
@@ -1627,11 +1635,15 @@ const marcarCobrado = async () => {
     const ahora = new Date()
     fechaInicioCobro.value = ahora
     
-    // GUARDADO EN SUPABASE EN VEZ DEL LOCALSTORAGE
+    // GUARDADO EN SUPABASE
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       await supabase.from('perfiles').update({ fecha_inicio_cobro: ahora.toISOString() }).eq('id', user.id)
     }
+
+    // 🔥 FIX: FORZAR GUARDADO LOCAL. Si Supabase falla por permisos (RLS), el LocalStorage salvará el progreso.
+    localStorage.setItem('fechaInicioCobroGaleria', ahora.toISOString());
+    localStorage.setItem('fecha_inicio_cobro', ahora.toISOString());
 
     calcularEstadisticas()
   }
@@ -1737,7 +1749,8 @@ const deleteObra = async (obra) => {
 
 const fetchGastronomia = async () => {
   cargandoGastro.value = true
-  let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false })
+  // 🔥 FIX: Añadimos .limit(10000) para evitar que Supabase recorte el menú.
+  let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false }).limit(10000)
   
   if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
     query = query.ilike('local', `%${localAsignado.value}%`)
