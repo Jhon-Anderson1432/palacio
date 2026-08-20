@@ -64,18 +64,17 @@
 <script setup>
 // === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR E INTENCIÓN INFORMATIVA/TURÍSTICA) ===
 useSeoMeta({
-  // Título ajustado a 50 caracteres (ideal para no ser truncado por Google)
-  title: 'Historia del Palacio Nacional Medellín | Monumento',
+  // Título ajustado y sin rastros genéricos.
+  title: 'Historia del Palacio Nacional | Arte, Patrimonio y Cultura',
   
-  // Descripción informativa persuasiva (147 caracteres)
-  description: 'Descubre la historia del Palacio Nacional en Medellín. De imponente Palacio de Justicia a Monumento Nacional, centro comercial y epicentro de arte.',
+  // Descripción informativa persuasiva centrada en los pilares.
+  description: 'Descubre la fascinante historia del Palacio Nacional en Medellín. De imponente Palacio de Justicia a Monumento Nacional y epicentro de arte y gastronomía.',
   
   // Open Graph (WhatsApp, Facebook, LinkedIn - ¡Magnético para turistas y curiosos!)
-  ogTitle: '🏛️ Historia y Secretos | Palacio Nacional Medellín',
-  ogDescription: '¿Conoces la historia del edificio más emblemático de Medellín? Explora su increíble transformación desde 1920 hasta hoy. ¡Descúbrelo aquí!',
-  ogImage: 'https://palacionacionalmedellin.com/pa1.jpg', // Usamos la foto histórica de 1920
+  ogTitle: '🏛️ Historia y Patrimonio | Palacio Nacional Medellín',
+  ogDescription: '¿Conoces la historia del monumento más emblemático de Medellín? Explora su increíble transformación desde 1920 hasta convertirse en el santuario del arte hoy.',
+  ogImage: 'https://palacionacionalmedellin.com/pa1.jpg', 
   
-  // Twitter Cards (X)
   twitterCard: 'summary_large_image',
 })
 
@@ -122,17 +121,17 @@ const timelineData = [
   },
   {
     year: '1993', img: '/pa6.jpg', 
-    es: { title: 'El Renacer Comercial', desc: 'Tras el traslado de los juzgados a un nuevo complejo, el Palacio fue rescatado del abandono, meticulosamente restaurado y adaptado como centro comercial. Magistrados y abogados dieron paso a comerciantes y visitantes, convirtiendo sus imponentes arcos en un epicentro de la moda urbana.' },
-    en: { title: 'The Commercial Rebirth', desc: 'After the courts moved to a new complex, the Palace was rescued from abandonment, meticulously restored and adapted into a shopping center. Magistrates made way for merchants and visitors, turning its imposing arches into an epicenter of urban fashion.' },
-    fr: { title: 'La Renaissance Commerciale', desc: 'Après le déménagement des tribunaux, le Palais a été sauvé de l\'abandon, méticuleusement restauré et adapté en centre commercial. Les magistrats ont fait place aux commerçants et aux visiteurs, transformant ses imposantes arches en un épicentre de la mode urbaine.' },
-    ja: { title: '商業のルネッサンス', desc: '裁判所が新しい複合施設に移転した後、宮殿は放棄から救われ、細心の注意を払って修復され、ショッピングセンターとして適応されました。治安判事は商人や訪問者に道を譲り、その壮大なアーチを都市のファッションの中心地に変えました。' }
+    es: { title: 'El Renacer Cultural', desc: 'Tras el traslado de los juzgados a un nuevo complejo, el Palacio fue rescatado del abandono y meticulosamente restaurado. Magistrados y abogados dieron paso a artistas y visitantes, convirtiendo sus imponentes arcos en un epicentro de cultura, arte y moda.' },
+    en: { title: 'The Cultural Rebirth', desc: 'After the courts moved to a new complex, the Palace was rescued from abandonment and meticulously restored. Magistrates made way for artists and visitors, turning its imposing arches into an epicenter of culture, art, and fashion.' },
+    fr: { title: 'La Renaissance Culturelle', desc: 'Après le déménagement des tribunaux, le Palais a été sauvé de l\'abandon et méticuleusement restauré. Les magistrats ont fait place aux artistes et visiteurs, transformant ses imposantes arches en un épicentre de culture, d\'art et de mode.' },
+    ja: { title: '文化のルネッサンス', desc: '裁判所が新しい複合施設に移転した後、宮殿は放棄から救われ、細心の注意を払って修復されました。治安判事はアーティストや訪問者に道を譲り、その壮大なアーチを文化、芸術、ファッションの中心地に変えました。' }
   },
   {
     year: 'Actualidad', img: '/pa4.jpg',
-    es: { title: 'El Santuario del Arte', desc: 'En su etapa más reciente, el Palacio trasciende su vocación comercial. Sus históricos pisos superiores resguardan hoy una vasta galería de arte contemporáneo, creando un contraste poético donde el bullicio comercial de la ciudad convive en armonía con lienzos, esculturas y exposiciones de talla internacional.' },
-    en: { title: 'The Art Sanctuary', desc: 'In its most recent stage, the Palace transcends its commercial vocation. Its historic upper floors now house a vast contemporary art gallery, creating a poetic contrast where the city\'s commercial bustle coexists in harmony with canvases, sculptures, and world-class exhibitions.' },
-    fr: { title: 'Le Sanctuaire de l\'Art', desc: 'Dans sa phase la plus récente, le Palais transcende sa vocation commerciale. Ses étages supérieurs historiques abritent aujourd\'hui une vaste galerie d\'art contemporain, créant un contraste poétique où l\'agitation commerciale coexiste en harmonie avec les toiles, les sculptures et les expositions.' },
-    ja: { title: 'アートの聖域', desc: '最新の段階で、宮殿はその商業的使命を超越しています。その歴史的な上層階には現在、広大な現代アートギャラリーがあり、都市の商業的な喧騒がキャンバス、彫刻、世界クラスの展覧会と調和して共存する詩的なコントラストを作り出しています。' }
+    es: { title: 'El Santuario del Arte', desc: 'En su etapa más reciente, el Palacio se consolida como un hito cultural. Sus históricos pisos superiores resguardan hoy una vasta galería de arte contemporáneo, conviviendo en perfecta armonía con exquisitas propuestas gastronómicas y exposiciones de talla internacional.' },
+    en: { title: 'The Art Sanctuary', desc: 'In its most recent stage, the Palace consolidates itself as a cultural landmark. Its historic upper floors now house a vast contemporary art gallery, coexisting in perfect harmony with exquisite gastronomic proposals and world-class exhibitions.' },
+    fr: { title: 'Le Sanctuaire de l\'Art', desc: 'Dans sa phase la plus récente, le Palais se consolide comme un repère culturel. Ses étages supérieurs historiques abritent aujourd\'hui une vaste galerie d\'art contemporain, coexistant en parfaite harmonie avec des propositions gastronomiques exquises et des expositions d\'envergure.' },
+    ja: { title: 'アートの聖域', desc: '最新の段階で、宮殿は文化的ランドマークとしての地位を確立しています。その歴史的な上層階には現在、広大な現代アートギャラリーがあり、絶品の美食の提案や世界クラスの展覧会と完璧に調和して共存しています。' }
   }
 ]
 
@@ -144,7 +143,7 @@ const timelineTranslated = computed(() => {
   }))
 })
 
-// === 3. SCHEMA Y ARQUITECTURA BASE (MANTENIDO INTACTO) ===
+// === 3. SCHEMA Y ARQUITECTURA BASE ===
 useHead({
   meta: [
     { name: 'keywords', content: 'historia del palacio nacional de medellin, palacio de justicia medellin, agustin goovaerts, monumento nacional colombia' }
@@ -161,7 +160,7 @@ useHead({
         "mainEntity": {
           "@type": "HistoricalBuilding",
           "name": "Palacio Nacional de Medellín",
-          "description": "Edificio histórico de estilo neo-románico diseñado por Agustín Goovaerts en 1920. Antiguo Palacio de Justicia de Antioquia y actual Patrimonio Nacional, Centro Comercial y Galería de Arte.",
+          "description": "Edificio histórico de estilo neo-románico diseñado por Agustín Goovaerts en 1920. Antiguo Palacio de Justicia de Antioquia y actual Patrimonio Nacional, epicentro de arte y gastronomía.",
           "url": "https://palacionacionalmedellin.com/historia",
           "address": {
             "@type": "PostalAddress",
@@ -187,7 +186,7 @@ onMounted(() => {
   }
 })
 definePageMeta({
-  layout: false // Apaga el layout maestro. Ni Navbar ni Footer aparecerán.
+  layout: false 
 })
 </script>
 

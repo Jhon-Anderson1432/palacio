@@ -15,7 +15,7 @@
     <div class="w-full flex justify-center mb-10">
       <NuxtImg 
         src="/logon.png" 
-        alt="Logotipo Galería Palacio Nacional Medellín" 
+        alt="Logotipo Galería de Arte Palacio Nacional Medellín" 
         class="w-40 md:w-48 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(212,175,55,0.15)]" 
         preload
       />
@@ -53,7 +53,6 @@
       <div class="relative">
         <select 
           v-model="filtroArtista" 
-          @change="aplicarFiltrosAdicionales"
           class="w-full sm:w-auto bg-transparent border border-white/20 text-white px-6 py-3 rounded-full focus:outline-none focus:border-[#D4AF37] hover:border-[#D4AF37]/60 transition-colors appearance-none cursor-pointer text-xs uppercase tracking-widest font-bold pr-10"
         >
           <option value="Todos" class="bg-neutral-900 text-white">{{ t.allArtists }}</option>
@@ -67,7 +66,6 @@
       <div class="relative">
         <select 
           v-model="filtroPrecio" 
-          @change="aplicarFiltrosAdicionales"
           class="w-full sm:w-auto bg-transparent border border-white/20 text-white px-6 py-3 rounded-full focus:outline-none focus:border-[#D4AF37] hover:border-[#D4AF37]/60 transition-colors appearance-none cursor-pointer text-xs uppercase tracking-widest font-bold pr-10"
         >
           <option value="Todos" class="bg-neutral-900 text-white">{{ t.allPrices }}</option>
@@ -89,11 +87,13 @@
       </button>
     </div>
 
-    <div v-if="cargando" class="flex flex-col items-center justify-center py-20 space-y-4 text-[#D4AF37]">
+    <!-- Indicador de carga SSR y Cliente -->
+    <div v-if="status === 'pending'" class="flex flex-col items-center justify-center py-20 space-y-4 text-[#D4AF37]">
       <div class="animate-spin rounded-full h-10 w-10 border-2 border-current border-t-transparent"></div>
       <span class="uppercase tracking-[0.2em] text-xs font-bold animate-pulse">{{ t.syncing }}</span>
     </div>
 
+    <!-- Catálogo de Obras Indexable por Google -->
     <section v-else-if="obrasFiltradas.length > 0" class="max-w-7xl mx-auto flex flex-col" aria-label="Catálogo de Obras de Arte">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 mb-12">
         
@@ -109,8 +109,21 @@
           </div>
 
           <figure class="relative aspect-square overflow-hidden bg-black/50">
+            <!-- FALLBACK SSR PARA SEO: Google verá esta imagen nativa -->
+            <div v-if="!componenteActivo" class="w-full h-full relative flex items-center justify-center bg-neutral-950">
+              <NuxtImg 
+                v-if="obra.listaImagenes[0] !== 'sin-imagen'" 
+                :src="obra.listaImagenes[0]" 
+                :alt="`${obtenerTitulo(obra)} - Arte en Palacio Nacional Medellín`" 
+                itemprop="image" 
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="text-neutral-600 text-xs uppercase tracking-widest">Sin Imagen</div>
+            </div>
+            
+            <!-- SWIPER INTERACTIVO PARA EL USUARIO -->
             <swiper
-              v-if="componenteActivo"
+              v-else
               :modules="modules"
               :slides-per-view="1"
               :loop="obra.listaImagenes.length > 1"
@@ -122,7 +135,7 @@
                 <NuxtImg 
                   v-if="img !== 'sin-imagen'" 
                   :src="img" 
-                  :alt="`${obtenerTitulo(obra)} - Venta de Arte en Medellín`" 
+                  :alt="`${obtenerTitulo(obra)} - Galería Palacio Nacional Medellín`" 
                   itemprop="image" 
                   :loading="index < 3 && idx === 0 ? 'eager' : 'lazy'" 
                   :preload="index < 3 && idx === 0" 
@@ -170,6 +183,7 @@
                 <span class="text-[10px] text-neutral-500 ml-1 font-sans font-bold uppercase tracking-widest">USD</span>
               </span>
 
+              <!-- ENLACE A LOS TENTÁCULOS -->
               <NuxtLink 
                 :to="'/DetalleObra/' + obra.id" 
                 class="flex items-center justify-center px-6 py-3 border border-white/20 bg-white/5 text-white rounded-full hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black focus:ring-2 focus:ring-[#D4AF37]/50 focus:outline-none transition-all duration-300 shadow-lg active:scale-95"
@@ -217,36 +231,30 @@
 </template>
 
 <script setup>
-// === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y SEO DE CATÁLOGO) ===
-useSeoMeta({
-  // Título ajustado a 56 caracteres (preciso para no ser cortado por Google)
-  title: 'Catálogo de Obras de Arte en Medellín | Palacio Nacional',
-  
-  // Descripción transaccional con palabras clave locales y de intención (149 caracteres)
-  description: 'Explora nuestro catálogo de arte en Medellín. Filtra y adquiere pinturas y esculturas exclusivas de artistas locales en la Galería Palacio Nacional.',
-  
-  // Open Graph (Ideal para compartir el catálogo por WhatsApp a coleccionistas)
-  ogTitle: '🖼️ Catálogo de Obras de Arte | Galería Palacio Nacional',
-  ogDescription: '¿Buscas invertir en arte? Descubre nuestra colección exclusiva de pinturas y esculturas en el centro histórico de Medellín. ¡Explora el catálogo!',
-  ogImage: 'https://palacionacionalmedellin.com/logon.png',
-  
-  // Twitter Cards (X)
-  twitterCard: 'summary_large_image',
-})
-
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 
+// === 1. SEO AGRESIVO Y FOCALIZADO ===
+useSeoMeta({
+  title: 'Galería de Arte Palacio Nacional | Exposiciones Medellín',
+  description: 'Visita la Galería de Arte Palacio Nacional en Medellín. Disfruta de nuestras exposiciones, museo y venta de pinturas y esculturas de artistas locales e internacionales.',
+  ogTitle: '🖼️ Galería de Arte Palacio Nacional | Medellín',
+  ogDescription: 'Descubre el epicentro del arte en Medellín. Exposiciones, museo y obras exclusivas en el histórico Palacio Nacional. ¡Planifica tu visita y explora la colección!',
+  ogImage: 'https://palacionacionalmedellin.com/logon.png',
+  twitterCard: 'summary_large_image',
+})
+
+// REPARACIÓN CRÍTICA: Declarar route para evitar colapso de JavaScript
+const route = useRoute();
+
 const modules = [Autoplay, EffectFade];
-
 const supabase = useSupabaseClient()
-
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 const searchQuery = useState('searchQuery', () => '')
 
-const componenteActivo = ref(true)
+const componenteActivo = ref(false)
 
 const traducciones = {
   es: { seoTitle: 'Galería de Arte', seoSubtitle: 'Exposiciones, Museo y Venta de Obras en Medellín', filterAll: 'Todas', filterPaintings: 'Pinturas', filterSculptures: 'Esculturas', filteringBy: 'Filtrando por:', clearFilter: 'Quitar Filtro', syncing: 'Sincronizando galería...', paintingLabel: 'Pintura', sculptureLabel: 'Escultura', by: 'Por', techniqueLabel: 'Técnica', dimensionsLabel: 'Medidas', detailsBtn: 'Ver detalles', loadMore: 'Descubrir más obras', loading: 'Cargando...', noResults: 'No encontramos obras con estos parámetros.', allArtists: 'Todos los Artistas', allPrices: 'Todos los Precios', priceLow: 'Menos de $1,000 USD', priceMed: '$1,000 - $5,000 USD', priceHigh: 'Más de $5,000 USD', prevPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', of: 'de' },
@@ -271,20 +279,94 @@ const obtenerTecnica = (obra) => {
   return obra.tecnica; 
 }
 
-const todasLasObras = ref([])
-const cargando = ref(true) 
 const filtroTipo = ref('Todos')
-
 const filtroArtista = ref('Todos')
 const filtroPrecio = ref('Todos')
-const listaArtistas = ref([])
 
-// Configuración de Paginación
+const paginaActual = ref(1)
 const limitePorPagina = 12
-const paginaActual = ref(1) 
-const totalPaginas = ref(1)
 
-// === 2. SCHEMA Y ARQUITECTURA BASE ===
+// === 2. FETCH SSR: EL SECRETO PARA QUE GOOGLE VEA LAS OBRAS ===
+const { data: obrasData, status } = await useAsyncData('obras-galeria', async () => {
+  const { data, error } = await supabase
+    .from('obras')
+    .select('*')
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  return data || []
+})
+
+// === 3. LÓGICA REACTIVA DE FILTRADO ===
+const listaArtistas = computed(() => {
+  if (!obrasData.value) return []
+  const autores = [...new Set(obrasData.value.map(o => o.autor).filter(a => a && a.trim() !== ''))]
+  return autores.sort()
+})
+
+const obrasProcesadas = computed(() => {
+  if (!obrasData.value) return []
+  let filtradas = obrasData.value
+
+  if (filtroTipo.value !== 'Todos') {
+    filtradas = filtradas.filter(o => o.tipo === filtroTipo.value)
+  }
+  if (filtroArtista.value !== 'Todos') {
+    filtradas = filtradas.filter(o => o.autor === filtroArtista.value)
+  }
+  if (searchQuery.value && searchQuery.value.trim() !== '') {
+    const term = searchQuery.value.toLowerCase().trim()
+    filtradas = filtradas.filter(o => 
+      o.titulo?.toLowerCase().includes(term) || 
+      o.autor?.toLowerCase().includes(term) || 
+      o.titulo_en?.toLowerCase().includes(term)
+    )
+  }
+  if (filtroPrecio.value !== 'Todos') {
+    filtradas = filtradas.filter(o => {
+      const precioNumerico = Number(String(o.precio).replace(/[^0-9.]/g, ''))
+      if (filtroPrecio.value === 'bajo') return precioNumerico < 1000
+      if (filtroPrecio.value === 'medio') return precioNumerico >= 1000 && precioNumerico <= 5000
+      if (filtroPrecio.value === 'alto') return precioNumerico > 5000
+      return true
+    })
+  }
+
+  return filtradas.map(o => {
+    const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean)
+    return { ...o, listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen'] }
+  })
+})
+
+const totalPaginas = computed(() => Math.ceil(obrasProcesadas.value.length / limitePorPagina) || 1)
+
+const obrasFiltradas = computed(() => {
+  const inicio = (paginaActual.value - 1) * limitePorPagina
+  return obrasProcesadas.value.slice(inicio, inicio + limitePorPagina)
+})
+
+watch([filtroTipo, filtroArtista, filtroPrecio, searchQuery], () => {
+  paginaActual.value = 1
+})
+
+const irAPagina = (nuevaPagina) => {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina
+    if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const cambiarFiltro = (nuevoTipo) => {
+  filtroTipo.value = nuevoTipo
+}
+
+const limpiarBusqueda = () => {
+  searchQuery.value = ''
+  filtroArtista.value = 'Todos'
+  filtroPrecio.value = 'Todos'
+  filtroTipo.value = 'Todos'
+}
+
 useHead({
   link: [
     { rel: 'canonical', href: 'https://palacionacionalmedellin.com/exposiciones' }
@@ -296,7 +378,7 @@ useHead({
         "@context": "https://schema.org",
         "@type": "ArtGallery",
         "name": "Galería de Arte Palacio Nacional Medellín",
-        "description": "Galería de arte, museo y venta de pinturas y esculturas en Medellín.",
+        "description": "Galería de arte, museo y venta de pinturas y esculturas exclusivas en Medellín.",
         "url": "https://palacionacionalmedellin.com/exposiciones",
         "image": "https://palacionacionalmedellin.com/logon.png",
         "address": {
@@ -311,142 +393,18 @@ useHead({
   ]
 })
 
-const cargarArtistas = async () => {
-  try {
-    const { data, error } = await supabase.from('obras').select('autor')
-    if (!error && data) {
-      const autoresUnicos = [...new Set(data.map(o => o.autor).filter(a => a && a.trim() !== ''))]
-      listaArtistas.value = autoresUnicos.sort()
-    }
-  } catch (err) {
-    console.error("Error al cargar artistas:", err.message)
-  }
-}
-
-// Fusión: Filtrado Numérico en JS + Paginación (Página 1 de X)
-const fetchObras = async (reiniciarPaginacion = true) => {
-  try {
-    cargando.value = true
-    
-    if (reiniciarPaginacion) {
-      paginaActual.value = 1
-    }
-
-    let query = supabase
-      .from('obras')
-      .select('*')
-      .order('created_at', { ascending: false }) 
-
-    if (filtroTipo.value !== 'Todos') {
-      query = query.eq('tipo', filtroTipo.value)
-    }
-
-    if (filtroArtista.value !== 'Todos') {
-      query = query.eq('autor', filtroArtista.value)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw error
-
-    if (data) {
-      // 1. Filtrado numérico en JavaScript
-      const obrasFiltradasJS = data.filter(obra => {
-        let coincideBusqueda = true
-        if (searchQuery.value && searchQuery.value.trim() !== '') {
-          const termino = searchQuery.value.toLowerCase().trim()
-          coincideBusqueda = (
-            obra.titulo?.toLowerCase().includes(termino) ||
-            obra.autor?.toLowerCase().includes(termino) ||
-            obra.titulo_en?.toLowerCase().includes(termino)
-          )
-        }
-
-        let coincidePrecio = true
-        if (filtroPrecio.value !== 'Todos') {
-          const precioNumerico = Number(String(obra.precio).replace(/[^0-9.]/g, ''))
-          
-          if (filtroPrecio.value === 'bajo') {
-            coincidePrecio = precioNumerico < 1000
-          } else if (filtroPrecio.value === 'medio') {
-            coincidePrecio = precioNumerico >= 1000 && precioNumerico <= 5000
-          } else if (filtroPrecio.value === 'alto') {
-            coincidePrecio = precioNumerico > 5000
-          }
-        }
-
-        return coincideBusqueda && coincidePrecio
-      })
-
-      // 2. Calcular total de páginas según los resultados ya filtrados matemáticamente
-      totalPaginas.value = Math.ceil(obrasFiltradasJS.length / limitePorPagina) || 1
-
-      // 3. Procesar imágenes
-      const obrasProcesadas = obrasFiltradasJS.map(o => {
-        const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean);
-        return {
-          ...o,
-          listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen']
-        };
-      });
-
-      // 4. Aplicar paginación (Página 1, 2, etc.) sobre el array procesado
-      const inicio = (paginaActual.value - 1) * limitePorPagina
-      const fin = inicio + limitePorPagina
-      
-      todasLasObras.value = obrasProcesadas.slice(inicio, fin)
-    }
-
-  } catch (err) {
-    console.error("Error al cargar obras:", err.message)
-  } finally {
-    cargando.value = false
-  }
-}
-
-const irAPagina = (nuevaPagina) => {
-  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
-    paginaActual.value = nuevaPagina
-    fetchObras(false)
-    if (import.meta.client) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-}
-
-const cambiarFiltro = (nuevoTipo) => {
-  filtroTipo.value = nuevoTipo
-  fetchObras(true)
-}
-
-const aplicarFiltrosAdicionales = () => {
-  fetchObras(true)
-}
-
-const limpiarBusqueda = () => {
-  searchQuery.value = ''
-  filtroArtista.value = 'Todos'
-  filtroPrecio.value = 'Todos'
-}
-
-watch(searchQuery, () => {
-  fetchObras(true)
-})
-
 onMounted(() => {
   componenteActivo.value = true
-  if (import.meta.client) {
+  // Aseguramos que route exista antes de acceder a sus propiedades
+  if (import.meta.client && route && !route.hash) {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
-  cargarArtistas() 
-  fetchObras(true)
 })
 
 onBeforeUnmount(() => {
   componenteActivo.value = false
 })
 
-const obrasFiltradas = computed(() => todasLasObras.value)
 definePageMeta({
   layout: false 
 })

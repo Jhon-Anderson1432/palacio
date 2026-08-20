@@ -5,7 +5,7 @@
 
     <!-- SEO: H1 Oculto visualmente pero 100% visible para Google. -->
     <h1 class="sr-only">
-      Palacio Nacional Medellín - Arte, Historia y Gastronomía en un solo lugar.
+      Palacio Nacional Medellín - Arte, Historia y Gastronomía.
     </h1>
 
     <video
@@ -25,10 +25,10 @@
 
     <section class="relative z-20 flex-1 flex flex-col items-center justify-center min-h-screen px-4 pt-28 pb-20" aria-label="Navegación Principal">
       
-      <!-- RENDIMIENTO & SEO: NuxtImg optimiza y entrega el formato ideal automáticamente -->
+      <!-- RENDIMIENTO & SEO: Alt text corregido para enfocarse en arte e historia -->
       <NuxtImg 
         src="/logon.png" 
-        alt="Logotipo Centro Comercial Palacio Nacional Medellín" 
+        alt="Logotipo Palacio Nacional Medellín - Arte, Historia y Gastronomía" 
         fetchpriority="high"
         class="w-48 md:w-64 mb-8 object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.4)] animate-fade-in-down"
       />
@@ -37,7 +37,6 @@
         {{ t.mainTitle }}
       </h2>
 
-      <!-- SEO FIX CRÍTICO: Reemplazo de <button>/<router-link> por <NuxtLink> -->
       <nav class="flex flex-col md:flex-row flex-wrap gap-5 md:gap-6 w-full max-w-5xl justify-center animate-slide-up" aria-label="Secciones del Palacio">
         
         <NuxtLink to="/exposiciones" class="nav-btn group">
@@ -68,29 +67,26 @@
 </template>
 
 <script setup>
-// Desactivamos el layout por defecto para esta página, ya que tiene su propio Navbar con props específicos
 definePageMeta({
   layout: false
 })
 
 // === 1. SEO REACTIVO EN NUXT 3 (MÁXIMO CTR Y AUTORIDAD DE DOMINIO) ===
 useSeoMeta({
-  // Título raíz: Exactamente 52 caracteres (perfecto para las SERPs).
-  title: 'Palacio Nacional Medellín | Arte, Moda y Gastronomía',
+  // Título raíz: Exacto y enfocado en tus 3 pilares.
+  title: 'Palacio Nacional Medellín | Arte, Historia y Gastronomía',
   
-  // Descripción enfocada en turismo local, intenciones comerciales e historia (151 caracteres)
-  description: 'Descubre el Palacio Nacional en el centro de Medellín. El lugar ideal donde convergen moda, galerías de arte, historia y la mejor oferta gastronómica.',
+  // Descripción purgada de "centro comercial" o "moda".
+  description: 'Descubre el Palacio Nacional de Medellín. Un monumento histórico donde convergen de manera única el arte contemporáneo, la historia viva y la alta gastronomía.',
   
-  // Open Graph (WhatsApp, Facebook, LinkedIn - Actuando como la carta de presentación principal)
-  ogTitle: '✨ Palacio Nacional Medellín | Arte, Historia y Cultura',
-  ogDescription: '¿Buscando qué hacer en el centro de Medellín? Explora galerías de arte, restaurantes, terrazas y moda en nuestro histórico monumento. ¡Visítanos hoy!',
+  // Open Graph (WhatsApp, Facebook, LinkedIn)
+  ogTitle: '✨ Palacio Nacional Medellín | Arte, Historia y Gastronomía',
+  ogDescription: 'Explora galerías de arte, descubre nuestra fascinante historia y disfruta de la mejor oferta gastronómica en el monumento más icónico de Medellín.',
   ogImage: 'https://palacionacionalmedellin.com/logon.png',
   
-  // Twitter Cards (X)
   twitterCard: 'summary_large_image',
 })
 
-// INYECCIÓN DE ESTADO GLOBAL SEGURO PARA SSR
 const idiomaGlobal = useIdiomaGlobal()
 
 // LÓGICA DE NEGOCIO
@@ -131,8 +127,7 @@ const traducciones = {
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
 
-// === 2. SCHEMA LOCAL BUSINESS Y ARQUITECTURA BASE ===
-// useHead se encarga de inyectar todo en el <head> nativamente
+// === 2. SCHEMA LOCAL BUSINESS (Optimizando para Google Maps y Búsquedas) ===
 useHead({
   link: [
     { rel: "canonical", href: "https://palacionacionalmedellin.com/" }
@@ -142,9 +137,9 @@ useHead({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         "@context": "https://schema.org",
-        "@type": ["ShoppingCenter", "TouristAttraction"],
+        "@type": "TouristAttraction",
         "name": "Palacio Nacional Medellín",
-        "description": "Centro comercial histórico en Medellín que fusiona galerías de arte, zonas gastronómicas, moda y un profundo valor arquitectónico.",
+        "description": "Monumento histórico en Medellín dedicado a la exhibición de arte contemporáneo, la preservación de la historia y la alta gastronomía.",
         "url": "https://palacionacionalmedellin.com/",
         "logo": "https://palacionacionalmedellin.com/logon.png",
         "address": {
@@ -176,7 +171,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS: Modularización de clases repetitivas y animaciones sutiles */
 .nav-btn {
   @apply min-w-[200px] px-6 py-4 border border-[#D4AF37]/80 bg-black/30 text-[#D4AF37] backdrop-blur-xl flex items-center justify-center uppercase tracking-widest font-medium shadow-[0_0_15px_rgba(212,175,55,0.1)] transition-all duration-500 rounded-sm;
 }
@@ -185,7 +179,6 @@ onMounted(() => {
   @apply bg-[#D4AF37] text-black shadow-[0_0_30px_rgba(212,175,55,0.4)] border-[#D4AF37];
 }
 
-/* Keyframes para una entrada ultra-elegante al estilo museo */
 .animate-fade-in-down {
   animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

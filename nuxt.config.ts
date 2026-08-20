@@ -13,7 +13,6 @@ export default defineNuxtConfig({
 
   // ==========================================
   // 2. EL BÚNKER DE SEGURIDAD (Route Rules)
-  // Borra estas rutas del sitemap y bloquea a Google a nivel de servidor
   // ==========================================
   routeRules: {
     '/adminpanel02402110': { index: false },
@@ -23,7 +22,11 @@ export default defineNuxtConfig({
     '/vigilante-scan': { index: false },
     '/confirm': { index: false },
     '/api/**': { index: false }, // Oculta todos los endpoints de datos crudos
-    '/DetalleObra/**': { index: false }
+    // LA SOLUCIÓN A LOS 380 TENTÁCULOS: Bloqueo a nivel de cabecera HTTP
+    '/DetalleObra/**': { 
+      index: false,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow' } 
+    }
   },
 
   // ==========================================
@@ -95,7 +98,8 @@ export default defineNuxtConfig({
       },
       // El '%s' es el comodín dinámico. Nuxt lo reemplaza por el título de la página interna.
       titleTemplate: '%s | Palacio Nacional Medellín',
-      title: 'Palacio Nacional Medellín | Arte, Moda, Gastronomía e Historia',
+      // SEO PURGADO: Removido "Moda"
+      title: 'Palacio Nacional Medellín | Arte, Historia y Gastronomía',
       meta: [
         { charset: 'UTF-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
@@ -109,16 +113,17 @@ export default defineNuxtConfig({
         { name: 'geo.region', content: 'CO-ANT' },
         { name: 'geo.placename', content: 'Medellín' },
         
-        { name: 'description', content: 'Visita el histórico Palacio Nacional en el centro de Medellín. El destino definitivo donde convergen galerías de arte, moda urbana, historia patrimonial y la mejor gastronomía (Chao Cafe, Chao Pescao y Sky Bar).' },
-        { name: 'keywords', content: 'Palacio Nacional Medellin, galerias de arte Medellin, centro comercial medellin, restaurantes centro Medellin, rooftop Medellin, Chao Pescao, Sky Bar, Chao Cafe, historia de medellin' },
+        // TEXTOS LIMPIOS: Sin rastros de "centro comercial" o "moda urbana"
+        { name: 'description', content: 'Visita el histórico Palacio Nacional en el centro de Medellín. El destino definitivo donde convergen galerías de arte, historia patrimonial y la mejor gastronomía (Chao Cafe, Chao Pescao y Sky Bar).' },
+        { name: 'keywords', content: 'Palacio Nacional Medellin, galerias de arte Medellin, monumento historico medellin, restaurantes centro Medellin, rooftop Medellin, Chao Pescao, Sky Bar, Chao Cafe, historia de medellin' },
         
         // Red de Seguridad Open Graph (WhatsApp, Facebook, LinkedIn)
         { property: 'og:site_name', content: 'Palacio Nacional Medellín' },
         { property: 'og:type', content: 'website' },
         { property: 'og:locale', content: 'es_CO' },
         { property: 'og:url', content: 'https://palacionacionalmedellin.com/' },
-        { property: 'og:title', content: 'Palacio Nacional Medellín | Arte, Moda y Gastronomía' },
-        { property: 'og:description', content: 'Visita el histórico Palacio Nacional. Arte, cultura, moda y la mejor experiencia gastronómica en un solo monumento histórico.' },
+        { property: 'og:title', content: 'Palacio Nacional Medellín | Arte, Historia y Gastronomía' },
+        { property: 'og:description', content: 'Visita el histórico Palacio Nacional. Arte, cultura y la mejor experiencia gastronómica en un solo monumento histórico.' },
         { property: 'og:image', content: 'https://palacionacionalmedellin.com/logon.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
@@ -127,7 +132,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@PalacioNacional' },
         { name: 'twitter:title', content: 'Palacio Nacional Medellín' },
-        { name: 'twitter:description', content: 'El destino definitivo donde convergen galerías de arte, moda urbana, historia patrimonial y gastronomía.' },
+        { name: 'twitter:description', content: 'El destino definitivo donde convergen galerías de arte, historia patrimonial y gastronomía.' },
         { name: 'twitter:image', content: 'https://palacionacionalmedellin.com/logon.png' }
       ],
       link: [
@@ -140,17 +145,17 @@ export default defineNuxtConfig({
       script: [
         {
           type: 'application/ld+json',
+          // SCHEMA CORREGIDO: De "ShoppingCenter" a "TouristAttraction"
           innerHTML: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "ShoppingCenter",
-            "@id": "https://palacionacionalmedellin.com/#centrocomercial",
+            "@type": "TouristAttraction",
+            "@id": "https://palacionacionalmedellin.com/#monumento",
             "name": "Palacio Nacional Medellín",
-            "alternateName": "Centro Comercial y Cultural Palacio Nacional",
+            "alternateName": "Monumento Histórico y Cultural Palacio Nacional",
             "url": "https://palacionacionalmedellin.com/",
-            "description": "Centro comercial y monumento histórico en el centro de Medellín. Convergencia de moda, arte, gastronomía e historia.",
+            "description": "Monumento histórico en el centro de Medellín. Convergencia de arte, gastronomía e historia.",
             "image": "https://palacionacionalmedellin.com/logon.png",
             "telephone": "+5745134422",
-            "priceRange": "$$",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Carrera 52 # 52-43",
@@ -164,14 +169,6 @@ export default defineNuxtConfig({
               "latitude": 6.25184,
               "longitude": -75.56359
             },
-            "openingHoursSpecification": [
-              {
-                "@type": "OpeningHoursSpecification",
-                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                "opens": "10:00",
-                "closes": "22:00"
-              }
-            ],
             "department": [
               {
                 "@type": "ArtGallery",

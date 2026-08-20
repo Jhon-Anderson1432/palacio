@@ -116,48 +116,36 @@ import 'swiper/css/effect-fade';
 
 const modules = [Autoplay, EffectFade];
 const route = useRoute();
-
-// CLIENTE NATIVE SUPABASE PARA NUXT 3
 const supabase = useSupabaseClient()
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
-const componenteActivo = ref(false) // Se cambia a false inicial para evitar errores de hidratación con Swiper
+const componenteActivo = ref(false)
 
 const traducciones = {
   es: { acquireBtn: 'Solicitar Adquisición', techniqueLabel: 'Técnica', dimensionsLabel: 'Dimensión', valueLabel: 'Valor', contactLabel: 'Contacto', infoLabel: 'Info detallada' },
   en: { acquireBtn: 'Request Acquisition', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', valueLabel: 'Value', contactLabel: 'Contact', infoLabel: 'Detailed info' },
   fr: { acquireBtn: 'Demander l\'acquisition', techniqueLabel: 'Technique', dimensionsLabel: 'Dimensions', valueLabel: 'Valeur', contactLabel: 'Contact', infoLabel: 'Infos détaillées' },
-  ja: { acquireBtn: '購入をリクエスト', techniqueLabel: '手法', dimensionsLabel: '寸法', valueLabel: '価値', contactLabel: '連絡先', infoLabel: '詳細情報' }
+  ja: { acquireBtn: '取得をリクエスト', techniqueLabel: '手法', dimensionsLabel: '寸法', valueLabel: '価値', contactLabel: '連絡先', infoLabel: '詳細情報' }
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
 
-// === 1. ARQUITECTURA SSR: FETCH ASÍNCRONO SEGURO CON NUXT ===
-// Adaptamos tu función original para que retorne los datos al servidor antes de renderizar
-const obtenerDetalleObra = async (idBusca) => {
-  try {
+// Fetch SSR - Asegura que los datos estén listos antes de renderizar
+const { data: obra } = await useAsyncData(
+  `obra-${route.params.id}`,
+  async () => {
     const { data, error } = await supabase
       .from('obras')
       .select('*')
-      .eq('id', idBusca)
+      .eq('id', route.params.id)
       .single()
       
-    if (error) throw error
+    if (error) return null
     
     const imgs = [data.imagen_1, data.imagen_2, data.imagen_3].filter(Boolean);
     data.listaImagenes = imgs.length > 0 ? imgs : ['sin-imagen'];
-    
     return data
-  } catch (err) {
-    console.error("Error al obtener la obra:", err.message)
-    return null
-  }
-}
-
-// useAsyncData garantiza que el SEO y el HTML estén listos antes de entregarse al navegador
-const { data: obra } = await useAsyncData(
-  `obra-${route.params.id}`,
-  () => obtenerDetalleObra(route.params.id),
-  { watch: [() => route.params.id] } // Actualiza si la ruta cambia sin recargar la página
+  },
+  { watch: [() => route.params.id] }
 )
 
 const tituloPrincipal = computed(() => {
@@ -176,30 +164,30 @@ const tecnicaPrincipal = computed(() => {
   return obra.value.tecnica;
 })
 
-// === 2. SEO DINÁMICO REACTIVO (ALIMENTADO POR SUPABASE) ===
+// === SEO MAESTRO PARA TENTÁCULOS (ELIMINACIÓN DE GOOGLE + WHATSAPP PERFECTO) ===
 useSeoMeta({
-  // Inyección de variables con template strings + marca (Ej: "La Monalisa de Da Vinci | Palacio Nacional Medellín")
-  title: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor} | Palacio Nacional Medellín` : 'Obra de Arte | Palacio Nacional Medellín',
+  // Título elegante en el navegador: "Nombre de Obra | Palacio Nacional"
+  title: () => obra.value ? `${tituloPrincipal.value} | Palacio Nacional` : 'Cargando Obra...',
   
-  description: () => obra.value ? `Adquiere la obra exclusiva "${tituloPrincipal.value}" creada por ${obra.value.autor}. Técnica: ${tecnicaPrincipal.value}. Galería de Arte Palacio Nacional Medellín.` : 'Explora y adquiere obras de arte exclusivas en la Galería del Palacio Nacional, ubicada en Medellín.',
+  description: () => obra.value ? `Obra: ${tituloPrincipal.value} creada por ${obra.value.autor}. Técnica: ${tecnicaPrincipal.value}.` : 'Detalle de la obra de arte.',
   
-  // Open Graph optimizado para CTR (Redes sociales y WhatsApp)
-  ogTitle: () => obra.value ? `🎨 ${tituloPrincipal.value} | Arte en Palacio Nacional Medellín` : 'Galería de Arte | Palacio Nacional Medellín',
-  ogDescription: () => obra.value ? `Descubre los detalles, medidas y precio de esta fascinante obra (${tecnicaPrincipal.value}) de ${obra.value.autor}. Haz clic e invierte en arte.` : 'Explora nuestra galería de arte contemporáneo en Medellín y adquiere obras exclusivas.',
+  // LA CLAVE MAGISTRAL: Le ordena a Google desindexar y eliminar esta página de sus resultados
+  robots: 'noindex, nofollow',
   
-  // La imagen dinámica extraída de la DB. Si no existe, usamos el logo como Fallback.
+  // Open Graph optimizado para que al compartir el link en WhatsApp se vea perfecto
+  ogTitle: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor}` : 'Obra de Arte',
+  ogDescription: () => obra.value ? `Descubre los detalles, medidas y precio de esta fascinante obra en la Galería del Palacio Nacional.` : 'Explora nuestra galería.',
   ogImage: () => obra.value?.imagen_1 && obra.value.imagen_1 !== 'sin-imagen' ? obra.value.imagen_1 : 'https://palacionacionalmedellin.com/logon.png',
-  
   twitterCard: 'summary_large_image',
 })
 
-// === 3. SCHEMA LOCAL Y ESTRUCTURA DINÁMICA ===
+// === SCHEMA ESTRUCTURAL CON NOINDEX ===
 useHead(() => {
   if (!obra.value) return {}
   const currentUrl = `https://palacionacionalmedellin.com/DetalleObra/${route.params.id}`
   return {
-    link: [
-      { rel: 'canonical', href: currentUrl }
+    meta: [
+      { name: 'googlebot', content: 'noindex, nofollow' } // Refuerzo de seguridad para borrar de Google
     ],
     script: [
       {
@@ -233,8 +221,7 @@ const preguntarPorWhatsApp = () => {
   const dominio = typeof window !== 'undefined' ? window.location.origin : 'https://palacionacionalmedellin.com'
   const urlDetalle = `${dominio}/DetalleObra/${obra.value.id}`
   const precioFormat = isNaN(obra.value.precio) ? obra.value.precio : '$' + Number(obra.value.precio).toLocaleString('es-CO') + ' USD'
-  const multimediaInfo = obra.value.imagen_1 ? `\n*Imagen:* ${obra.value.imagen_1}` : ''
-  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n*Enlace:* ${urlDetalle}${multimediaInfo}`
+  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n*Enlace:* ${urlDetalle}`
   const urlWa = `https://wa.me/573116390177?text=${encodeURIComponent(texto)}`
   if (typeof window !== 'undefined') {
     window.open(urlWa, '_blank')
@@ -250,60 +237,19 @@ onBeforeUnmount(() => {
 })
 
 definePageMeta({
-  layout: false // Apaga el layout maestro
+  layout: false 
 })
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-
-.font-serif {
-  font-family: 'Playfair Display', serif;
-}
-
-article {
-  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-h1 {
-  animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-p[itemprop="creator"] {
-  animation: slideInRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.swiper-slide {
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden;
-  background-color: #0a0a0a;
-  position: relative;
-}
-
-.swiper-slide img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain;
-  object-position: center;
-  display: block;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translateZ(0);
-}
+.font-serif { font-family: 'Playfair Display', serif; }
+article { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+h1 { animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+p[itemprop="creator"] { animation: slideInRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.swiper-slide { width: 100% !important; height: 100% !important; overflow: hidden; background-color: #0a0a0a; position: relative; }
+.swiper-slide img { width: 100% !important; height: 100% !important; object-fit: contain; object-position: center; display: block; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(0); }
 </style>
