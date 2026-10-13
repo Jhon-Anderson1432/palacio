@@ -1,6 +1,21 @@
+const useBackup = process.env.USE_BACKUP === 'true'
+
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase', '@pinia/nuxt', '@nuxt/image', "@nuxtjs/seo"],
+
+  runtimeConfig: {
+    public: {
+      supabase: {
+        key: useBackup ? process.env.SUPABASE_KEY_RESERVA : process.env.SUPABASE_KEY,
+        url: useBackup ? process.env.SUPABASE_URL_RESERVA : process.env.SUPABASE_URL,
+      },
+      backupDB: {
+        key: process.env.SUPABASE_KEY_RESERVA,
+        url: process.env.SUPABASE_URL_RESERVA,
+      }
+    }
+  },
 
   // ==========================================
   // 1. CONFIGURACIÓN DEL DOMINIO PARA SEO
