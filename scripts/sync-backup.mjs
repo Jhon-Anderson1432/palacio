@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import ws from 'ws'
 
 // ── Configuración ──────────────────────────────────────────
 const PRIMARY_URL = process.env.PRIMARY_SUPABASE_URL
@@ -17,12 +18,14 @@ if (!PRIMARY_URL || !PRIMARY_KEY || !BACKUP_URL || !BACKUP_KEY) {
 
 // Cliente Principal (Solo Lectura)
 const primary = createClient(PRIMARY_URL, PRIMARY_KEY, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
+  realtime: { transport: ws }
 })
 
 // Cliente Reserva (Lectura y Escritura)
 const backup = createClient(BACKUP_URL, BACKUP_KEY, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
+  realtime: { transport: ws }
 })
 
 const STORAGE_BUCKET = 'obras-imagenes'
