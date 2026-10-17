@@ -13,7 +13,8 @@ export default defineNuxtConfig({
       backupDB: {
         key: process.env.SUPABASE_KEY_RESERVA,
         url: process.env.SUPABASE_URL_RESERVA,
-      }
+      },
+      primaryUrl: process.env.SUPABASE_URL,
     }
   },
 
