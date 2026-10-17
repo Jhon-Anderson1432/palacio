@@ -1,0 +1,35 @@
+name: Sincronizar DB de Reserva
+
+on:
+  schedule:
+    # Ejecuta automáticamente todos los días a las 03:00 UTC (10:00 PM hora Colombia)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
+
+jobs:
+  sync:
+    name: Sincronizar Tablas y Storage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del script
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Ejecutar Sincronización
+        working-directory: ./scripts
+        env:
+          PRIMARY_SUPABASE_URL: ${{ secrets.PRIMARY_SUPABASE_URL }}
+          PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
+          BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
+          BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
+        run: node sync-backup.mjs
