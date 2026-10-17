@@ -30,6 +30,12 @@ const backup = createClient(BACKUP_URL, BACKUP_KEY, {
 
 const STORAGE_BUCKET = 'obras-imagenes'
 
+// Normalización de URLs y Hosts para reemplazo infalible
+const cleanPrimary = PRIMARY_URL.trim().replace(/\/+$/, '')
+const cleanBackup  = BACKUP_URL.trim().replace(/\/+$/, '')
+const primaryHost  = cleanPrimary.replace(/^https?:\/\//, '')
+const backupHost   = cleanBackup.replace(/^https?:\/\//, '')
+
 // ── 1. Sincronizar Tablas ───────────────────────────────────
 async function syncTable(tableName, imageFields = []) {
   console.log(`\nSincronizando tabla: "${tableName}"...`)
@@ -40,22 +46,33 @@ async function syncTable(tableName, imageFields = []) {
     .select('*')
 
   if (readError) {
-    console.error(`  Error leyendo "${tableName}" en la DB principal:`, readError.message)
-    return
+    throw new Error(`Error leyendo "${tableName}" en la DB principal: ${readError.message}`)
   }
 
   console.log(`  ${rows.length} registros obtenidos de la DB principal`)
+
+  let urlReplacements = 0
 
   // 2. Reescribir URLs de imágenes para que apunten a la DB de reserva
   const rewrittenRows = rows.map(row => {
     const newRow = { ...row }
     for (const field of imageFields) {
       if (newRow[field] && typeof newRow[field] === 'string') {
-        newRow[field] = newRow[field].replaceAll(PRIMARY_URL, BACKUP_URL)
+        const originalVal = newRow[field]
+        // Reemplazamos tanto la URL completa como el host directo
+        let updatedVal = originalVal.replaceAll(cleanPrimary, cleanBackup)
+        updatedVal = updatedVal.replaceAll(primaryHost, backupHost)
+
+        if (originalVal !== updatedVal) {
+          urlReplacements++
+        }
+        newRow[field] = updatedVal
       }
     }
     return newRow
   })
+
+  console.log(`  ${urlReplacements} URLs de imágenes reescritas hacia la DB de reserva`)
 
   // 3. Upsert en la DB de reserva en lotes de 200
   const BATCH_SIZE = 200
@@ -66,8 +83,7 @@ async function syncTable(tableName, imageFields = []) {
       .upsert(batch, { onConflict: 'id' })
 
     if (upsertError) {
-      console.error(`  Error en upsert lote [${i} a ${i + batch.length}] en "${tableName}":`, upsertError.message)
-      return
+      throw new Error(`Error en upsert lote [${i} a ${i + batch.length}] en "${tableName}": ${upsertError.message}`)
     }
   }
 
@@ -84,12 +100,15 @@ async function syncTable(tableName, imageFields = []) {
       console.log(`  Eliminando ${idsToDelete.length} registros obsoletos en reserva...`)
       for (let i = 0; i < idsToDelete.length; i += 100) {
         const batchIds = idsToDelete.slice(i, i + 100)
-        await backup.from(tableName).delete().in('id', batchIds)
+        const { error: deleteError } = await backup.from(tableName).delete().in('id', batchIds)
+        if (deleteError) {
+          console.warn(`  Advertencia borrando registros obsoletos en "${tableName}": ${deleteError.message}`)
+        }
       }
     }
   }
 
-  console.log(`  Tabla "${tableName}" sincronizada correctamente.`)
+  console.log(`  Tabla "${tableName}" sincronizada y actualizada correctamente.`)
 }
 
 // ── 2. Listar Archivos con Paginación ───────────────────────
