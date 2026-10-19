@@ -1,0 +1,35 @@
+name: Sincronizar Sistema POS (Cada 12h)
+
+on:
+  schedule:
+    # Ejecuta automáticamente cada 12 horas (00:00 y 12:00 UTC = 7:00 PM y 7:00 AM Colombia)
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+    # Permite ejecutarlo manualmente en cualquier momento desde GitHub Actions
+
+jobs:
+  sync-pos:
+    name: Sincronizar Comandas y Menú POS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependencias del script
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Ejecutar Sincronización POS
+        working-directory: ./scripts
+        env:
+          PRIMARY_SUPABASE_URL: ${{ secrets.PRIMARY_SUPABASE_URL }}
+          PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
+          BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
+          BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
+        run: node sync-pos.mjs
