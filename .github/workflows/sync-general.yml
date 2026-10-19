@@ -1,15 +1,15 @@
-name: Sincronizar DB de Reserva
+name: Sincronización General Completa (Manual o Cada 3 Días)
 
 on:
   schedule:
-    # Ejecuta automáticamente todos los días a las 03:00 UTC (10:00 PM hora Colombia)
-    - cron: '0 3 * * *'
+    # Ejecuta automáticamente cada 3 días a las 04:00 UTC (11:00 PM hora Colombia)
+    - cron: '0 4 */3 * *'
   workflow_dispatch:
-    # Permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
+    # Permite ejecutarlo manualmente en cualquier momento desde GitHub Actions con un solo clic
 
 jobs:
-  sync:
-    name: Sincronizar Tablas y Storage
+  sync-general:
+    name: Sincronizar Todas las Tablas, Auth y Storage
     runs-on: ubuntu-latest
 
     steps:
@@ -25,11 +25,11 @@ jobs:
         working-directory: ./scripts
         run: npm install
 
-      - name: Ejecutar Sincronización
+      - name: Ejecutar Sincronización General
         working-directory: ./scripts
         env:
           PRIMARY_SUPABASE_URL: ${{ secrets.PRIMARY_SUPABASE_URL }}
           PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
           BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
           BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
-        run: node sync-backup.mjs
+        run: node sync-general.mjs
