@@ -135,6 +135,55 @@ async function syncTable(tableName, imageFields = [], orderCol = 'id') {
   return rows.map(r => r.id)
 }
 
+// Sincronización de Autenticación previa para garantizar foreign keys de perfiles
+async function syncAuthUsers() {
+  console.log('\nSincronizando Usuarios de Autenticación (auth.users)...')
+
+  const { data: usersRpc, error: rpcError } = await primary.rpc('get_auth_users_for_sync')
+
+  if (!rpcError && usersRpc && Array.isArray(usersRpc)) {
+    console.log(`  ${usersRpc.length} usuarios leídos vía función RPC de la DB principal`)
+
+    const { data: syncResult, error: syncError } = await backup.rpc('sync_auth_users_from_json', {
+      users_data: usersRpc
+    })
+
+    if (syncError) {
+      throw new Error(`Error insertando usuarios en reserva vía RPC: ${syncError.message}`)
+    }
+
+    console.log(`  ${syncResult?.count || usersRpc.length} usuarios y contraseñas sincronizados exitosamente en auth.users`)
+    return
+  }
+
+  // Fallback mediante API Admin
+  console.log('  Aviso: Función RPC no detectada, utilizando API Admin como respaldo...')
+  const { data: { users }, error: listError } = await primary.auth.admin.listUsers({ page: 1, perPage: 1000 })
+
+  if (listError) {
+    throw new Error(`Error listando usuarios con API Admin: ${listError.message}`)
+  }
+
+  let count = 0
+  for (const user of users) {
+    try {
+      const { error: createError } = await backup.auth.admin.createUser({
+        id: user.id,
+        email: user.email,
+        email_confirm: true,
+        user_metadata: user.user_metadata,
+        app_metadata: user.app_metadata
+      })
+      if (!createError || createError.message?.includes('already been registered')) {
+        count++
+      }
+    } catch (e) {
+      // Ignorar si ya existe
+    }
+  }
+  console.log(`  ${count} usuarios verificados en auth.users de reserva`)
+}
+
 // ── Ejecución Principal del POS ─────────────────────────────
 async function main() {
   const startTime = Date.now()
@@ -144,6 +193,9 @@ async function main() {
   console.log('========================================================')
 
   // ORDEN ESTRICTO DE INSERCIÓN (Para no violar claves foráneas):
+  // 0. auth.users (Garantiza que existan los usuarios para perfiles)
+  await syncAuthUsers()
+
   // 1. perfiles (meseras / cajeras que atienden mesas)
   const perfilesIds = await syncTable('perfiles', [], 'id')
 
