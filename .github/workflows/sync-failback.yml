@@ -1,0 +1,42 @@
+name: Recuperar DB Principal desde Reserva (Failback)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmacion:
+        description: 'Escribe "RECUPERAR" para confirmar la transferencia de Reserva hacia Principal'
+        required: true
+        default: 'RECUPERAR'
+
+jobs:
+  failback:
+    name: Failback Reserva -> Principal
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validar confirmación de seguridad
+        if: ${{ github.event.inputs.confirmacion != 'RECUPERAR' }}
+        run: |
+          echo "Operación cancelada: No se escribió la palabra de confirmación exacta"
+          exit 1
+
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependencias
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Ejecutar Failback (Reserva -> Principal)
+        working-directory: ./scripts
+        env:
+          PRIMARY_SUPABASE_URL: ${{ secrets.PRIMARY_SUPABASE_URL }}
+          PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
+          BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
+          BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
+        run: node sync-failback.mjs
