@@ -36,79 +36,145 @@ const cleanBackup  = BACKUP_URL.trim().replace(/\/+$/, '')
 const primaryHost  = cleanPrimary.replace(/^https?:\/\//, '')
 const backupHost   = cleanBackup.replace(/^https?:\/\//, '')
 
-// ── 1. Sincronizar Tablas ───────────────────────────────────
-async function syncTable(tableName, imageFields = []) {
-  console.log(`\nSincronizando tabla: "${tableName}"...`)
+// ── 1. Funciones Auxiliares ──────────────────────────────────
 
-  // 1. Obtener todos los registros de la DB principal
-  const { data: rows, error: readError } = await primary
-    .from(tableName)
-    .select('*')
+// Paginación segura para obtener todos los registros
+async function fetchAllRows(client, tableName, orderCol = 'id') {
+  const allRows = []
+  let from = 0
+  const limit = 1000
 
-  if (readError) {
-    throw new Error(`Error leyendo "${tableName}" en la DB principal: ${readError.message}`)
+  while (true) {
+    const { data, error } = await client
+      .from(tableName)
+      .select('*')
+      .order(orderCol, { ascending: true })
+      .range(from, from + limit - 1)
+
+    if (error) {
+      throw new Error(`Error leyendo "${tableName}": ${error.message}`)
+    }
+
+    if (!data || data.length === 0) break
+    allRows.push(...data)
+
+    if (data.length < limit) break
+    from += limit
   }
 
-  console.log(`  ${rows.length} registros obtenidos de la DB principal`)
+  return allRows
+}
 
-  let urlReplacements = 0
+// Serialización canónica: ordena las claves alfabéticamente para que el orden de las columnas en PostgreSQL no afecte la comparación entre bases de datos
+function canonicalStringify(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj)
+  if (Array.isArray(obj)) return `[${obj.map(canonicalStringify).join(',')}]`
+  return `{${Object.keys(obj).sort().map(k => `${JSON.stringify(k)}:${canonicalStringify(obj[k])}`).join(',')}}`
+}
 
-  // 2. Reescribir URLs de imágenes para que apunten a la DB de reserva
-  const rewrittenRows = rows.map(row => {
+// Comparación inteligente: solo retorna registros nuevos o modificados
+function getChangedRows(sourceRows, destRows) {
+  const destMap = new Map(destRows.map(r => [r.id, canonicalStringify(r)]))
+
+  const toUpsert = []
+  let newCount = 0
+  let modifiedCount = 0
+  let skippedCount = 0
+
+  for (const row of sourceRows) {
+    const destSnapshot = destMap.get(row.id)
+    if (destSnapshot === undefined) {
+      toUpsert.push(row)
+      newCount++
+    } else if (destSnapshot !== canonicalStringify(row)) {
+      toUpsert.push(row)
+      modifiedCount++
+    } else {
+      skippedCount++
+    }
+  }
+
+  return { toUpsert, newCount, modifiedCount, skippedCount }
+}
+
+// Reescritura de URLs de imágenes
+function rewriteUrls(rows, fields = []) {
+  if (!fields.length) return rows
+  let replaced = 0
+
+  const processed = rows.map(row => {
     const newRow = { ...row }
-    for (const field of imageFields) {
+    for (const field of fields) {
       if (newRow[field] && typeof newRow[field] === 'string') {
-        const originalVal = newRow[field]
-        // Reemplazamos tanto la URL completa como el host directo
-        let updatedVal = originalVal.replaceAll(cleanPrimary, cleanBackup)
-        updatedVal = updatedVal.replaceAll(primaryHost, backupHost)
-
-        if (originalVal !== updatedVal) {
-          urlReplacements++
-        }
-        newRow[field] = updatedVal
+        const original = newRow[field]
+        let val = original.replaceAll(cleanPrimary, cleanBackup)
+        val = val.replaceAll(primaryHost, backupHost)
+        if (original !== val) replaced++
+        newRow[field] = val
       }
     }
     return newRow
   })
 
-  console.log(`  ${urlReplacements} URLs de imágenes reescritas hacia la DB de reserva`)
+  if (replaced > 0) {
+    console.log(`  ${replaced} URLs de imagenes reescritas hacia la DB de reserva`)
+  }
 
-  // 3. Upsert en la DB de reserva en lotes de 200
+  return processed
+}
+
+// Upsert por lotes
+async function upsertBatch(tableName, rows) {
   const BATCH_SIZE = 200
-  for (let i = 0; i < rewrittenRows.length; i += BATCH_SIZE) {
-    const batch = rewrittenRows.slice(i, i + BATCH_SIZE)
-    const { error: upsertError } = await backup
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE)
+    const { error } = await backup
       .from(tableName)
       .upsert(batch, { onConflict: 'id' })
 
-    if (upsertError) {
-      throw new Error(`Error en upsert lote [${i} a ${i + batch.length}] en "${tableName}": ${upsertError.message}`)
+    if (error) {
+      throw new Error(`Error en upsert lote [${i} a ${i + batch.length}] en "${tableName}": ${error.message}`)
     }
   }
+}
 
-  // 4. Limpiar registros que hayan sido eliminados en la principal
-  const { data: backupRows, error: checkError } = await backup
-    .from(tableName)
-    .select('id')
+// ── 2. Sincronizar Tablas ───────────────────────────────────
+async function syncTable(tableName, imageFields = []) {
+  console.log(`\nSincronizando tabla: "${tableName}"...`)
 
-  if (!checkError && backupRows) {
-    const primaryIdSet = new Set(rows.map(r => r.id))
-    const idsToDelete = backupRows.filter(r => !primaryIdSet.has(r.id)).map(r => r.id)
+  // Leer fuente y destino en paralelo
+  const [sourceRows, destRows] = await Promise.all([
+    fetchAllRows(primary, tableName),
+    fetchAllRows(backup, tableName)
+  ])
+  console.log(`  Principal: ${sourceRows.length} | Reserva: ${destRows.length}`)
 
-    if (idsToDelete.length > 0) {
-      console.log(`  Eliminando ${idsToDelete.length} registros obsoletos en reserva...`)
-      for (let i = 0; i < idsToDelete.length; i += 100) {
-        const batchIds = idsToDelete.slice(i, i + 100)
-        const { error: deleteError } = await backup.from(tableName).delete().in('id', batchIds)
-        if (deleteError) {
-          console.warn(`  Advertencia borrando registros obsoletos en "${tableName}": ${deleteError.message}`)
-        }
+  const processedRows = rewriteUrls(sourceRows, imageFields)
+  const { toUpsert, newCount, modifiedCount, skippedCount } = getChangedRows(processedRows, destRows)
+
+  if (toUpsert.length === 0) {
+    console.log(`  Tabla "${tableName}" ya esta al dia. (${skippedCount} sin cambios)`)
+  } else {
+    await upsertBatch(tableName, toUpsert)
+    console.log(`  Tabla "${tableName}" sincronizada: ${newCount} nuevos, ${modifiedCount} modificados, ${skippedCount} sin cambios.`)
+  }
+
+  // Limpiar registros que hayan sido eliminados en la principal
+  const primaryIdSet = new Set(sourceRows.map(r => r.id))
+  const idsToDelete = destRows.filter(r => !primaryIdSet.has(r.id)).map(r => r.id)
+
+  if (idsToDelete.length > 0) {
+    console.log(`  Eliminando ${idsToDelete.length} registros obsoletos en reserva...`)
+    for (let i = 0; i < idsToDelete.length; i += 100) {
+      const batchIds = idsToDelete.slice(i, i + 100)
+      const { error: deleteError } = await backup.from(tableName).delete().in('id', batchIds)
+      if (deleteError) {
+        console.warn(`  Advertencia borrando registros obsoletos en "${tableName}": ${deleteError.message}`)
       }
     }
   }
 
-  console.log(`  Tabla "${tableName}" sincronizada y actualizada correctamente.`)
+  console.log(`  Tabla "${tableName}" procesada correctamente.`)
 }
 
 // ── 2. Listar Archivos con Paginación ───────────────────────

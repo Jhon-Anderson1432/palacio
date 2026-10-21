@@ -122,17 +122,59 @@ async function deleteObsolete(tableName, primaryIds) {
   }
 }
 
+// Serialización canónica: ordena las claves alfabéticamente para que el orden de las columnas en PostgreSQL no afecte la comparación entre bases de datos
+function canonicalStringify(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj)
+  if (Array.isArray(obj)) return `[${obj.map(canonicalStringify).join(',')}]`
+  return `{${Object.keys(obj).sort().map(k => `${JSON.stringify(k)}:${canonicalStringify(obj[k])}`).join(',')}}`
+}
+
+// Comparación inteligente: solo retorna registros nuevos o modificados
+function getChangedRows(sourceRows, destRows) {
+  const destMap = new Map(destRows.map(r => [r.id, canonicalStringify(r)]))
+
+  const toUpsert = []
+  let newCount = 0
+  let modifiedCount = 0
+  let skippedCount = 0
+
+  for (const row of sourceRows) {
+    const destSnapshot = destMap.get(row.id)
+    if (destSnapshot === undefined) {
+      toUpsert.push(row)
+      newCount++
+    } else if (destSnapshot !== canonicalStringify(row)) {
+      toUpsert.push(row)
+      modifiedCount++
+    } else {
+      skippedCount++
+    }
+  }
+
+  return { toUpsert, newCount, modifiedCount, skippedCount }
+}
+
 // Sincronizar tabla individual
 async function syncTable(tableName, imageFields = [], orderCol = 'id') {
   console.log(`\nSincronizando tabla: "${tableName}"...`)
-  const rows = await fetchAllRows(primary, tableName, orderCol)
-  console.log(`  ${rows.length} registros obtenidos de la DB principal`)
 
-  const processedRows = rewriteUrls(rows, imageFields)
-  await upsertBatch(tableName, processedRows)
-  console.log(`  Tabla "${tableName}" sincronizada exitosamente.`)
+  const [sourceRows, destRows] = await Promise.all([
+    fetchAllRows(primary, tableName, orderCol),
+    fetchAllRows(backup, tableName, orderCol)
+  ])
+  console.log(`  Principal: ${sourceRows.length} | Reserva: ${destRows.length}`)
 
-  return rows.map(r => r.id)
+  const processedRows = rewriteUrls(sourceRows, imageFields)
+  const { toUpsert, newCount, modifiedCount, skippedCount } = getChangedRows(processedRows, destRows)
+
+  if (toUpsert.length === 0) {
+    console.log(`  Tabla "${tableName}" ya esta al dia. (${skippedCount} sin cambios)`)
+  } else {
+    await upsertBatch(tableName, toUpsert)
+    console.log(`  Tabla "${tableName}" sincronizada: ${newCount} nuevos, ${modifiedCount} modificados, ${skippedCount} sin cambios.`)
+  }
+
+  return sourceRows.map(r => r.id)
 }
 
 // Sincronización de Autenticación previa para garantizar foreign keys de perfiles
