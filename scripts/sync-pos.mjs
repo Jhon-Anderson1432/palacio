@@ -122,9 +122,16 @@ async function deleteObsolete(tableName, primaryIds) {
   }
 }
 
+// Serialización canónica: ordena las claves alfabéticamente para que el orden de las columnas en PostgreSQL no afecte la comparación entre bases de datos
+function canonicalStringify(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj)
+  if (Array.isArray(obj)) return `[${obj.map(canonicalStringify).join(',')}]`
+  return `{${Object.keys(obj).sort().map(k => `${JSON.stringify(k)}:${canonicalStringify(obj[k])}`).join(',')}}`
+}
+
 // Comparación inteligente: solo retorna registros nuevos o modificados
 function getChangedRows(sourceRows, destRows) {
-  const destMap = new Map(destRows.map(r => [r.id, JSON.stringify(r)]))
+  const destMap = new Map(destRows.map(r => [r.id, canonicalStringify(r)]))
 
   const toUpsert = []
   let newCount = 0
@@ -136,7 +143,7 @@ function getChangedRows(sourceRows, destRows) {
     if (destSnapshot === undefined) {
       toUpsert.push(row)
       newCount++
-    } else if (destSnapshot !== JSON.stringify(row)) {
+    } else if (destSnapshot !== canonicalStringify(row)) {
       toUpsert.push(row)
       modifiedCount++
     } else {
