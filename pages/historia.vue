@@ -120,7 +120,7 @@ const timelineData = [
     ja: { title: '国家遺産', desc: 'その計り知れない美的、文化的、歴史的価値を認識し、建物は国定記念物に指定されました。国家歴史的・芸術的遺産としてのこの宣言は、メデジンの急速な都市開発からその保存を保証しました。' }
   },
   {
-    year: '1993', img: '/pa6.jpg', 
+    year: '1993', img: '/pa4.webp', 
     es: { title: 'El Renacer Cultural', desc: 'Tras el traslado de los juzgados a un nuevo complejo, el Palacio fue rescatado del abandono y meticulosamente restaurado. Magistrados y abogados dieron paso a artistas y visitantes, convirtiendo sus imponentes arcos en un epicentro de cultura, arte y moda.' },
     en: { title: 'The Cultural Rebirth', desc: 'After the courts moved to a new complex, the Palace was rescued from abandonment and meticulously restored. Magistrates made way for artists and visitors, turning its imposing arches into an epicenter of culture, art, and fashion.' },
     fr: { title: 'La Renaissance Culturelle', desc: 'Après le déménagement des tribunaux, le Palais a été sauvé de l\'abandon et méticuleusement restauré. Les magistrats ont fait place aux artistes et visiteurs, transformant ses imposantes arches en un épicentre de culture, d\'art et de mode.' },
