@@ -36,17 +36,17 @@
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
-                <NuxtLink to="/eventos" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.events }}</NuxtLink>
+                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.events }}</NuxtLink>
               </li>
             </ul>
             <ul class="space-y-3">
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
-                <NuxtLink to="/noticias" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.news }}</NuxtLink>
+                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.news }}</NuxtLink>
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
-                <NuxtLink to="/faq" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.faq }}</NuxtLink>
+                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.faq }}</NuxtLink>
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
@@ -82,7 +82,7 @@
       <div class="mt-10 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-5 text-[10px] text-gray-500">
         <p>{{ t.rights }}</p>
         <div class="flex items-center gap-5">
-          <NuxtLink to="/terminos" class="hover:text-white transition-colors text-center focus:outline-none">{{ t.terms }}</NuxtLink>
+          <NuxtLink to="/proximamente" class="hover:text-white transition-colors text-center focus:outline-none">{{ t.terms }}</NuxtLink>
           <button 
             @click="scrollToTop" 
             class="bg-white/10 hover:bg-[#D4AF37] hover:text-black transition-all duration-500 p-3 rounded-full flex items-center justify-center border border-white/5 shadow-lg hover:shadow-[0_5px_20px_rgba(212,175,55,0.4)] hover:-translate-y-1 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
