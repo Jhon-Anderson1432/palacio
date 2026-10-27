@@ -51,7 +51,7 @@
           <span class="text-sm transition-transform duration-300 group-hover:scale-105">{{ t.btnHistory }}</span>
         </NuxtLink>
         
-        <NuxtLink to="/sedes" class="nav-btn group">
+        <NuxtLink to="/proximamente" class="nav-btn group">
           <span class="text-sm transition-transform duration-300 group-hover:scale-105">{{ t.btnLocations }}</span>
         </NuxtLink>
         

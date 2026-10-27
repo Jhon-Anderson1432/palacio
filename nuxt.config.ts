@@ -98,7 +98,8 @@ export default defineNuxtConfig({
         '/loginadmin', // <--- SALVAVIDAS AGREGADO AQUÍ
         '/terminal-pos',
         '/login-meseras',
-        '/vigilante-scan'
+        '/vigilante-scan',
+        '/proximamente'
       ]
     }
   },
