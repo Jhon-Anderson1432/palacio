@@ -14,7 +14,7 @@
 
     <div class="fixed inset-0 bg-black/80 z-10 pointer-events-none"></div>
 
-    <Navbar :ocultarBuscador="true" />
+    <Navbar />
 
     <section class="relative z-20 flex flex-col items-center justify-center px-4 pb-20 md:pb-32">
       

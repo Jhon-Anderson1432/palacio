@@ -7,7 +7,7 @@
     </div>
 
     <!-- Navbar -->
-    <Navbar :ocultarBuscador="true" :fondoTranslucido="true" />
+    <Navbar :fondoTranslucido="true" />
 
     <!-- Contenido principal -->
     <section class="flex-1 flex items-center justify-center px-4 py-20 relative z-10">

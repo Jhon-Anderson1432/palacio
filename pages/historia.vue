@@ -1,7 +1,7 @@
 <template>
   <main class="relative min-h-screen w-full font-sans bg-neutral-950 text-white overflow-x-hidden pt-32 selection:bg-[#D4AF37] selection:text-black">
     
-    <Navbar :ocultarBuscador="true" />
+    <Navbar />
 
     <header class="text-center mb-24 px-5 mt-8">
       <h1 class="text-4xl md:text-6xl font-light tracking-[0.15em] uppercase mb-6 text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.25)]">
