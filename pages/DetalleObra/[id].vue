@@ -1,6 +1,6 @@
 <template>
   <main class="min-h-screen w-full bg-black text-white flex flex-col overflow-y-auto font-sans pb-20 relative pt-24 selection:bg-[#D4AF37] selection:text-black">
-    <Navbar :ocultarBuscador="true" rutaVolver="/exposiciones" />
+    <Navbar :mostrarBotonVolver="true" rutaVolver="/exposiciones" />
     
     <div class="fixed bottom-0 right-0 w-32 h-32 z-0 pointer-events-none opacity-60">
       <div class="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tl from-[#D4AF37]/20 to-transparent"></div>

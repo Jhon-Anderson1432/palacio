@@ -1,53 +1,11 @@
 <template>
   <main 
-    class="min-h-screen w-full bg-black text-[#D4AF37] font-sans flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#D4AF37] selection:text-black antialiased"
+    class="min-h-screen w-full bg-black text-[#D4AF37] font-sans flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#D4AF37] selection:text-black antialiased pt-24"
     role="main"
     aria-label="Portal Gastronómico Palacio Nacional"
   >
     
-    <!-- Selector de Idioma -->
-    <div class="absolute top-6 left-6 z-50">
-      <button 
-        @click="toggleDropdown"
-        class="flex items-center gap-2 px-5 py-2.5 border border-[#D4AF37]/20 rounded-full bg-black/50 backdrop-blur-xl text-[#D4AF37]/80 hover:text-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 shadow-lg"
-        :aria-expanded="dropdownOpen"
-        aria-haspopup="true"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span class="text-sm font-medium tracking-wider uppercase">{{ idiomaGlobal }}</span>
-        <svg class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': dropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
-
-      <transition name="dropdown-fade">
-        <div v-if="dropdownOpen" class="absolute top-full left-0 mt-3 w-44 bg-[#0a0a0a]/95 backdrop-blur-2xl border border-[#D4AF37]/20 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.9)] overflow-hidden py-1">
-          <button 
-            v-for="lang in idiomas" 
-            :key="lang.code"
-            @click="seleccionarIdioma(lang.code)"
-            class="w-full text-left px-5 py-3.5 text-sm text-neutral-400 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition-colors duration-300 border-b border-white/5 last:border-none focus:outline-none focus:bg-[#D4AF37]/10 focus:text-[#D4AF37]"
-            :class="{ 'text-[#D4AF37] bg-[#D4AF37]/5 font-medium': idiomaGlobal === lang.code }"
-          >
-            {{ lang.label }}
-          </button>
-        </div>
-      </transition>
-    </div>
-
-    <!-- Botón Volver -->
-    <NuxtLink 
-      to="/" 
-      class="absolute top-6 right-6 z-50 p-3 border border-[#D4AF37]/20 rounded-full text-[#D4AF37]/60 bg-black/40 backdrop-blur-md hover:text-black hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/30 shadow-lg"
-      title="Volver al Palacio"
-      aria-label="Volver a la página de inicio del Palacio"
-    >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
-    </NuxtLink>
+    <Navbar :fondoTranslucido="true" />
 
     <div class="w-full max-w-7xl px-6 py-16 flex flex-col items-center z-10">
       
