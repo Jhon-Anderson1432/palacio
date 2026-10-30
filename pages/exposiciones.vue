@@ -877,17 +877,65 @@ watch([filtroTipo, filtroArtista, filtroTecnica, filtroPrecio, searchQuery], () 
   paginaActual.value = 1
 })
 
-const irAPagina = (nuevaPagina) => {
-  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
-    paginaActual.value = nuevaPagina
-    if (import.meta.client) {
-      const catalogoEl = document.getElementById('catalogo-obras')
-      if (catalogoEl) {
-        catalogoEl.scrollIntoView({ behavior: 'smooth' })
-      } else {
-        window.scrollTo({ top: 350, behavior: 'smooth' })
-      }
+let animacionScrollId = null
+
+// Desplazamiento suave y cinematográfico hacia arriba al cambiar de página
+const scrollSuaveArriba = () => {
+  if (!import.meta.client) return
+
+  const inicio = window.scrollY || window.pageYOffset
+  const catalogoEl = document.getElementById('catalogo-obras')
+  // Posición de destino con margen para no quedar tapado por la barra de navegación
+  const fin = catalogoEl 
+    ? Math.max(0, catalogoEl.getBoundingClientRect().top + inicio - 95)
+    : 0
+
+  const distancia = fin - inicio
+  // Si la distancia es insignificante, no es necesario animar
+  if (Math.abs(distancia) < 15) return
+
+  const duracion = 950 // ms para una transición suave, fluida y elegante
+  let inicioTiempo = null
+
+  const limpiarEventos = () => {
+    window.removeEventListener('wheel', interrumpir)
+    window.removeEventListener('touchmove', interrumpir)
+  }
+
+  const interrumpir = () => {
+    if (animacionScrollId) cancelAnimationFrame(animacionScrollId)
+    limpiarEventos()
+  }
+
+  window.addEventListener('wheel', interrumpir, { passive: true, once: true })
+  window.addEventListener('touchmove', interrumpir, { passive: true, once: true })
+
+  const animar = (tiempoActual) => {
+    if (!inicioTiempo) inicioTiempo = tiempoActual
+    const transcurrido = tiempoActual - inicioTiempo
+    const progreso = Math.min(transcurrido / duracion, 1)
+
+    // Curva easeInOutCubic: inicio suave, aceleración sutil y frenado orgánico
+    const ease = progreso < 0.5
+      ? 4 * progreso * progreso * progreso
+      : 1 - Math.pow(-2 * progreso + 2, 3) / 2
+
+    window.scrollTo(0, inicio + distancia * ease)
+
+    if (progreso < 1) {
+      animacionScrollId = requestAnimationFrame(animar)
+    } else {
+      limpiarEventos()
     }
+  }
+
+  animacionScrollId = requestAnimationFrame(animar)
+}
+
+const irAPagina = (nuevaPagina) => {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value && nuevaPagina !== paginaActual.value) {
+    paginaActual.value = nuevaPagina
+    scrollSuaveArriba()
   }
 }
 
@@ -951,6 +999,12 @@ definePageMeta({
   layout: false 
 })
 </script>
+
+<style>
+html {
+  scroll-behavior: smooth;
+}
+</style>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');

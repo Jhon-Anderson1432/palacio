@@ -48,7 +48,8 @@
       <!-- Indicador visual sutil para invitar a hacer scroll -->
       <a 
         href="#galeria" 
-        class="inline-flex flex-col items-center gap-2 text-neutral-400 hover:text-[#D4AF37] transition-colors duration-300 mt-4 group focus:outline-none"
+        @click.prevent="scrollHaciaGaleria"
+        class="inline-flex flex-col items-center gap-2 text-neutral-400 hover:text-[#D4AF37] transition-colors duration-300 mt-4 group focus:outline-none cursor-pointer"
         :aria-label="t.scrollDown"
       >
         <span class="text-[10px] uppercase tracking-[0.25em] font-medium">{{ t.scrollDown }}</span>
@@ -480,6 +481,56 @@ const traducciones = {
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones['es'])
 
+// Desplazamiento suave y cinematográfico hacia la sección de Galería
+const scrollHaciaGaleria = () => {
+  if (!import.meta.client) return
+  const destino = document.getElementById('galeria')
+  if (!destino) return
+
+  const inicio = window.scrollY || window.pageYOffset
+  // Margen superior para compensar la barra de navegación persistente
+  const margenSuperior = 60
+  const fin = destino.getBoundingClientRect().top + inicio - margenSuperior
+  const distancia = fin - inicio
+  const duracion = 950 // ms para una transición elegante y pausada
+  let inicioTiempo = null
+  let animacionId = null
+
+  const limpiarEventos = () => {
+    window.removeEventListener('wheel', interrumpir)
+    window.removeEventListener('touchmove', interrumpir)
+  }
+
+  const interrumpir = () => {
+    if (animacionId) cancelAnimationFrame(animacionId)
+    limpiarEventos()
+  }
+
+  window.addEventListener('wheel', interrumpir, { passive: true, once: true })
+  window.addEventListener('touchmove', interrumpir, { passive: true, once: true })
+
+  const animar = (tiempoActual) => {
+    if (!inicioTiempo) inicioTiempo = tiempoActual
+    const transcurrido = tiempoActual - inicioTiempo
+    const progreso = Math.min(transcurrido / duracion, 1)
+
+    // Curva easeInOutCubic: inicio suave, aceleración sutil y frenado orgánico
+    const ease = progreso < 0.5
+      ? 4 * progreso * progreso * progreso
+      : 1 - Math.pow(-2 * progreso + 2, 3) / 2
+
+    window.scrollTo(0, inicio + distancia * ease)
+
+    if (progreso < 1) {
+      animacionId = requestAnimationFrame(animar)
+    } else {
+      limpiarEventos()
+    }
+  }
+
+  animacionId = requestAnimationFrame(animar)
+}
+
 // === 4. SCHEMA LOCAL BUSINESS (Optimizando para Google Maps y Búsquedas) ===
 useHead({
   link: [
@@ -518,6 +569,12 @@ useHead({
   ]
 })
 </script>
+
+<style>
+html {
+  scroll-behavior: smooth;
+}
+</style>
 
 <style scoped>
 .animate-fade-in-down {
