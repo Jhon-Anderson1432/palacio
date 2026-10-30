@@ -61,10 +61,10 @@
           <div class="space-y-3 text-[11px] font-light">
             <p itemprop="streetAddress">{{ t.address }}</p>
             <p>
-              <a href="tel:+573150770508" class="hover:text-[#D4AF37] transition-colors focus:outline-none" aria-label="Llamar al Palacio Nacional">+57 315 077 05 08</a>
+              <a href="tel:+573116390177" class="hover:text-[#D4AF37] transition-colors focus:outline-none" aria-label="Llamar al Palacio Nacional">+57 311 639 0177</a>
             </p>
             <p>
-              <a href="mailto:Contacto@palacionacional.com.co" class="hover:text-[#D4AF37] transition-colors truncate focus:outline-none" aria-label="Enviar correo al Palacio Nacional">Contacto@palacionacional.com.co</a>
+              <a href="mailto:ccpalacional@gmail.com" class="hover:text-[#D4AF37] transition-colors truncate focus:outline-none" aria-label="Enviar correo al Palacio Nacional">ccpalacional@gmail.com</a>
             </p>
           </div>
           <meta itemprop="addressLocality" content="Medellín" />
@@ -162,7 +162,7 @@ useHead({
           "addressRegion": "Antioquia",
           "addressCountry": "CO"
         },
-        "telephone": "+573150770508"
+        "telephone": "+573116390177"
       })
     }
   ]
