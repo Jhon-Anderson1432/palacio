@@ -1,111 +1,137 @@
 <template>
   <div class="fixed inset-0 z-[999] bg-[#0a0a0a] overflow-y-auto text-white font-sans flex antialiased">
-    
-    <div v-if="menuAbierto" @click="menuAbierto = false" class="fixed inset-0 bg-black/80 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
 
-    <aside :class="['w-64 bg-black border-r border-white/10 p-6 md:p-8 flex flex-col fixed top-0 left-0 bottom-0 md:relative z-50 transition-transform duration-300 ease-in-out', menuAbierto ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
-      
+    <div v-if="menuAbierto" @click="menuAbierto = false"
+      class="fixed inset-0 bg-black/80 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
+
+    <aside
+      :class="['w-64 bg-black border-r border-white/10 p-6 md:p-8 flex flex-col fixed top-0 left-0 bottom-0 md:relative z-50 transition-transform duration-300 ease-in-out', menuAbierto ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+
       <div class="flex flex-col mb-10 text-[#D4AF37]">
         <div class="flex items-center justify-between gap-3">
           <span class="font-serif text-xl tracking-tighter uppercase">Palacio Admin</span>
           <button @click="menuAbierto = false" class="md:hidden text-white/50 hover:text-white p-2 transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
           </button>
         </div>
         <span class="text-[9px] uppercase tracking-widest text-neutral-500 mt-1">
           {{ rolUsuario.replace('_', ' ') }} <span v-if="localAsignado">({{ localAsignado }})</span>
         </span>
       </div>
-      
+
       <nav class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
-        <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'asistente_galeria' || rolUsuario === 'superadmin'" class="space-y-4">
-          <button @click="pestañaActiva = 'inventario'; menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Inventario Arte</span>
+        <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'asistente_galeria' || rolUsuario === 'superadmin'"
+          class="space-y-4">
+          <button @click="pestañaActiva = 'inventario'; menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Inventario Arte</span>
           </button>
 
-          <button v-if="rolUsuario !== 'asistente_galeria'" @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Métricas Arte</span>
+          <button v-if="rolUsuario !== 'asistente_galeria'"
+            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Métricas Arte</span>
           </button>
         </div>
 
-        <div v-if="rolUsuario === 'admin_cafe' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
-          <button @click="pestañaActiva = 'caja'; fetchOrdenesCaja(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'caja' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Caja Registradora</span>
+        <div v-if="rolUsuario === 'admin_cafe' || rolUsuario === 'superadmin'"
+          class="space-y-4 pt-4 border-t border-white/5">
+          <button @click="pestañaActiva = 'caja'; fetchOrdenesCaja(); menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'caja' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Caja Registradora</span>
           </button>
 
-          <button @click="pestañaActiva = 'estadisticas_pos'; calcularEstadisticasPos(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas_pos' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Métricas POS</span>
+          <button @click="pestañaActiva = 'estadisticas_pos'; calcularEstadisticasPos(); menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas_pos' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Métricas POS</span>
           </button>
-          
-          <button @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
+
+          <button @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
           </button>
         </div>
 
-        <div v-if="rolUsuario === 'admin_seguridad' || rolUsuario === 'superadmin'" class="space-y-4 pt-4 border-t border-white/5">
-          <button @click="pestañaActiva = 'seguridad'; fetchSeguridad(); menuAbierto = false" :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'seguridad' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
-             <span class="font-medium text-sm uppercase tracking-widest">Monitoreo Seguridad</span>
+        <div v-if="rolUsuario === 'admin_seguridad' || rolUsuario === 'superadmin'"
+          class="space-y-4 pt-4 border-t border-white/5">
+          <button @click="pestañaActiva = 'seguridad'; fetchSeguridad(); menuAbierto = false"
+            :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'seguridad' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
+            <span class="font-medium text-sm uppercase tracking-widest">Monitoreo Seguridad</span>
           </button>
         </div>
       </nav>
-      
-      <button @click="cerrarSesionAdmin" class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all duration-300 text-[10px] font-bold uppercase tracking-widest mt-4 focus:outline-none focus:ring-2 focus:ring-red-500/50">
+
+      <button @click="cerrarSesionAdmin"
+        class="text-red-500 hover:bg-red-500/10 p-3 rounded-xl flex items-center gap-3 mb-4 transition-all duration-300 text-[10px] font-bold uppercase tracking-widest mt-4 focus:outline-none focus:ring-2 focus:ring-red-500/50">
         CERRAR SESIÓN
       </button>
-      
-      <NuxtLink to="/exposiciones" class="text-neutral-500 hover:text-white transition-colors duration-300 flex items-center gap-2 text-[10px] uppercase font-bold pt-4 border-t border-white/10 tracking-widest focus:outline-none">
+
+      <NuxtLink to="/exposiciones"
+        class="text-neutral-500 hover:text-white transition-colors duration-300 flex items-center gap-2 text-[10px] uppercase font-bold pt-4 border-t border-white/10 tracking-widest focus:outline-none">
         ← GALERÍA PÚBLICA
       </NuxtLink>
     </aside>
 
     <main class="flex-1 flex flex-col relative">
-      <nav class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-4 md:p-6 flex items-center justify-between gap-3 md:gap-6 shadow-sm">
-        
-        <button @click="menuAbierto = true" class="md:hidden text-[#D4AF37] p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      <nav
+        class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-4 md:p-6 flex items-center justify-between gap-3 md:gap-6 shadow-sm">
+
+        <button @click="menuAbierto = true"
+          class="md:hidden text-[#D4AF37] p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
         </button>
 
-        <div v-if="pestañaActiva === 'inventario' || pestañaActiva === 'gastronomia'" class="flex-1 max-w-xl relative group">
-          <input
-            v-model="searchQuery"
-            type="text"
+        <div v-if="pestañaActiva === 'inventario' || pestañaActiva === 'gastronomia'"
+          class="flex-1 max-w-xl relative group">
+          <input v-model="searchQuery" type="text"
             :placeholder="pestañaActiva === 'inventario' ? 'Buscar obra...' : 'Buscar plato...'"
-            class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 md:py-3 md:pl-12 pr-4 text-xs md:text-sm outline-none focus:border-[#D4AF37]/50 focus:bg-white/10 focus:ring-2 focus:ring-[#D4AF37]/20 transition-all duration-300 text-white"
-          />
-          <span class="absolute left-4 top-3 md:left-5 md:top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors">🔍</span>
+            class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 md:py-3 md:pl-12 pr-4 text-xs md:text-sm outline-none focus:border-[#D4AF37]/50 focus:bg-white/10 focus:ring-2 focus:ring-[#D4AF37]/20 transition-all duration-300 text-white" />
+          <span
+            class="absolute left-4 top-3 md:left-5 md:top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors">🔍</span>
         </div>
         <div v-else class="flex-1">
           <h2 class="text-lg md:text-xl font-serif text-white truncate drop-shadow-md">
-            {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' : (pestañaActiva === 'seguridad' ? 'Control de Vigilancia' : 'Estadísticas de la Galería')) }}
+            {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' :
+              (pestañaActiva === 'seguridad' ? 'Control de Vigilancia' : 'Estadísticas de la Galería')) }}
           </h2>
         </div>
-        
-        <button v-if="pestañaActiva === 'inventario'" @click="openForm()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+
+        <button v-if="pestañaActiva === 'inventario'" @click="openForm()"
+          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> OBRA
         </button>
 
-        <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+        <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()"
+          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> PLATO
         </button>
 
-        <button v-if="pestañaActiva === 'seguridad'" @click="abrirModalQR()" class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+        <button v-if="pestañaActiva === 'seguridad'" @click="abrirModalQR()"
+          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">NUEVO</span> PUNTO QR
         </button>
 
-        <button v-if="pestañaActiva === 'caja' || pestañaActiva === 'seguridad'" @click="pestañaActiva === 'caja' ? fetchOrdenesCaja() : fetchSeguridad()" class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">
+        <button v-if="pestañaActiva === 'caja' || pestañaActiva === 'seguridad'"
+          @click="pestañaActiva === 'caja' ? fetchOrdenesCaja() : fetchSeguridad()"
+          class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">
           🔄
         </button>
       </nav>
 
       <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
-        
+
         <div v-if="pestañaActiva === 'caja'">
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
               <h1 class="text-3xl md:text-4xl font-serif text-white flex items-center gap-3">
                 Órdenes Activas
                 <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                 </span>
               </h1>
@@ -113,88 +139,113 @@
                 {{ localAsignado ? 'Sede: ' + localAsignado.replace(/-/g, ' ') : 'Monitoreo Global' }}
               </p>
             </div>
-            
+
             <div class="flex bg-black border border-white/10 rounded-full p-1 shadow-inner">
-              <button @click="estadoCaja = 'pendiente'" :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none', estadoCaja === 'pendiente' ? 'bg-[#D4AF37] text-black shadow-md' : 'text-neutral-500 hover:text-white']">
+              <button @click="estadoCaja = 'pendiente'"
+                :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none', estadoCaja === 'pendiente' ? 'bg-[#D4AF37] text-black shadow-md' : 'text-neutral-500 hover:text-white']">
                 Pendientes ({{ ordenesPendientes.length }})
               </button>
-              <button @click="estadoCaja = 'pagado'" :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none', estadoCaja === 'pagado' ? 'bg-green-500 text-black shadow-md' : 'text-neutral-500 hover:text-white']">
+              <button @click="estadoCaja = 'pagado'"
+                :class="['px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none', estadoCaja === 'pagado' ? 'bg-green-500 text-black shadow-md' : 'text-neutral-500 hover:text-white']">
                 Facturadas
               </button>
             </div>
           </header>
 
-          <div v-if="cargandoCaja" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Buscando comandas...</div>
-          
-          <div v-else-if="ordenesCajaFiltradas.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+          <div v-if="cargandoCaja"
+            class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Buscando
+            comandas...</div>
+
+          <div v-else-if="ordenesCajaFiltradas.length === 0"
+            class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
             No hay órdenes en estado "{{ estadoCaja }}" registradas.
           </div>
 
           <div v-else class="w-full space-y-10">
             <div v-for="(grupo, index) in vistasCaja" :key="index" class="w-full">
-              
-              <h3 v-if="estadoCaja === 'pagado'" class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-5 border-b border-[#D4AF37]/20 pb-2 capitalize">{{ grupo.fecha }}</h3>
+
+              <h3 v-if="estadoCaja === 'pagado'"
+                class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-5 border-b border-[#D4AF37]/20 pb-2 capitalize">
+                {{ grupo.fecha }}</h3>
 
               <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div v-for="orden in grupo.ordenes" :key="orden.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500 hover:border-white/10" :class="{'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente'}">
-                  
+                <div v-for="orden in grupo.ordenes" :key="orden.id"
+                  class="bg-neutral-900 border border-white/5 rounded-3xl p-6 relative flex flex-col shadow-lg transition-all duration-500 hover:border-white/10"
+                  :class="{ 'ring-1 ring-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.15)]': orden.estado === 'pendiente' }">
+
                   <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                     <div>
-                      <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37] drop-shadow-sm">{{ orden.mesa }}</span></h3>
-                      <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
-                      <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new Date(orden.created_at).toLocaleTimeString() }}</p>
+                      <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37] drop-shadow-sm">{{
+                          orden.mesa }}</span></h3>
+                      <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span
+                          class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
+                      <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new
+                        Date(orden.created_at).toLocaleTimeString() }}</p>
                     </div>
                     <div class="text-right">
-                      <span :class="{'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500 border-green-500/30': orden.estado === 'pagado', 'bg-red-500/20 text-red-500 border-red-500/30': orden.estado === 'cancelado'}" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
+                      <span
+                        :class="{ 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': orden.estado === 'pendiente', 'bg-green-500/20 text-green-500 border-green-500/30': orden.estado === 'pagado', 'bg-red-500/20 text-red-500 border-red-500/30': orden.estado === 'cancelado' }"
+                        class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
                         {{ orden.estado }}
                       </span>
                     </div>
                   </div>
 
                   <div class="flex-1 space-y-3 mb-6 overflow-y-auto max-h-48 hide-scrollbar pr-2">
-                    <div v-for="item in (orden.pos_orden_items_originales || orden.pos_orden_items)" :key="'orig-'+item.id" 
-                         :class="['flex flex-col text-xs md:text-sm transition-all duration-300', 
-                                  (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 mb-2 shadow-sm' : 'border-b border-white/5 pb-3']">
+                    <div v-for="item in (orden.pos_orden_items_originales || orden.pos_orden_items)"
+                      :key="'orig-' + item.id"
+                      :class="['flex flex-col text-xs md:text-sm transition-all duration-300',
+                        (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 mb-2 shadow-sm' : 'border-b border-white/5 pb-3']">
                       <div class="flex justify-between items-start">
                         <span class="text-gray-300 pr-4 flex items-center flex-wrap gap-2">
                           <div>
-                            <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span> 
+                            <span class="text-[#D4AF37] font-bold text-base mr-1">{{ item.cantidad }}x</span>
                             {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
                           </div>
-                          <span v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'" class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
+                          <span
+                            v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'"
+                            class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
                             + Añadido
                           </span>
                         </span>
-                        <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+                        <span class="text-white font-bold whitespace-nowrap mt-1">${{ (item.precio_unitario *
+                          item.cantidad).toLocaleString('es-CO') }}</span>
                       </div>
-                      <div v-if="item.notas" class="text-[11px] text-red-400 italic mt-1.5 pl-6 flex items-start gap-1 font-medium tracking-wide">
+                      <div v-if="item.notas"
+                        class="text-[11px] text-red-400 italic mt-1.5 pl-6 flex items-start gap-1 font-medium tracking-wide">
                         <span>↳</span> {{ item.notas }}
                       </div>
                     </div>
 
                     <template v-if="orden.pos_orden_items_anadidos && orden.pos_orden_items_anadidos.length > 0">
-                      <div class="pt-3 pb-2 mt-2 flex items-center justify-center border-t border-dashed border-[#D4AF37]/50">
-                        <span class="bg-red-500 text-white px-4 py-1.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse border border-red-400">
+                      <div
+                        class="pt-3 pb-2 mt-2 flex items-center justify-center border-t border-dashed border-[#D4AF37]/50">
+                        <span
+                          class="bg-red-500 text-white px-4 py-1.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse border border-red-400">
                           🚨 NUEVO PEDIDO AGREGADO
                         </span>
                       </div>
-                      <div v-for="item in orden.pos_orden_items_anadidos" :key="'add-'+item.id" 
-                           :class="['flex flex-col text-xs md:text-sm transition-all duration-300 relative overflow-hidden', 
-                                    (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/20 border border-orange-500/50 rounded-xl p-3 mb-2 shadow-sm' : 'bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-2 shadow-sm']">
+                      <div v-for="item in orden.pos_orden_items_anadidos" :key="'add-' + item.id"
+                        :class="['flex flex-col text-xs md:text-sm transition-all duration-300 relative overflow-hidden',
+                          (item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos') ? 'bg-orange-500/20 border border-orange-500/50 rounded-xl p-3 mb-2 shadow-sm' : 'bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-2 shadow-sm']">
                         <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
                         <div class="flex justify-between items-start pl-3 pt-1">
                           <span class="text-white pr-4 flex items-center flex-wrap gap-2 font-bold">
                             <div>
-                              <span class="text-red-400 font-extrabold text-base mr-1">{{ item.cantidad }}x</span> 
+                              <span class="text-red-400 font-extrabold text-base mr-1">{{ item.cantidad }}x</span>
                               {{ item.menu_gastronomia?.nombre || 'Plato eliminado' }}
                             </div>
-                            <span v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'" class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
+                            <span
+                              v-if="item.menu_gastronomia?.categoria === 'añadidos' || item.menu_gastronomia?.subcategoria === 'añadidos'"
+                              class="bg-orange-500 text-black px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(249,115,22,0.4)]">
                               + Añadido
                             </span>
                           </span>
-                          <span class="text-white font-bold whitespace-nowrap mt-1 pr-1">${{ (item.precio_unitario * item.cantidad).toLocaleString('es-CO') }}</span>
+                          <span class="text-white font-bold whitespace-nowrap mt-1 pr-1">${{ (item.precio_unitario *
+                            item.cantidad).toLocaleString('es-CO') }}</span>
                         </div>
-                        <div v-if="item.notas" class="text-[11px] text-red-300 italic mt-1.5 pl-8 pb-1 flex items-start gap-1 font-medium tracking-wide">
+                        <div v-if="item.notas"
+                          class="text-[11px] text-red-300 italic mt-1.5 pl-8 pb-1 flex items-start gap-1 font-medium tracking-wide">
                           <span>↳</span> {{ item.notas }}
                         </div>
                       </div>
@@ -203,16 +254,23 @@
 
                   <div class="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
                     <span class="text-sm text-neutral-400 uppercase tracking-widest">Total</span>
-                    <span class="text-3xl font-serif text-[#D4AF37] drop-shadow-sm">${{ orden.total.toLocaleString('es-CO') }}</span>
+                    <span class="text-3xl font-serif text-[#D4AF37] drop-shadow-sm">${{
+                      orden.total.toLocaleString('es-CO') }}</span>
                   </div>
 
                   <div class="grid grid-cols-3 gap-2 mt-auto">
-                    <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')" class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-white/30">
+                    <button @click="imprimirTicket(orden, orden.estado === 'pagado' ? 'factura' : 'comanda')"
+                      class="p-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-white/30">
                       Imprimir {{ orden.estado === 'pagado' ? 'Factura' : 'Comanda' }}
                     </button>
-                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'pagado')" class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/50">Cobrar</button>
-                    <button v-if="orden.estado === 'pendiente'" @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'cancelado')" class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Anular</button>
-                    <button @click="eliminarOrdenFisica(orden.ids_asociados || orden.id)" class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/50">
+                    <button v-if="orden.estado === 'pendiente'"
+                      @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'pagado')"
+                      class="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/50">Cobrar</button>
+                    <button v-if="orden.estado === 'pendiente'"
+                      @click="actualizarEstadoOrden(orden.ids_asociados || orden.id, 'cancelado')"
+                      class="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Anular</button>
+                    <button @click="eliminarOrdenFisica(orden.ids_asociados || orden.id)"
+                      class="col-span-3 p-3 mt-1 bg-red-900/30 hover:bg-red-700/50 text-red-400 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/50">
                       🗑️ Eliminar Orden Definitivamente
                     </button>
                   </div>
@@ -226,37 +284,53 @@
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
               <h1 class="text-3xl md:text-4xl font-serif text-white">Cierre de Caja</h1>
-              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Resumen de Ventas Pagadas</p>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Resumen de
+                Ventas
+                Pagadas</p>
             </div>
-            
+
             <div class="flex items-center gap-3">
-              <input type="date" v-model="fechaFiltroMetricas" @change="calcularEstadisticasPos" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
-              
-              <button @click="imprimirCierreCaja()" class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-all duration-300 text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+              <input type="date" v-model="fechaFiltroMetricas" @change="calcularEstadisticasPos"
+                class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all cursor-pointer color-scheme-dark"
+                style="color-scheme: dark;" />
+
+              <button @click="imprimirCierreCaja()"
+                class="bg-[#D4AF37] text-black px-6 py-3 rounded-full font-bold hover:bg-yellow-600 transition-all duration-300 text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
                 🖨️ Imprimir Cierre
               </button>
             </div>
           </header>
 
-          <div v-if="cargandoStatsPos" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Calculando métricas...</div>
+          <div v-if="cargandoStatsPos"
+            class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">
+            Calculando métricas...</div>
 
           <div v-else class="max-w-5xl mx-auto space-y-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/30 flex flex-col justify-between h-32 md:h-40 shadow-lg relative overflow-hidden">
+              <div
+                class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/30 flex flex-col justify-between h-32 md:h-40 shadow-lg relative overflow-hidden">
                 <div class="absolute -right-10 -top-10 bg-[#D4AF37]/5 w-32 h-32 rounded-full blur-2xl"></div>
-                <span class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-widest font-bold z-10">Ventas Totales</span>
-                <span class="text-4xl md:text-5xl font-serif text-white z-10 drop-shadow-md">${{ statsPos.totalVentasDia.toLocaleString('es-CO') }}</span>
+                <span class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-widest font-bold z-10">Ventas
+                  Totales</span>
+                <span class="text-4xl md:text-5xl font-serif text-white z-10 drop-shadow-md">${{
+                  statsPos.totalVentasDia.toLocaleString('es-CO') }}</span>
               </div>
-              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/10 flex flex-col justify-between h-32 md:h-40 shadow-md">
-                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Mesas Atendidas</span>
-                <span class="text-4xl md:text-5xl font-serif text-white drop-shadow-md">{{ statsPos.totalMesasDia }}</span>
+              <div
+                class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/10 flex flex-col justify-between h-32 md:h-40 shadow-md">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Mesas
+                  Atendidas</span>
+                <span class="text-4xl md:text-5xl font-serif text-white drop-shadow-md">{{ statsPos.totalMesasDia
+                  }}</span>
               </div>
             </div>
 
             <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8 shadow-xl">
-              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Desempeño por Mesera</h3>
+              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Desempeño por
+                Mesera
+              </h3>
               <div v-if="statsPos.desgloseMeseras.length > 0" class="space-y-6">
-                <div v-for="mesera in statsPos.desgloseMeseras" :key="mesera.nombre" class="flex flex-col p-5 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300 space-y-4">
+                <div v-for="mesera in statsPos.desgloseMeseras" :key="mesera.nombre"
+                  class="flex flex-col p-5 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-colors duration-300 space-y-4">
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div class="mb-2 sm:mb-0">
                       <p class="text-sm md:text-base text-white font-bold">{{ mesera.nombre }}</p>
@@ -265,27 +339,35 @@
                       </p>
                     </div>
                     <div class="sm:text-right">
-                      <span class="text-2xl font-serif text-[#D4AF37]">${{ mesera.ventas.toLocaleString('es-CO') }}</span>
+                      <span class="text-2xl font-serif text-[#D4AF37]">${{ mesera.ventas.toLocaleString('es-CO')
+                        }}</span>
                     </div>
                   </div>
-                  
+
                   <div class="border-t border-white/10 pt-3 space-y-4">
-                    <div v-for="mesa in mesera.desgloseMesas" :key="mesa.nombre" class="bg-black/30 p-3 rounded-xl border border-white/5">
+                    <div v-for="mesa in mesera.desgloseMesas" :key="mesa.nombre"
+                      class="bg-black/30 p-3 rounded-xl border border-white/5">
                       <div class="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
-                        <span class="text-[11px] uppercase tracking-widest text-white font-bold">Mesa: <span class="text-[#D4AF37]">{{ mesa.nombre }}</span></span>
-                        <span class="text-[11px] text-[#D4AF37] font-bold">${{ mesa.total.toLocaleString('es-CO') }}</span>
+                        <span class="text-[11px] uppercase tracking-widest text-white font-bold">Mesa: <span
+                            class="text-[#D4AF37]">{{ mesa.nombre }}</span></span>
+                        <span class="text-[11px] text-[#D4AF37] font-bold">${{ mesa.total.toLocaleString('es-CO')
+                          }}</span>
                       </div>
                       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        <div v-for="(cant, prod) in mesa.productos" :key="prod" class="flex justify-between items-center bg-black/40 px-3 py-2 rounded-xl text-xs border border-white/5 transition-colors hover:bg-black/60">
+                        <div v-for="(cant, prod) in mesa.productos" :key="prod"
+                          class="flex justify-between items-center bg-black/40 px-3 py-2 rounded-xl text-xs border border-white/5 transition-colors hover:bg-black/60">
                           <span class="text-gray-300 truncate pr-2 capitalize">{{ prod.toLowerCase() }}</span>
-                          <span class="text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded-md whitespace-nowrap">x{{ cant }}</span>
+                          <span
+                            class="text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded-md whitespace-nowrap">x{{
+                            cant }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl bg-black/20">
+              <div v-else
+                class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl bg-black/20">
                 No hay ventas pagadas registradas en esta fecha.
               </div>
             </div>
@@ -296,40 +378,55 @@
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
               <h1 class="text-3xl md:text-4xl font-serif text-white">Vigilancia Diaria</h1>
-              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Control de Puntos QR</p>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em] font-bold">Control de
+                Puntos QR
+              </p>
             </div>
-            
+
             <div class="flex items-center gap-3">
-              <input type="date" v-model="fechaFiltroSeguridad" @change="fetchSeguridad()" class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all cursor-pointer color-scheme-dark" style="color-scheme: dark;" />
+              <input type="date" v-model="fechaFiltroSeguridad" @change="fetchSeguridad()"
+                class="bg-black border border-white/20 text-[#D4AF37] px-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all cursor-pointer color-scheme-dark"
+                style="color-scheme: dark;" />
             </div>
           </header>
 
-          <div v-if="cargandoSeguridad" class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Cargando registros...</div>
+          <div v-if="cargandoSeguridad"
+            class="text-center py-20 text-[#D4AF37] animate-pulse text-xs uppercase tracking-widest">Cargando
+            registros...</div>
 
           <div v-else class="max-w-6xl mx-auto space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div class="bg-neutral-900 p-5 rounded-3xl border border-white/10 flex flex-col justify-between h-32 shadow-md">
-                <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Total Escaneos (Hoy)</span>
+              <div
+                class="bg-neutral-900 p-5 rounded-3xl border border-white/10 flex flex-col justify-between h-32 shadow-md">
+                <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Total Escaneos
+                  (Hoy)</span>
                 <span class="text-4xl font-serif text-white drop-shadow-sm">{{ statsSeguridad.totalEscaneos }}</span>
               </div>
-              <div class="bg-neutral-900 p-5 rounded-3xl border border-orange-500/20 flex flex-col justify-between h-32 relative shadow-md overflow-hidden">
+              <div
+                class="bg-neutral-900 p-5 rounded-3xl border border-orange-500/20 flex flex-col justify-between h-32 relative shadow-md overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 bg-orange-500/10 w-32 h-32 rounded-full blur-2xl"></div>
-                <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold z-10">Observaciones Reportadas</span>
-                <span class="text-4xl font-serif text-orange-400 z-10 drop-shadow-sm">{{ statsSeguridad.observaciones }}</span>
+                <span class="text-[10px] text-orange-400 uppercase tracking-widest font-bold z-10">Observaciones
+                  Reportadas</span>
+                <span class="text-4xl font-serif text-orange-400 z-10 drop-shadow-sm">{{ statsSeguridad.observaciones
+                  }}</span>
               </div>
             </div>
 
             <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8 shadow-xl">
-              <h3 class="text-base md:text-lg font-serif text-[#D4AF37] mb-6 border-b border-white/10 pb-4">Detalle de Escaneos</h3>
-              
-              <div v-if="registrosSeguridad.length === 0" class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl bg-black/20">
+              <h3 class="text-base md:text-lg font-serif text-[#D4AF37] mb-6 border-b border-white/10 pb-4">Detalle de
+                Escaneos
+              </h3>
+
+              <div v-if="registrosSeguridad.length === 0"
+                class="text-center text-neutral-500 text-xs md:text-sm py-8 border border-dashed border-white/10 rounded-2xl bg-black/20">
                 No hay escaneos registrados recientes.
               </div>
 
               <div v-else class="overflow-x-auto rounded-xl">
                 <table class="w-full text-left border-collapse">
                   <thead>
-                    <tr class="border-b border-white/10 text-xs uppercase tracking-widest text-neutral-400 bg-white/[0.02]">
+                    <tr
+                      class="border-b border-white/10 text-xs uppercase tracking-widest text-neutral-400 bg-white/[0.02]">
                       <th class="py-4 px-4 font-bold rounded-tl-xl">Hora</th>
                       <th class="py-4 px-4 font-bold">Vigilante</th>
                       <th class="py-4 px-4 font-bold">Punto</th>
@@ -337,50 +434,62 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="registro in registrosSeguridad" :key="registro.id" class="border-b border-white/5 hover:bg-white/[0.04] transition-colors duration-200">
+                    <tr v-for="registro in registrosSeguridad" :key="registro.id"
+                      class="border-b border-white/5 hover:bg-white/[0.04] transition-colors duration-200">
                       <td class="py-4 px-4 text-[#D4AF37] font-bold">{{ formatearHora(registro.hora_registro) }}</td>
                       <td class="py-4 px-4 text-white">
-                        <span class="bg-[#D4AF37]/10 text-[#D4AF37] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-[#D4AF37]/20">
+                        <span
+                          class="bg-[#D4AF37]/10 text-[#D4AF37] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-[#D4AF37]/20">
                           {{ registro.nombre_vigilante || 'N/A' }}
                         </span>
                       </td>
                       <td class="py-4 px-4 text-white">
-                        {{ registro.puntos_control?.nombre }} 
+                        {{ registro.puntos_control?.nombre }}
                         <span class="text-xs text-neutral-500 block mt-1">{{ registro.puntos_control?.piso }}</span>
                       </td>
-                      <td class="py-4 px-4 text-neutral-300 text-sm max-w-xs truncate" :title="registro.observacion">{{ registro.observacion }}</td>
+                      <td class="py-4 px-4 text-neutral-300 text-sm max-w-xs truncate" :title="registro.observacion">{{
+                        registro.observacion }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
-          
+
           <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8 mt-10 shadow-xl">
             <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
               <h3 class="text-base md:text-lg font-serif text-white">Puntos QR Activos</h3>
-              <button @click="fetchPuntosControl" class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold hover:text-white transition-colors focus:outline-none">Actualizar Lista</button>
+              <button @click="fetchPuntosControl"
+                class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold hover:text-white transition-colors focus:outline-none">Actualizar
+                Lista</button>
             </div>
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div v-for="punto in puntosDeControl" :key="punto.id" class="bg-black/50 border border-white/10 p-4 rounded-xl flex flex-col justify-between hover:border-white/20 transition-all duration-300 shadow-sm">
+              <div v-for="punto in puntosDeControl" :key="punto.id"
+                class="bg-black/50 border border-white/10 p-4 rounded-xl flex flex-col justify-between hover:border-white/20 transition-all duration-300 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                   <div>
                     <p class="text-sm font-bold text-white flex items-center gap-2">
                       {{ punto.nombre }}
-                      <span v-if="punto.es_punto_final" class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" title="Punto Final"></span>
+                      <span v-if="punto.es_punto_final"
+                        class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                        title="Punto Final"></span>
                     </p>
                     <p class="text-[10px] text-neutral-400 uppercase tracking-widest">{{ punto.piso }}</p>
                   </div>
-                  <div class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-md" @click="mostrarQRGrande(punto)" title="Ver QR en grande">
+                  <div
+                    class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-[#D4AF37] hover:scale-105 transition-all duration-300 shadow-md"
+                    @click="mostrarQRGrande(punto)" title="Ver QR en grande">
                     <ClientOnly>
                       <qrcode-vue :value="punto.codigo_qr" :size="48" level="L" />
                     </ClientOnly>
                   </div>
                 </div>
                 <div class="flex gap-2 pt-3 border-t border-white/5 mt-auto">
-                  <button @click="abrirModalQR(punto)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
-                  <button @click="deletePuntoControl(punto)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
+                  <button @click="abrirModalQR(punto)"
+                    class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
+                  <button @click="deletePuntoControl(punto)"
+                    class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
                 </div>
               </div>
             </div>
@@ -388,135 +497,254 @@
         </div>
 
         <div v-if="pestañaActiva === 'inventario'">
-          <header class="mb-8 md:mb-12">
-            <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
-            <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Sincronizado con Supabase Cloud</p>
+          <header class="mb-8 md:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión de Catálogo</h1>
+              <p class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">
+                {{ totalObrasCount }} obras en inventario • Página {{ paginaActualObras }} de {{ totalPaginasObras }}
+              </p>
+            </div>
+
+            <!-- Selector de límite por página y botón recargar -->
+            <div class="flex items-center gap-3">
+              <span
+                class="text-[10px] uppercase tracking-widest text-neutral-400 font-semibold select-none">Mostrar:</span>
+              <select :value="limiteObrasPorPagina" @change="cambiarLimiteObras($event.target.value)"
+                class="bg-black border border-white/15 hover:border-[#D4AF37]/50 focus:border-[#D4AF37] text-white text-xs px-3 py-1.5 rounded-xl outline-none cursor-pointer transition-colors"
+                aria-label="Obras por página">
+                <option :value="12">12 obras</option>
+                <option :value="24">24 obras</option>
+                <option :value="48">48 obras</option>
+              </select>
+              <button @click="fetchObras(false)"
+                class="p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#D4AF37]/50 text-neutral-300 hover:text-white rounded-xl text-xs transition-colors"
+                title="Actualizar catálogo" aria-label="Actualizar catálogo">
+                🔄
+              </button>
+            </div>
           </header>
 
-          <div v-if="!cargando" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <div v-for="obra in obrasFiltradas" :key="obra.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/30 transition-all duration-300 relative shadow-lg group">
-              <div class="relative mb-5 overflow-hidden rounded-2xl aspect-square bg-black shadow-inner">
-                <NuxtImg v-if="obra.imagen_1" :src="obra.imagen_1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" />
-                <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">Sin Imagen</div>
-                
-                <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold uppercase tracking-tighter shadow-sm">{{ obra.precio }}</div>
-                <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest shadow-sm">{{ obra.tipo || 'Pintura' }}</div>
-              </div>
-              <div class="space-y-3">
-                <h3 class="text-white font-serif text-xl leading-tight group-hover:text-[#D4AF37] transition-colors duration-300">{{ formatoTitulo(obra.titulo) }}</h3>
-                <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{ formatoTitulo(obra.titulo_en) }}</p>
-                <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{ formatoTitulo(obra.autor) }}</p>
-              </div>
-              <div class="flex gap-2 mt-6 pt-4 border-t border-white/5">
-                <button @click="openForm(obra)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
-                <button @click="deleteObra(obra)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
+          <!-- Loader de carga -->
+          <div v-if="cargando"
+            class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest flex flex-col items-center justify-center gap-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-2 border-[#D4AF37] border-t-transparent"></div>
+            <span>Cargando obras...</span>
+          </div>
+
+          <!-- Grid de Obras -->
+          <div v-else-if="obrasFiltradas.length > 0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div v-for="obra in obrasFiltradas" :key="obra.id"
+                class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/30 transition-all duration-300 relative shadow-lg group">
+                <div class="relative mb-5 overflow-hidden rounded-2xl aspect-square bg-black shadow-inner">
+                  <NuxtImg v-if="obra.imagen_1" :src="obra.imagen_1"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                    loading="lazy" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">Sin Imagen
+                  </div>
+
+                  <div
+                    class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold uppercase tracking-tighter shadow-sm">
+                    {{ obra.precio }}</div>
+                  <div
+                    class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest shadow-sm">
+                    {{ obra.tipo || 'Pintura' }}</div>
+                </div>
+                <div class="space-y-3">
+                  <h3
+                    class="text-white font-serif text-xl leading-tight group-hover:text-[#D4AF37] transition-colors duration-300">
+                    {{ formatoTitulo(obra.titulo) }}</h3>
+                  <p v-if="obra.titulo_en" class="text-neutral-500 text-[10px] italic -mt-2">{{
+                    formatoTitulo(obra.titulo_en) }}
+                  </p>
+                  <p class="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em]">{{
+                    formatoTitulo(obra.autor) }}</p>
+                </div>
+                <div class="flex gap-2 mt-6 pt-4 border-t border-white/5">
+                  <button @click="openForm(obra)"
+                    class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
+                  <button @click="deleteObra(obra)"
+                    class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
+                </div>
               </div>
             </div>
+
+            <!-- CONTROLES DE PAGINACIÓN NUMÉRICA -->
+            <div v-if="totalPaginasObras > 1"
+              class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+              <span class="text-xs text-neutral-400 font-light">
+                Mostrando <strong class="text-white">{{ (paginaActualObras - 1) * limiteObrasPorPagina + 1 }}</strong> -
+                <strong class="text-white">{{ Math.min(paginaActualObras * limiteObrasPorPagina, totalObrasCount)
+                  }}</strong> de
+                <strong class="text-[#D4AF37]">{{ totalObrasCount }}</strong> obras
+              </span>
+
+              <nav aria-label="Paginación de inventario" class="flex flex-wrap items-center gap-1.5">
+                <!-- Botón Anterior -->
+                <button @click="irAPaginaObras(paginaActualObras - 1)" :disabled="paginaActualObras === 1"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider border border-white/10 bg-white/5 text-neutral-300 hover:border-[#D4AF37]/50 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/10 disabled:hover:text-neutral-300 transition-all flex items-center gap-1 focus:outline-none"
+                  aria-label="Página anterior">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                  <span class="hidden sm:inline">Ant.</span>
+                </button>
+
+                <!-- Páginas Numéricas y Elipsis -->
+                <template v-for="(p, idx) in paginasVisiblesObras" :key="idx">
+                  <span v-if="p === '...'"
+                    class="w-9 h-9 flex items-center justify-center text-neutral-500 font-bold text-xs select-none">
+                    •••
+                  </span>
+                  <button v-else @click="irAPaginaObras(p)" :class="[
+                    'w-9 h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40',
+                    paginaActualObras === p
+                      ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.35)] font-extrabold'
+                      : 'bg-white/5 border border-white/10 text-neutral-300 hover:text-white hover:border-[#D4AF37]/50 hover:bg-white/10'
+                  ]" :aria-current="paginaActualObras === p ? 'page' : undefined" :aria-label="'Ir a página ' + p">
+                    {{ p }}
+                  </button>
+                </template>
+
+                <!-- Botón Siguiente -->
+                <button @click="irAPaginaObras(paginaActualObras + 1)"
+                  :disabled="paginaActualObras === totalPaginasObras"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider border border-white/10 bg-white/5 text-neutral-300 hover:border-[#D4AF37]/50 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/10 disabled:hover:text-neutral-300 transition-all flex items-center gap-1 focus:outline-none"
+                  aria-label="Página siguiente">
+                  <span class="hidden sm:inline">Sig.</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              </nav>
+            </div>
           </div>
-          <div v-if="cargando" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Conectando...</div>
+
+          <!-- Estado vacío (Sin resultados para la búsqueda) -->
+          <div v-else class="text-center py-20 bg-neutral-900/50 border border-white/5 rounded-3xl p-8">
+            <span class="text-4xl block mb-3 opacity-40">🔍</span>
+            <p class="text-white font-serif text-lg mb-1">No se encontraron obras</p>
+            <p class="text-neutral-400 text-xs mb-4">No hay resultados para "{{ searchQuery }}"</p>
+            <button @click="searchQuery = ''; fetchObras(true)"
+              class="px-5 py-2.5 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-white transition-colors">
+              Limpiar Búsqueda
+            </button>
+          </div>
         </div>
 
         <div v-if="pestañaActiva === 'gastronomia'">
           <header class="mb-6">
             <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
-            <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Filtrado por sede: {{ localAsignado.replace(/-/g, ' ') }}</p>
+            <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">
+              Filtrado por
+              sede: {{ localAsignado.replace(/-/g, ' ') }}</p>
             <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
           </header>
 
           <div class="mb-4 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
-            <button 
-              @click="categoriaActivaGastro = 'todas'"
-              :class="[
-                'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
-                categoriaActivaGastro === 'todas'
-                  ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]' 
-                  : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
-              ]"
-            >
+            <button @click="categoriaActivaGastro = 'todas'" :class="[
+              'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+              categoriaActivaGastro === 'todas'
+                ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]'
+                : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+            ]">
               Todas las categorías
             </button>
-            <button 
-              v-for="cat in categoriasGastroDisponiblesMenu" 
-              :key="cat" 
-              @click="categoriaActivaGastro = cat"
+            <button v-for="cat in categoriasGastroDisponiblesMenu" :key="cat" @click="categoriaActivaGastro = cat"
               :class="[
                 'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
-                categoriaActivaGastro === cat 
-                  ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]' 
+                categoriaActivaGastro === cat
+                  ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]'
                   : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
-              ]"
-            >
+              ]">
               {{ obtenerNombreCategoria(cat) }}
             </button>
           </div>
 
-          <div v-if="categoriaActivaGastro !== 'todas' && subcategoriasGastroDisponiblesMenu.length > 0" class="mb-8 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
-            <button 
-              @click="subcategoriaActivaGastro = 'todas'"
-              :class="[
-                'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
-                subcategoriaActivaGastro === 'todas'
-                  ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
-                  : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
-              ]"
-            >
+          <div v-if="categoriaActivaGastro !== 'todas' && subcategoriasGastroDisponiblesMenu.length > 0"
+            class="mb-8 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
+            <button @click="subcategoriaActivaGastro = 'todas'" :class="[
+              'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+              subcategoriaActivaGastro === 'todas'
+                ? 'bg-[#D4AF37]/80 text-black shadow-sm'
+                : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
+            ]">
               Todas
             </button>
-            <button 
-              v-for="sub in subcategoriasGastroDisponiblesMenu" 
-              :key="sub" 
-              @click="subcategoriaActivaGastro = sub"
+            <button v-for="sub in subcategoriasGastroDisponiblesMenu" :key="sub" @click="subcategoriaActivaGastro = sub"
               :class="[
                 'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
-                subcategoriaActivaGastro === sub 
-                  ? 'bg-[#D4AF37]/80 text-black shadow-sm' 
+                subcategoriaActivaGastro === sub
+                  ? 'bg-[#D4AF37]/80 text-black shadow-sm'
                   : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
-              ]"
-            >
+              ]">
               {{ obtenerNombreSubcategoria(sub) }}
             </button>
           </div>
 
-          <div v-if="cargandoGastro" class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">Cargando Menús...</div>
-          
+          <div v-if="cargandoGastro"
+            class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">
+            Cargando Menús...</div>
+
           <div v-else class="space-y-10">
-            <div v-if="gastroFiltrados.length === 0" class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+            <div v-if="gastroFiltrados.length === 0"
+              class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
               No se encontraron platos con ese filtro.
             </div>
-            
+
             <div v-for="(subcategorias, categoriaId) in menuAgrupado" :key="categoriaId" class="mb-10">
-              <h2 class="text-2xl md:text-3xl font-serif text-[#D4AF37] mb-6 border-b border-[#D4AF37]/20 pb-3">{{ obtenerNombreCategoria(categoriaId) }}</h2>
-              
+              <h2 class="text-2xl md:text-3xl font-serif text-[#D4AF37] mb-6 border-b border-[#D4AF37]/20 pb-3">{{
+                obtenerNombreCategoria(categoriaId) }}</h2>
+
               <div v-for="(platos, subcategoriaId) in subcategorias" :key="subcategoriaId" class="mb-8 last:mb-0">
-                <h3 v-if="subcategoriaId !== 'general' && subcategoriaId !== 'null'" class="text-sm md:text-base text-white/80 font-bold uppercase tracking-[0.15em] mb-4 pl-2 border-l-2 border-[#D4AF37]">
+                <h3 v-if="subcategoriaId !== 'general' && subcategoriaId !== 'null'"
+                  class="text-sm md:text-base text-white/80 font-bold uppercase tracking-[0.15em] mb-4 pl-2 border-l-2 border-[#D4AF37]">
                   {{ obtenerNombreSubcategoria(subcategoriaId) }}
                 </h3>
-                
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                  <div v-for="item in platos" :key="item.id" class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all duration-300 relative flex flex-col justify-between shadow-lg hover:shadow-xl">
+                  <div v-for="item in platos" :key="item.id"
+                    class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all duration-300 relative flex flex-col justify-between shadow-lg hover:shadow-xl">
                     <div>
                       <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                         <div class="pr-2">
-                          <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{ formatoTitulo(item.nombre) }}</h3>
-                          <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{ formatoTitulo(item.nombre_en) }}</p>
+                          <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{
+                            formatoTitulo(item.nombre) }}
+                          </h3>
+                          <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{
+                            formatoTitulo(item.nombre_en) }}</p>
                         </div>
-                        <span class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap shadow-sm">${{ item.precio }}</span>
+                        <span
+                          class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap shadow-sm">${{
+                          item.precio }}</span>
                       </div>
-                      
+
                       <div class="space-y-2 mb-6">
-                        <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{ formatoParrafo(item.descripcion) }}</p>
-                        <div class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
-                          <span class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm border border-[#D4AF37]/20">{{ item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
-                          <span class="bg-white/10 px-2 py-1 rounded-sm border border-white/10">{{ obtenerNombreCategoria(item.categoria) }}</span>
-                          <span v-if="item.subcategoria" class="bg-white/20 text-white px-2 py-1 rounded-sm border border-white/10">{{ obtenerNombreSubcategoria(item.subcategoria) }}</span>
-                          <span v-if="item.etiqueta" class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm border border-blue-500/20">{{ item.etiqueta }}</span>
+                        <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{
+                          formatoParrafo(item.descripcion) }}</p>
+                        <div
+                          class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
+                          <span
+                            class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm border border-[#D4AF37]/20">{{
+                              item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
+                          <span class="bg-white/10 px-2 py-1 rounded-sm border border-white/10">{{
+                            obtenerNombreCategoria(item.categoria) }}</span>
+                          <span v-if="item.subcategoria"
+                            class="bg-white/20 text-white px-2 py-1 rounded-sm border border-white/10">{{
+                            obtenerNombreSubcategoria(item.subcategoria) }}</span>
+                          <span v-if="item.etiqueta"
+                            class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm border border-blue-500/20">{{
+                            item.etiqueta
+                            }}</span>
                         </div>
                       </div>
                     </div>
 
                     <div class="flex gap-2 mt-auto pt-4 border-t border-white/5">
-                      <button @click="openGastroForm(item)" class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
-                      <button @click="deleteProductoGastro(item)" class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
+                      <button @click="openGastroForm(item)"
+                        class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
+                      <button @click="deleteProductoGastro(item)"
+                        class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
                     </div>
                   </div>
                 </div>
@@ -527,33 +755,42 @@
 
         <div v-if="pestañaActiva === 'estadisticas'">
           <div class="max-w-5xl mx-auto space-y-8">
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
-                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Catálogo</span>
+              <div
+                class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total
+                  Catálogo</span>
                 <span class="text-4xl md:text-5xl font-serif text-white">{{ stats.total }}</span>
               </div>
-              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/20 flex flex-col justify-between h-32 md:h-40 shadow-md">
-                <span class="text-[10px] md:text-xs text-[#D4AF37]/70 uppercase tracking-widest font-bold">Total Pinturas</span>
+              <div
+                class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-[#D4AF37]/20 flex flex-col justify-between h-32 md:h-40 shadow-md">
+                <span class="text-[10px] md:text-xs text-[#D4AF37]/70 uppercase tracking-widest font-bold">Total
+                  Pinturas</span>
                 <span class="text-4xl md:text-5xl font-serif text-[#D4AF37]">{{ stats.pinturas }}</span>
               </div>
-              <div class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
-                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total Esculturas</span>
+              <div
+                class="bg-neutral-900 p-5 md:p-6 rounded-3xl border border-white/5 flex flex-col justify-between h-32 md:h-40 shadow-md">
+                <span class="text-[10px] md:text-xs text-neutral-400 uppercase tracking-widest font-bold">Total
+                  Esculturas</span>
                 <span class="text-4xl md:text-5xl font-serif text-white">{{ stats.esculturas }}</span>
               </div>
             </div>
 
-            <div class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
+            <div
+              class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
               <div class="absolute -right-10 -top-10 bg-[#D4AF37]/5 w-40 h-40 rounded-full blur-3xl"></div>
-              
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/10 pb-4 relative z-10">
+
+              <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/10 pb-4 relative z-10">
                 <div>
                   <h3 class="text-base md:text-lg font-serif text-[#D4AF37]">Rendimiento y Honorarios</h3>
                   <p class="text-[10px] text-neutral-400 uppercase tracking-widest mt-1">
                     Ciclo iniciado: {{ fechaInicioCobro ? fechaInicioCobro.toLocaleDateString() : '...' }}
                   </p>
                 </div>
-                <button @click="marcarCobrado" class="mt-4 md:mt-0 bg-green-500/20 text-green-500 border border-green-500/50 hover:bg-green-500 hover:text-black px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
+                <button @click="marcarCobrado"
+                  class="mt-4 md:mt-0 bg-green-500/20 text-green-500 border border-green-500/50 hover:bg-green-500 hover:text-black px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
                   Marcar como Cobrado
                 </button>
               </div>
@@ -568,20 +805,25 @@
                   <span class="text-2xl font-bold text-white">{{ statsActividad.semana }}</span>
                 </div>
                 <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                  <span class="text-[9px] text-[#D4AF37]/70 uppercase tracking-widest block mb-1">Obras (Este Ciclo)</span>
+                  <span class="text-[9px] text-[#D4AF37]/70 uppercase tracking-widest block mb-1">Obras (Este
+                    Ciclo)</span>
                   <span class="text-2xl font-bold text-[#D4AF37]">{{ statsActividad.ciclo }}</span>
                 </div>
                 <div class="bg-[#D4AF37]/10 p-4 rounded-xl border border-[#D4AF37]/30">
-                  <span class="text-[9px] text-[#D4AF37] uppercase tracking-widest font-bold block mb-1">Total a Cobrar</span>
-                  <span class="text-2xl font-serif text-[#D4AF37]">${{ statsActividad.pago.toLocaleString('es-CO') }}</span>
+                  <span class="text-[9px] text-[#D4AF37] uppercase tracking-widest font-bold block mb-1">Total a
+                    Cobrar</span>
+                  <span class="text-2xl font-serif text-[#D4AF37]">${{ statsActividad.pago.toLocaleString('es-CO')
+                    }}</span>
                 </div>
               </div>
             </div>
 
             <div class="bg-neutral-900 border border-white/5 rounded-3xl p-5 md:p-8 shadow-xl">
-              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Registro de Modificaciones</h3>
+              <h3 class="text-base md:text-lg font-serif text-white mb-6 border-b border-white/10 pb-4">Registro de
+                Modificaciones</h3>
               <div v-if="logsActividad.length > 0" class="space-y-4">
-                <div v-for="(log, index) in logsActividad" :key="index" class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-white/[0.02] rounded-xl border border-white/5 gap-4 hover:bg-white/[0.04] transition-colors duration-300">
+                <div v-for="(log, index) in logsActividad" :key="index"
+                  class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-white/[0.02] rounded-xl border border-white/5 gap-4 hover:bg-white/[0.04] transition-colors duration-300">
                   <div class="flex items-center gap-4">
                     <span class="text-xl">{{ log.accion === 'Creación' ? '✨' : '📝' }}</span>
                     <div>
@@ -589,13 +831,16 @@
                       <p class="text-[10px] md:text-xs text-neutral-400">{{ formatoTitulo(log.titulo) }}</p>
                     </div>
                   </div>
-                  <div class="sm:text-right flex sm:block justify-between items-center border-t border-white/5 sm:border-0 pt-2 sm:pt-0">
-                    <p class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">{{ log.fechaFormateada }}</p>
+                  <div
+                    class="sm:text-right flex sm:block justify-between items-center border-t border-white/5 sm:border-0 pt-2 sm:pt-0">
+                    <p class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">{{ log.fechaFormateada }}
+                    </p>
                     <p class="text-[10px] text-neutral-500 uppercase">{{ log.horaFormateada }}</p>
                   </div>
                 </div>
               </div>
-              <div v-else class="text-center text-neutral-500 text-xs md:text-sm py-8 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl">
+              <div v-else
+                class="text-center text-neutral-500 text-xs md:text-sm py-8 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl">
                 Aún no hay registros de actividad.
               </div>
             </div>
@@ -605,160 +850,324 @@
       </div>
     </main>
 
-    <div v-if="showForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
-      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
-        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ? 'Editar Obra' : 'Nueva Obra' }}</h2>
+    <div v-if="showForm"
+      class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
+      <div
+        class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
+        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ obraEditandoId ?
+          'Editar Obra' : 'Nueva Obra' }}</h2>
         <form @submit.prevent="guardarObra" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
-              <input type="file" @change="(e) => handleImageChange(e, 1)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[1] ? '✅' : '📷' }}</span>
-              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">{{ imgFiles[1] ? imgFiles[1].name : (form.imagen_1 ? 'Cambiar Foto 1' : 'Foto Principal') }}</p>
+            <div
+              class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
+              <input type="file" @change="(e) => handleImageChange(e, 1)" accept="image/*"
+                class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[1] ? '✅' : '📷'
+                }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">
+                {{
+                  imgFiles[1] ? imgFiles[1].name : (form.imagen_1 ? 'Cambiar Foto 1' : 'Foto Principal') }}</p>
             </div>
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
-              <input type="file" @change="(e) => handleImageChange(e, 2)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[2] ? '✅' : '📷' }}</span>
-              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">{{ imgFiles[2] ? imgFiles[2].name : (form.imagen_2 ? 'Cambiar Foto 2' : 'Foto Detalle A') }}</p>
+            <div
+              class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
+              <input type="file" @change="(e) => handleImageChange(e, 2)" accept="image/*"
+                class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[2] ? '✅' : '📷'
+                }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">
+                {{
+                  imgFiles[2] ? imgFiles[2].name : (form.imagen_2 ? 'Cambiar Foto 2' : 'Foto Detalle A') }}</p>
             </div>
-            <div class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
-              <input type="file" @change="(e) => handleImageChange(e, 3)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[3] ? '✅' : '📷' }}</span>
-              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">{{ imgFiles[3] ? imgFiles[3].name : (form.imagen_3 ? 'Cambiar Foto 3' : 'Foto Detalle B') }}</p>
+            <div
+              class="p-4 border-2 border-dashed border-white/10 rounded-xl text-center bg-white/5 relative hover:border-[#D4AF37]/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px] md:min-h-[100px] cursor-pointer group">
+              <input type="file" @change="(e) => handleImageChange(e, 3)" accept="image/*"
+                class="absolute inset-0 opacity-0 cursor-pointer">
+              <span class="text-lg mb-1 group-hover:scale-110 transition-transform">{{ imgFiles[3] ? '✅' : '📷'
+                }}</span>
+              <p class="text-[8px] uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors">
+                {{
+                  imgFiles[3] ? imgFiles[3].name : (form.imagen_3 ? 'Cambiar Foto 3' : 'Foto Detalle B') }}</p>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <select v-model="form.tipo" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all" required>
+            <select v-model="form.tipo"
+              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all"
+              required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">TIPO DE OBRA...</option>
               <option value="Pintura" class="bg-neutral-900">PINTURA</option>
               <option value="Escultura" class="bg-neutral-900">ESCULTURA</option>
             </select>
-            <input v-model="form.autor" placeholder="AUTOR" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
-            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
+
+            <!-- Combobox de Autor con Menú Desplegable y Sugerencias -->
+            <div :class="['relative', dropdownAutorAbierto ? 'z-40' : 'z-10']" ref="autorComboboxRef">
+              <div class="relative">
+                <input 
+                  v-model="form.autor" 
+                  @focus="dropdownAutorAbierto = true"
+                  @input="dropdownAutorAbierto = true"
+                  placeholder="AUTOR (BUSCAR O ESCRIBIR NUEVO)"
+                  class="w-full bg-white/5 border border-white/10 pl-3 pr-16 py-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all placeholder:text-neutral-500"
+                  :class="{ 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20': dropdownAutorAbierto }"
+                  required
+                  autocomplete="off"
+                >
+                
+                <!-- Botón para limpiar si hay texto -->
+                <button 
+                  v-if="form.autor"
+                  type="button"
+                  @click="form.autor = ''; dropdownAutorAbierto = true"
+                  class="absolute right-8 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 text-xs transition-colors"
+                  title="Limpiar autor"
+                >
+                  ✕
+                </button>
+
+                <!-- Flecha para abrir/cerrar menú desplegable -->
+                <button 
+                  type="button" 
+                  @click="toggleDropdownAutor"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#D4AF37] p-1 text-xs transition-transform duration-200"
+                  :class="{ 'rotate-180 text-[#D4AF37]': dropdownAutorAbierto }"
+                  aria-label="Abrir listado de autores"
+                >
+                  ▼
+                </button>
+              </div>
+
+              <!-- Menú desplegable con sugerencias -->
+              <transition name="dropdown-slide">
+                <div 
+                  v-if="dropdownAutorAbierto" 
+                  class="absolute left-0 right-0 top-full mt-1.5 bg-[#0d0d0d] border border-[#D4AF37]/30 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-[60] max-h-56 overflow-y-auto py-1.5 backdrop-blur-xl custom-scrollbar"
+                >
+                  <!-- Indicador de total / estado -->
+                  <div class="px-3 py-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold border-b border-white/5 flex justify-between items-center select-none">
+                    <span>Artistas registrados</span>
+                    <span class="text-neutral-500">{{ autoresSugeridos.length }}</span>
+                  </div>
+
+                  <!-- Lista de autores sugeridos -->
+                  <button 
+                    v-for="autor in autoresSugeridos" 
+                    :key="autor"
+                    type="button"
+                    @click="seleccionarAutor(autor)"
+                    class="w-full text-left px-3.5 py-2 text-xs text-neutral-300 hover:bg-[#D4AF37]/15 hover:text-[#D4AF37] transition-colors flex items-center justify-between group"
+                    :class="{ 'text-[#D4AF37] font-bold bg-[#D4AF37]/10': form.autor && form.autor.toLowerCase() === autor.toLowerCase() }"
+                  >
+                    <span class="truncate">{{ autor }}</span>
+                    <span v-if="form.autor && form.autor.toLowerCase() === autor.toLowerCase()" class="text-[#D4AF37] text-xs">✓</span>
+                  </button>
+
+                  <!-- Mensaje cuando es un autor nuevo -->
+                  <div 
+                    v-if="autoresSugeridos.length === 0" 
+                    class="px-4 py-3 text-xs text-neutral-400 italic bg-white/[0.02]"
+                  >
+                    <p class="text-amber-400/90 font-medium not-italic">✨ Nuevo autor:</p>
+                    <p class="text-white font-semibold mt-0.5 truncate not-italic">"{{ form.autor }}"</p>
+                    <p class="text-[10px] text-neutral-500 mt-1">Se guardará como autor de la obra al publicar.</p>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <input v-model="form.precio" placeholder="PRECIO (EJ: 5,500)"
+              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+              required>
           </div>
-          
-          <input v-model="form.medidas" placeholder="DIMENSIONES (EJ: 120 X 80 CM)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
+
+          <input v-model="form.medidas" placeholder="DIMENSIONES (EJ: 120 X 80 CM)"
+            class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+            required>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
-            
+
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
-              <input v-model="form.titulo" placeholder="TÍTULO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
-              <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇪🇸</span> ESPAÑOL
+              </h4>
+              <input v-model="form.titulo" placeholder="TÍTULO"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+                required>
+              <input v-model="form.tecnica" placeholder="TÉCNICA (EJ: ÓLEO)"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+                required>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH</h4>
-              <input v-model="form.titulo_en" placeholder="TITLE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all" required>
-              <input v-model="form.medidas_en" placeholder="TECHNIQUE (OIL)" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all" required>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇺🇸</span> ENGLISH
+              </h4>
+              <input v-model="form.titulo_en" placeholder="TITLE"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all"
+                required>
+              <input v-model="form.medidas_en" placeholder="TECHNIQUE (OIL)"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all"
+                required>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS</h4>
-              <input v-model="form.titulo_fr" placeholder="TITRE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
-              <input v-model="form.medidas_fr" placeholder="TECHNIQUE" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇫🇷</span> FRANÇAIS
+              </h4>
+              <input v-model="form.titulo_fr" placeholder="TITRE"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <input v-model="form.medidas_fr" placeholder="TECHNIQUE"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
-              <input v-model="form.titulo_ja" placeholder="タイトル" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
-              <input v-model="form.medidas_ja" placeholder="手法" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇯🇵</span> 日本語
+              </h4>
+              <input v-model="form.titulo_ja" placeholder="タイトル"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <input v-model="form.medidas_ja" placeholder="手法"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
             </div>
 
           </div>
 
           <div class="flex gap-3 md:gap-4 mt-8">
-            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50" :disabled="enviando">
+            <button type="submit"
+              class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50"
+              :disabled="enviando">
               {{ enviando ? 'PROCESANDO...' : (obraEditandoId ? 'ACTUALIZAR' : 'PUBLICAR') }}
             </button>
-            <button @click="showForm = false" type="button" class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">CANCELAR</button>
+            <button @click="showForm = false" type="button"
+              class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">CANCELAR</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div v-if="showGastroForm" class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
-      <div class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
-        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
-        
+    <div v-if="showGastroForm"
+      class="fixed inset-0 bg-black/95 flex items-center justify-center p-2 md:p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
+      <div
+        class="bg-neutral-900 border border-white/10 w-full max-w-4xl rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[95vh] md:max-h-[90vh]">
+        <h2 class="text-xl md:text-2xl font-serif text-[#D4AF37] mb-6 uppercase tracking-tighter">{{ gastroEditandoId ?
+          'Editar Plato' : 'Nuevo Plato' }}</h2>
+
         <form @submit.prevent="guardarGastro" class="space-y-6">
-          
-          <div v-if="rolUsuario === 'superadmin'" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col justify-center gap-3 mb-3">
+
+          <div v-if="rolUsuario === 'superadmin'"
+            class="w-full bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col justify-center gap-3 mb-3">
             <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">LOCALES (Múltiple)</span>
             <div class="flex flex-wrap gap-4">
-              <label class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
-              <input type="checkbox" v-model="formGastro.locales" value="chao-cafe" class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> CHAO CAFE
+              <label
+                class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
+                <input type="checkbox" v-model="formGastro.locales" value="chao-cafe"
+                  class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> CHAO CAFE
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
-              <input type="checkbox" v-model="formGastro.locales" value="chao-pescado" class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> CHAO PESCAO
+              <label
+                class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
+                <input type="checkbox" v-model="formGastro.locales" value="chao-pescado"
+                  class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> CHAO PESCAO
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
-              <input type="checkbox" v-model="formGastro.locales" value="sky-bar" class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> SKY BAR
+              <label
+                class="flex items-center gap-2 cursor-pointer text-xs md:text-sm text-white uppercase hover:text-[#D4AF37] transition-colors">
+                <input type="checkbox" v-model="formGastro.locales" value="sky-bar"
+                  class="accent-[#D4AF37] w-4 h-4 cursor-pointer"> SKY BAR
               </label>
             </div>
           </div>
           <div v-else class="w-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-3 rounded-xl mb-3">
-            <span class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">Bloqueado a tu sede: {{ localAsignado ? localAsignado.replace(/-/g, ' ') : '' }}</span>
+            <span class="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">Bloqueado a tu sede: {{
+              localAsignado ? localAsignado.replace(/-/g, ' ') : '' }}</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            
-            <select v-model="formGastro.categoria" @change="formGastro.subcategoria = ''" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all" required>
+
+            <select v-model="formGastro.categoria" @change="formGastro.subcategoria = ''"
+              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all"
+              required>
               <option value="" disabled class="bg-neutral-900 text-neutral-500">CATEGORÍA...</option>
-              <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{ cat.nombre }}</option>
-            </select>
-            
-            <select v-if="subcategoriasDisponibles.length > 0" v-model="formGastro.subcategoria" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all" required>
-              <option value="" disabled class="bg-neutral-900 text-neutral-500">SUBCATEGORÍA...</option>
-              <option v-for="sub in subcategoriasDisponibles" :key="sub.id" :value="sub.id" class="bg-neutral-900">{{ sub.nombre }}</option>
+              <option v-for="cat in categoriasDisponibles" :key="cat.id" :value="cat.id" class="bg-neutral-900">{{
+                cat.nombre }}</option>
             </select>
 
-            <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (NÚMEROS)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
+            <select v-if="subcategoriasDisponibles.length > 0" v-model="formGastro.subcategoria"
+              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase appearance-none text-white cursor-pointer transition-all"
+              required>
+              <option value="" disabled class="bg-neutral-900 text-neutral-500">SUBCATEGORÍA...</option>
+              <option v-for="sub in subcategoriasDisponibles" :key="sub.id" :value="sub.id" class="bg-neutral-900">{{
+                sub.nombre }}</option>
+            </select>
+
+            <input v-model.number="formGastro.precio" type="number" placeholder="PRECIO (NÚMEROS)"
+              class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+              required>
           </div>
-          
-          <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)" class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+
+          <input v-model="formGastro.etiqueta" placeholder="ETIQUETA (EJ: NUEVO, RECOMENDADO)"
+            class="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-white/10 pt-6">
-            
+
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇪🇸</span> ESPAÑOL</h4>
-              <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all" required>
-              <textarea v-model="formGastro.descripcion" placeholder="DESCRIPCIÓN" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇪🇸</span> ESPAÑOL
+              </h4>
+              <input v-model="formGastro.nombre" placeholder="NOMBRE DEL PLATO"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all"
+                required>
+              <textarea v-model="formGastro.descripcion" placeholder="DESCRIPCIÓN" rows="2"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇺🇸</span> ENGLISH</h4>
-              <input v-model="formGastro.nombre_en" placeholder="DISH NAME" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all">
-              <textarea v-model="formGastro.descripcion_en" placeholder="DESCRIPTION" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic resize-none transition-all"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇺🇸</span> ENGLISH
+              </h4>
+              <input v-model="formGastro.nombre_en" placeholder="DISH NAME"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic transition-all">
+              <textarea v-model="formGastro.descripcion_en" placeholder="DESCRIPTION" rows="2"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-[#D4AF37] focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase italic resize-none transition-all"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇫🇷</span> FRANÇAIS</h4>
-              <input v-model="formGastro.nombre_fr" placeholder="NOM DU PLAT" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
-              <textarea v-model="formGastro.descripcion_fr" placeholder="DESCRIPTION" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇫🇷</span> FRANÇAIS
+              </h4>
+              <input v-model="formGastro.nombre_fr" placeholder="NOM DU PLAT"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <textarea v-model="formGastro.descripcion_fr" placeholder="DESCRIPTION" rows="2"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
             </div>
 
             <div class="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><span class="text-lg">🇯🇵</span> 日本語</h4>
-              <input v-model="formGastro.nombre_ja" placeholder="料理の名前" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
-              <textarea v-model="formGastro.descripcion_ja" placeholder="説明" rows="2" class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
+              <h4 class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="text-lg">🇯🇵</span> 日本語
+              </h4>
+              <input v-model="formGastro.nombre_ja" placeholder="料理の名前"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all">
+              <textarea v-model="formGastro.descripcion_ja" placeholder="説明" rows="2"
+                class="w-full bg-black/50 border border-white/10 p-3 rounded-lg outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase resize-none transition-all"></textarea>
             </div>
 
           </div>
 
           <div class="flex gap-3 md:gap-4 mt-8">
-            <button type="submit" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50" :disabled="enviandoGastro">
+            <button type="submit"
+              class="flex-1 bg-[#D4AF37] text-black font-bold py-3 md:py-4 rounded-xl hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] disabled:bg-neutral-700 text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50"
+              :disabled="enviandoGastro">
               {{ enviandoGastro ? 'PROCESANDO...' : (gastroEditandoId ? 'ACTUALIZAR PLATO' : 'PUBLICAR PLATO') }}
             </button>
-            <button @click="showGastroForm = false" type="button" class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">CANCELAR</button>
+            <button @click="showGastroForm = false" type="button"
+              class="w-1/3 bg-red-500/10 py-3 md:py-4 rounded-xl text-[10px] md:text-xs uppercase text-red-500 font-bold tracking-widest hover:bg-red-500/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">CANCELAR</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div v-if="mostrandoModalQR" class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
+    <div v-if="mostrandoModalQR"
+      class="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[1001] backdrop-blur-lg transition-opacity duration-300">
       <div class="bg-neutral-900 border border-white/10 w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl relative">
-        <button @click="mostrandoModalQR = false" class="absolute top-4 right-4 text-neutral-500 hover:text-white text-xl transition-colors focus:outline-none">✕</button>
+        <button @click="mostrandoModalQR = false"
+          class="absolute top-4 right-4 text-neutral-500 hover:text-white text-xl transition-colors focus:outline-none">✕</button>
 
         <h2 class="text-xl font-serif text-[#D4AF37] mb-6 uppercase tracking-widest text-center">
           {{ nuevoQRGuardado ? 'QR Generado' : (qrEditandoId ? 'Editar Punto de Control' : 'Crear Punto de Control') }}
@@ -766,24 +1175,33 @@
 
         <form v-if="!nuevoQRGuardado" @submit.prevent="generarYGuardarQR" class="space-y-4">
           <div>
-            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Nombre del Punto (Ej: Puerta Principal, Pasillo 2)</label>
-            <input v-model="formQR.nombre" type="text" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all uppercase text-sm">
+            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Nombre del Punto (Ej:
+              Puerta
+              Principal, Pasillo 2)</label>
+            <input v-model="formQR.nombre" type="text" required
+              class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all uppercase text-sm">
           </div>
 
           <div>
-            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Piso / Nivel (Ej: Piso 1, Mezzanine, Sótano)</label>
-            <input v-model="formQR.piso" type="text" required class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm uppercase">
+            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Piso / Nivel (Ej: Piso 1,
+              Mezzanine, Sótano)</label>
+            <input v-model="formQR.piso" type="text" required
+              class="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm uppercase">
           </div>
 
-          <div class="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 mt-2 hover:bg-white/10 transition-colors">
-            <input v-model="formQR.es_punto_final" type="checkbox" id="esFinal" class="w-4 h-4 accent-[#D4AF37] cursor-pointer">
-            <label for="esFinal" class="text-xs text-white uppercase tracking-widest cursor-pointer leading-tight flex-1">
+          <div
+            class="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 mt-2 hover:bg-white/10 transition-colors">
+            <input v-model="formQR.es_punto_final" type="checkbox" id="esFinal"
+              class="w-4 h-4 accent-[#D4AF37] cursor-pointer">
+            <label for="esFinal"
+              class="text-xs text-white uppercase tracking-widest cursor-pointer leading-tight flex-1">
               Marcar como Punto Final <br>
               <span class="text-[9px] text-neutral-500">Al escanearlo, inicia la hora de descanso.</span>
             </label>
           </div>
 
-          <button type="submit" :disabled="generandoQR" class="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:opacity-50 text-xs uppercase tracking-widest transition-all duration-300 mt-6 shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+          <button type="submit" :disabled="generandoQR"
+            class="w-full bg-[#D4AF37] text-black font-bold py-4 rounded-xl hover:bg-yellow-600 disabled:opacity-50 text-xs uppercase tracking-widest transition-all duration-300 mt-6 shadow-[0_0_15px_rgba(212,175,55,0.3)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
             {{ generatingQR ? 'Procesando...' : (qrEditandoId ? 'Actualizar Punto' : 'Generar Código QR') }}
           </button>
         </form>
@@ -796,16 +1214,19 @@
           </div>
           <p class="text-white text-sm font-bold uppercase tracking-widest text-center">{{ nuevoQRGuardado.nombre }}</p>
           <p class="text-neutral-400 text-xs uppercase tracking-widest mt-1">{{ nuevoQRGuardado.piso }}</p>
-          
-          <span v-if="nuevoQRGuardado.es_punto_final" class="mt-3 bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
+
+          <span v-if="nuevoQRGuardado.es_punto_final"
+            class="mt-3 bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
             Punto de Descanso
           </span>
 
           <div class="flex gap-3 w-full mt-8">
-            <button @click="imprimirQRActual" class="flex-1 bg-[#D4AF37] text-black font-bold py-3 rounded-xl hover:bg-yellow-600 text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50">
+            <button @click="imprimirQRActual"
+              class="flex-1 bg-[#D4AF37] text-black font-bold py-3 rounded-xl hover:bg-yellow-600 text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50">
               <span class="text-base">🖨️</span> Imprimir
             </button>
-            <button @click="abrirModalQR()" class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition-all text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-white/30">
+            <button @click="abrirModalQR()"
+              class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition-all text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-white/30">
               Crear Otro
             </button>
           </div>
@@ -831,9 +1252,9 @@ const supabase = useSupabaseClient()
 
 const pestañaActiva = ref('inventario')
 const searchQuery = ref('')
-const menuAbierto = ref(false) 
+const menuAbierto = ref(false)
 
-const rolUsuario = ref('superadmin') 
+const rolUsuario = ref('superadmin')
 const localAsignado = ref(null)
 
 const registrosSeguridad = ref([])
@@ -850,7 +1271,7 @@ const fetchPuntosControl = async () => {
 
 const fetchSeguridad = async (mostrarLoader = true) => {
   if (mostrarLoader) cargandoSeguridad.value = true
-  
+
   if (!fechaFiltroSeguridad.value) fechaFiltroSeguridad.value = getHoyStr()
   const [yyyy, mm, dd] = fechaFiltroSeguridad.value.split('-')
   const inicioDia = new Date(yyyy, mm - 1, dd, 0, 0, 0, 0).toISOString()
@@ -868,7 +1289,7 @@ const fetchSeguridad = async (mostrarLoader = true) => {
     .gte('hora_registro', inicioDia)
     .lte('hora_registro', finDia)
     .order('hora_registro', { ascending: false })
-    
+
   if (!error && data) {
     registrosSeguridad.value = data
     statsSeguridad.totalEscaneos = data.length
@@ -883,39 +1304,45 @@ const fetchSeguridad = async (mostrarLoader = true) => {
 
 const formatearHora = (fechaISO) => {
   if (!fechaISO) return 'Sin hora'
-  return new Date(fechaISO).toLocaleTimeString('es-CO', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    hour12: true 
+  return new Date(fechaISO).toLocaleTimeString('es-CO', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
   })
 }
 
 const inicializarRealtimeSeguridad = () => {
-  if (subscripcionSeguridad) return; 
+  if (subscripcionSeguridad) return;
   subscripcionSeguridad = supabase
     .channel('seguridad_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'registros_punto_control' }, (payload) => {
-      fetchSeguridad(false); 
+      fetchSeguridad(false);
     })
     .subscribe((status) => {
       if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-         subscripcionSeguridad = null;
-         setTimeout(() => inicializarRealtimeSeguridad(), 3000);
+        subscripcionSeguridad = null;
+        setTimeout(() => inicializarRealtimeSeguridad(), 3000);
       }
     });
 }
 
 const ordenesCaja = ref([])
 const cargandoCaja = ref(false)
-const estadoCaja = ref('pendiente') 
-let subscripcionPos = null 
-const ordenesImpresas = new Set() 
+const estadoCaja = ref('pendiente')
+let subscripcionPos = null
+const ordenesImpresas = new Set()
 
 const todasLasObras = ref([])
 const cargando = ref(true)
 const showForm = ref(false)
 const enviando = ref(false)
 const obraEditandoId = ref(null)
+
+// Estados reactivos de paginación en servidor para Inventario
+const paginaActualObras = ref(1)
+const limiteObrasPorPagina = ref(24)
+const totalObrasCount = ref(0)
+const totalPaginasObras = computed(() => Math.ceil(totalObrasCount.value / limiteObrasPorPagina.value) || 1)
 
 const imgFiles = reactive({ 1: null, 2: null, 3: null })
 
@@ -924,6 +1351,47 @@ const form = ref({
   autor: '', precio: '', tecnica: '', medidas_en: '', medidas_fr: '', medidas_ja: '',
   medidas: '', tipo: '', imagen_1: null, imagen_2: null, imagen_3: null
 })
+
+// Estados para Combobox de Autores en el formulario de obras
+const listaAutores = ref([])
+const dropdownAutorAbierto = ref(false)
+const autorComboboxRef = ref(null)
+
+const cargarAutores = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('autor')
+    if (!error && data) {
+      const unicos = [...new Set(data.map(o => (o.autor || '').trim()).filter(Boolean))]
+      unicos.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
+      listaAutores.value = unicos
+    }
+  } catch (e) {
+    console.error('Error al cargar autores:', e)
+  }
+}
+
+const autoresSugeridos = computed(() => {
+  const query = (form.value.autor || '').trim().toLowerCase()
+  if (!query) {
+    return listaAutores.value
+  }
+  const normQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  return listaAutores.value.filter(autor => {
+    const normAutor = autor.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    return normAutor.includes(normQuery)
+  })
+})
+
+const seleccionarAutor = (autor) => {
+  form.value.autor = autor
+  dropdownAutorAbierto.value = false
+}
+
+const toggleDropdownAutor = () => {
+  dropdownAutorAbierto.value = !dropdownAutorAbierto.value
+}
 
 const stats = reactive({ total: 0, pinturas: 0, esculturas: 0 })
 const statsActividad = reactive({ hoy: 0, semana: 0, ciclo: 0, pago: 0 })
@@ -938,7 +1406,7 @@ const getHoyStr = () => {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 }
 const fechaFiltroMetricas = ref(getHoyStr())
-const fechaFiltroSeguridad = ref(getHoyStr()) 
+const fechaFiltroSeguridad = ref(getHoyStr())
 
 const todosLosPlatos = ref([])
 const cargandoGastro = ref(false)
@@ -985,7 +1453,7 @@ const subcategoriasDisponibles = computed(() => {
 })
 
 const formGastro = ref({
-  locales: [], 
+  locales: [],
   categoria: '', subcategoria: '', precio: null, etiqueta: '',
   nombre: '', descripcion: '', nombre_en: '', descripcion_en: '',
   nombre_fr: '', descripcion_fr: '', nombre_ja: '', descripcion_ja: ''
@@ -993,7 +1461,7 @@ const formGastro = ref({
 
 const cargarPerfilYDatos = async () => {
   if (import.meta.server) return;
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { router.push('/LoginAdmin'); return }
 
@@ -1021,15 +1489,15 @@ const cargarPerfilYDatos = async () => {
         fechaInicioCobro.value = fechaLocal
         await supabase.from('perfiles').update({ fecha_inicio_cobro: fechaLocal.toISOString() }).eq('id', user.id)
       } else {
-         const d = new Date();
-         fechaInicioCobro.value = new Date(d.getFullYear(), d.getMonth(), 1);
+        const d = new Date();
+        fechaInicioCobro.value = new Date(d.getFullYear(), d.getMonth(), 1);
       }
     }
 
     if (perfil.rol === 'admin_cafe') {
       pestañaActiva.value = 'caja'
       fetchOrdenesCaja()
-      inicializarRealtime() 
+      inicializarRealtime()
       fetchGastronomia()
     } else if (perfil.rol === 'admin_galeria' || perfil.rol === 'asistente_galeria') {
       pestañaActiva.value = 'inventario'
@@ -1044,21 +1512,21 @@ const cargarPerfilYDatos = async () => {
       fetchGastronomia()
       fetchOrdenesCaja()
       fetchSeguridad()
-      inicializarRealtime() 
+      inicializarRealtime()
       inicializarRealtimeSeguridad()
     }
   } else {
-      fetchObras()
-      fetchGastronomia()
+    fetchObras()
+    fetchGastronomia()
   }
 }
 
 const inicializarRealtime = () => {
-  if (subscripcionPos) return; 
+  if (subscripcionPos) return;
   subscripcionPos = supabase
     .channel('pos_ordenes_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'pos_ordenes' }, (payload) => {
-      
+
       if (rolUsuario.value === 'admin_cafe' && payload.new && payload.new.local !== localAsignado.value) return;
 
       if (payload.eventType === 'INSERT') {
@@ -1074,11 +1542,11 @@ const inicializarRealtime = () => {
 
           if (ordenEspecifica && ordenEspecifica.pos_orden_items && ordenEspecifica.pos_orden_items.length > 0) {
             imprimirTicket(ordenEspecifica, 'comanda');
-            fetchOrdenesCaja(false); 
+            fetchOrdenesCaja(false);
           } else if (intento <= 4) {
             setTimeout(() => intentarImprimir(intento + 1), 1000);
           } else {
-             fetchOrdenesCaja(false);
+            fetchOrdenesCaja(false);
           }
         };
         setTimeout(() => intentarImprimir(1), 1000);
@@ -1089,8 +1557,8 @@ const inicializarRealtime = () => {
     })
     .subscribe((status) => {
       if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-         subscripcionPos = null;
-         setTimeout(() => inicializarRealtime(), 3000);
+        subscripcionPos = null;
+        setTimeout(() => inicializarRealtime(), 3000);
       }
     });
 }
@@ -1108,7 +1576,7 @@ const fetchOrdenesCaja = async (mostrarLoader = true) => {
       )
     `)
     .order('created_at', { ascending: false })
-    .limit(200) 
+    .limit(200)
 
   if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
     query = query.eq('local', localAsignado.value)
@@ -1125,7 +1593,7 @@ const ordenesPendientes = computed(() => {
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   const agrupadas = {};
-  
+
   pendientes.forEach(orden => {
     if (!agrupadas[orden.mesa]) {
       agrupadas[orden.mesa] = {
@@ -1155,20 +1623,20 @@ const ordenesFacturadas = computed(() => {
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   const gruposPorMesa = {};
-  
+
   pagadas.forEach(orden => {
     const mesa = orden.mesa;
     if (!gruposPorMesa[mesa]) {
       gruposPorMesa[mesa] = [];
     }
-    
+
     const ordenTime = new Date(orden.created_at).getTime();
-    
+
     let grupoEncontrado = gruposPorMesa[mesa].find(g => {
-       const firstTime = new Date(g.created_at).getTime();
-       return (ordenTime - firstTime) < 6 * 60 * 60 * 1000;
+      const firstTime = new Date(g.created_at).getTime();
+      return (ordenTime - firstTime) < 6 * 60 * 60 * 1000;
     });
-    
+
     if (grupoEncontrado) {
       grupoEncontrado.ids_asociados.push(orden.id);
       grupoEncontrado.pos_orden_items_anadidos.push(...(orden.pos_orden_items || []));
@@ -1211,13 +1679,13 @@ const vistasCaja = computed(() => {
       const d = new Date(orden.created_at)
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
       const fechaKey = d.toLocaleDateString('es-CO', options)
-      
+
       const fechaCapitalizada = fechaKey.charAt(0).toUpperCase() + fechaKey.slice(1)
 
       if (!grupos[fechaCapitalizada]) grupos[fechaCapitalizada] = []
       grupos[fechaCapitalizada].push(orden)
     })
-    
+
     return Object.keys(grupos).map(fecha => ({
       fecha,
       ordenes: grupos[fecha]
@@ -1249,7 +1717,7 @@ const eliminarOrdenFisica = async (idOrArray) => {
 
 const calcularEstadisticasPos = async () => {
   cargandoStatsPos.value = true
-  
+
   if (!fechaFiltroMetricas.value) {
     fechaFiltroMetricas.value = getHoyStr()
   }
@@ -1286,17 +1754,17 @@ const calcularEstadisticasPos = async () => {
       const mesera = orden.perfiles?.nombre || 'Desconocida'
       const nombreMesa = orden.mesa || 'Sin Mesa'
 
-      if(!agrupado[mesera]) {
-        agrupado[mesera] = { 
-          nombre: mesera, 
-          ventas: 0, 
+      if (!agrupado[mesera]) {
+        agrupado[mesera] = {
+          nombre: mesera,
+          ventas: 0,
           mesasUnicas: new Set(),
-          mesasDetalle: {} 
+          mesasDetalle: {}
         }
       }
       agrupado[mesera].ventas += orden.total
       agrupado[mesera].mesasUnicas.add(nombreMesa)
-      
+
       if (!agrupado[mesera].mesasDetalle[nombreMesa]) {
         agrupado[mesera].mesasDetalle[nombreMesa] = { total: 0, productos: {} }
       }
@@ -1313,10 +1781,10 @@ const calcularEstadisticasPos = async () => {
         })
       }
     })
-    
+
     statsPos.desgloseMeseras = Object.values(agrupado).map(m => {
       const arrayMesas = Object.keys(m.mesasDetalle)
-        .sort((a, b) => String(a).localeCompare(String(b), undefined, {numeric: true}))
+        .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }))
         .map(nombreMesa => ({
           nombre: nombreMesa,
           total: m.mesasDetalle[nombreMesa].total,
@@ -1329,7 +1797,7 @@ const calcularEstadisticasPos = async () => {
         cantidadMesas: m.mesasUnicas.size,
         desgloseMesas: arrayMesas
       }
-    }).sort((a,b) => b.ventas - a.ventas)
+    }).sort((a, b) => b.ventas - a.ventas)
   }
   cargandoStatsPos.value = false
 }
@@ -1409,7 +1877,7 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
       </thead>
       <tbody>
   `;
-  
+
   orden.pos_orden_items.forEach(item => {
     const codigo = item.menu_gastronomia?.codigo_pos ? `[${item.menu_gastronomia.codigo_pos}] ` : '';
     const fSize = esFactura ? '14px' : '18px';
@@ -1430,7 +1898,7 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
       `;
     }
   });
-  
+
   contenido += `
       </tbody>
     </table>
@@ -1460,13 +1928,13 @@ const imprimirTicket = (orden, tipo = 'comanda') => {
     </div>
     `;
   }
-  
+
   let iframe = document.getElementById('impresora-oculta');
-  
+
   if (iframe) {
     document.body.removeChild(iframe);
   }
-  
+
   iframe = document.createElement('iframe');
   iframe.id = 'impresora-oculta';
   iframe.style.position = 'fixed';
@@ -1522,7 +1990,7 @@ const imprimirCierreCaja = () => {
           <span>$${m.ventas.toLocaleString('es-CO')}</span>
         </div>
     `
-    
+
     m.desgloseMesas.forEach(mesa => {
       contenido += `
         <div style="margin-top: 6px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
@@ -1560,11 +2028,11 @@ const imprimirCierreCaja = () => {
   `
 
   let iframe = document.getElementById('impresora-oculta');
-  
+
   if (iframe) {
     document.body.removeChild(iframe);
   }
-  
+
   iframe = document.createElement('iframe');
   iframe.id = 'impresora-oculta';
   iframe.style.position = 'fixed';
@@ -1585,56 +2053,155 @@ const imprimirCierreCaja = () => {
   iframe.contentDocument.close();
 }
 
-const fetchObras = async () => {
-  cargando.value = true
-  // 🔥 FIX: Añadimos .limit(10000) porque Supabase corta las respuestas a 1000 por defecto.
-  const { data } = await supabase.from('obras').select('*').order('created_at', { ascending: false }).limit(10000)
-  todasLasObras.value = data || []
-  cargando.value = false
-  calcularEstadisticas()
+// Navegación numérica con elipsis para la paginación del inventario
+const paginasVisiblesObras = computed(() => {
+  const total = totalPaginasObras.value
+  const actual = paginaActualObras.value
+
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+
+  const paginas = []
+  const delta = 1
+  const izquierda = Math.max(2, actual - delta)
+  const derecha = Math.min(total - 1, actual + delta)
+
+  paginas.push(1)
+  if (izquierda > 2) paginas.push('...')
+  for (let i = izquierda; i <= derecha; i++) paginas.push(i)
+  if (derecha < total - 1) paginas.push('...')
+  paginas.push(total)
+
+  return paginas
+})
+
+const irAPaginaObras = (nuevaPagina) => {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginasObras.value && nuevaPagina !== paginaActualObras.value) {
+    paginaActualObras.value = nuevaPagina
+    fetchObras(false)
+    if (import.meta.client) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 }
 
-const calcularEstadisticas = () => {
-  stats.total = todasLasObras.value.length
-  stats.pinturas = todasLasObras.value.filter(o => o.tipo === 'Pintura').length
-  stats.esculturas = todasLasObras.value.filter(o => o.tipo === 'Escultura').length
+const cambiarLimiteObras = (nuevoLimite) => {
+  limiteObrasPorPagina.value = Number(nuevoLimite)
+  fetchObras(true)
+}
 
-  const ultimas = [...todasLasObras.value].slice(0, 5)
-  logsActividad.value = ultimas.map(obra => {
-    const fecha = new Date(obra.created_at || Date.now())
-    return { accion: 'Creación', titulo: obra.titulo, fechaFormateada: fecha.toLocaleDateString(), horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-  })
+// Búsqueda reactiva con debounce hacia Supabase
+let debounceBusquedaObras = null
+watch(searchQuery, () => {
+  if (pestañaActiva.value !== 'inventario') return
+  clearTimeout(debounceBusquedaObras)
+  debounceBusquedaObras = setTimeout(() => {
+    fetchObras(true)
+  }, 350)
+})
 
-  // Evitamos que sobreescriba la fecha con datos erróneos
-  if (!fechaInicioCobro.value) return;
+// Paginación en Servidor: Solo descarga la página solicitada (ej. 24 obras)
+const fetchObras = async (resetPagina = false) => {
+  if (resetPagina) {
+    paginaActualObras.value = 1
+  }
+  cargando.value = true
 
-  const ahora = new Date()
-  const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())
-  const inicioSemana = new Date(inicioHoy)
-  inicioSemana.setDate(inicioSemana.getDate() - 7)
+  const desde = (paginaActualObras.value - 1) * limiteObrasPorPagina.value
+  const hasta = desde + limiteObrasPorPagina.value - 1
 
-  let cuentaHoy = 0
-  let cuentaSemana = 0
-  let cuentaCiclo = 0
+  let query = supabase
+    .from('obras')
+    .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, precio, tecnica, medidas, medidas_en, medidas_fr, medidas_ja, tipo, imagen_1, imagen_2, imagen_3, created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
 
-  todasLasObras.value.forEach(obra => {
-    const fechaObra = new Date(obra.created_at)
-    if (fechaObra >= inicioHoy) cuentaHoy++
-    if (fechaObra >= inicioSemana) cuentaSemana++
-    if (fechaObra >= fechaInicioCobro.value) cuentaCiclo++
-  })
+  const term = searchQuery?.value ? searchQuery.value.trim() : ''
+  if (term) {
+    query = query.or(`titulo.ilike.%${term}%,titulo_en.ilike.%${term}%,autor.ilike.%${term}%`)
+  }
 
-  statsActividad.hoy = cuentaHoy
-  statsActividad.semana = cuentaSemana
-  statsActividad.ciclo = cuentaCiclo
-  statsActividad.pago = cuentaCiclo * 3000
+  const { data, count, error } = await query.range(desde, hasta)
+
+  if (!error && data) {
+    todasLasObras.value = data
+    totalObrasCount.value = count || 0
+    stats.total = count || 0
+  }
+  cargando.value = false
+}
+
+const calcularEstadisticas = async () => {
+  try {
+    // Conteo exacto en servidor para que las métricas reflejen siempre el catálogo completo
+    const [resTotal, resPinturas, resEsculturas] = await Promise.all([
+      supabase.from('obras').select('*', { count: 'exact', head: true }),
+      supabase.from('obras').select('*', { count: 'exact', head: true }).eq('tipo', 'Pintura'),
+      supabase.from('obras').select('*', { count: 'exact', head: true }).eq('tipo', 'Escultura')
+    ])
+    stats.total = resTotal.count ?? totalObrasCount.value
+    stats.pinturas = resPinturas.count ?? 0
+    stats.esculturas = resEsculturas.count ?? 0
+
+    // Últimas 5 obras para logs de actividad
+    const { data: ultimasObras } = await supabase
+      .from('obras')
+      .select('id, titulo, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (ultimasObras) {
+      logsActividad.value = ultimasObras.map(obra => {
+        const fecha = new Date(obra.created_at || Date.now())
+        return {
+          accion: 'Creación',
+          titulo: obra.titulo,
+          fechaFormateada: fecha.toLocaleDateString(),
+          horaFormateada: fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      })
+    }
+
+    if (!fechaInicioCobro.value) return;
+
+    const ahora = new Date()
+    const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())
+    const inicioSemana = new Date(inicioHoy)
+    inicioSemana.setDate(inicioSemana.getDate() - 7)
+
+    const fechaMinima = new Date(Math.min(inicioSemana.getTime(), fechaInicioCobro.value.getTime()))
+    const { data: obrasRecientes } = await supabase
+      .from('obras')
+      .select('id, created_at')
+      .gte('created_at', fechaMinima.toISOString())
+
+    let cuentaHoy = 0
+    let cuentaSemana = 0
+    let cuentaCiclo = 0
+
+    if (obrasRecientes) {
+      obrasRecientes.forEach(obra => {
+        const fechaObra = new Date(obra.created_at)
+        if (fechaObra >= inicioHoy) cuentaHoy++
+        if (fechaObra >= inicioSemana) cuentaSemana++
+        if (fechaObra >= fechaInicioCobro.value) cuentaCiclo++
+      })
+    }
+
+    statsActividad.hoy = cuentaHoy
+    statsActividad.semana = cuentaSemana
+    statsActividad.ciclo = cuentaCiclo
+    statsActividad.pago = cuentaCiclo * 3000
+  } catch (err) {
+    console.error('Error calculando estadísticas:', err)
+  }
 }
 
 const marcarCobrado = async () => {
   if (confirm(`¿Confirmas que se ha cobrado el monto de $${statsActividad.pago.toLocaleString('es-CO')}? Se reiniciará el contador del ciclo.`)) {
     const ahora = new Date()
     fechaInicioCobro.value = ahora
-    
+
     // GUARDADO EN SUPABASE
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -1649,11 +2216,7 @@ const marcarCobrado = async () => {
   }
 }
 
-const obrasFiltradas = computed(() => {
-  const query = searchQuery?.value ? searchQuery.value.toLowerCase().trim() : ''
-  if (!query) return todasLasObras.value
-  return todasLasObras.value.filter(o => o.titulo.toLowerCase().includes(query) || (o.titulo_en && o.titulo_en.toLowerCase().includes(query)) || o.autor.toLowerCase().includes(query))
-})
+const obrasFiltradas = computed(() => todasLasObras.value)
 
 const handleImageChange = (e, index) => {
   const file = e.target.files[0]
@@ -1662,6 +2225,7 @@ const handleImageChange = (e, index) => {
 
 const openForm = (obra = null) => {
   imgFiles[1] = null; imgFiles[2] = null; imgFiles[3] = null;
+  dropdownAutorAbierto.value = false
   if (obra) {
     obraEditandoId.value = obra.id
     form.value = { ...obra, titulo_fr: obra.titulo_fr || '', titulo_ja: obra.titulo_ja || '', medidas_fr: obra.medidas_fr || '', medidas_ja: obra.medidas_ja || '' }
@@ -1687,7 +2251,7 @@ const uploadImageAndGetUrl = async (file) => {
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.webp`
   const { error: uploadError } = await supabase.storage.from('obras-imagenes').upload(fileName, compressedFile)
   if (uploadError) throw uploadError
-  
+
   const { data: { publicUrl } } = supabase.storage.from('obras-imagenes').getPublicUrl(fileName)
   return publicUrl
 }
@@ -1715,13 +2279,13 @@ const guardarObra = async () => {
     let url3 = imgFiles[3] ? await uploadImageAndGetUrl(imgFiles[3]) : form.value.imagen_3
 
     const payload = { ...form.value, imagen_1: url1, imagen_2: url2, imagen_3: url3 }
-    
+
     payload.titulo = formatoTitulo(payload.titulo)
     payload.autor = formatoTitulo(payload.autor)
     payload.tecnica = formatoTitulo(payload.tecnica)
-    if(payload.titulo_en) payload.titulo_en = formatoTitulo(payload.titulo_en)
-    if(payload.titulo_fr) payload.titulo_fr = formatoTitulo(payload.titulo_fr)
-    if(payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim()
+    if (payload.titulo_en) payload.titulo_en = formatoTitulo(payload.titulo_en)
+    if (payload.titulo_fr) payload.titulo_fr = formatoTitulo(payload.titulo_fr)
+    if (payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim()
 
     delete payload.id; delete payload.created_at;
 
@@ -1733,17 +2297,30 @@ const guardarObra = async () => {
       const { error } = await supabase.from('obras').insert([payload])
       if (error) throw error
     }
-    
+
     alert("¡Obra procesada con éxito!")
     showForm.value = false
-    fetchObras()
+    dropdownAutorAbierto.value = false
+
+    // Si el autor es nuevo, agregarlo a la lista de sugerencias en memoria
+    if (payload.autor && !listaAutores.value.some(a => a.toLowerCase() === payload.autor.toLowerCase())) {
+      listaAutores.value.push(payload.autor)
+      listaAutores.value.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
+    }
+
+    // Si se editó una obra, permanece en la página actual; si se añadió una nueva, va a la página 1
+    fetchObras(obraEditandoId.value ? false : true)
   } catch (err) { alert("Error de subida: " + err.message); console.error(err) } finally { enviando.value = false }
 }
 
 const deleteObra = async (obra) => {
   if (confirm(`¿Peligro: Eliminar definitivamente la obra "${obra.titulo}"?`)) {
     await supabase.from('obras').delete().eq('id', obra.id)
-    fetchObras()
+    // Si la página quedó vacía y no es la página 1, retroceder una página
+    if (todasLasObras.value.length === 1 && paginaActualObras.value > 1) {
+      paginaActualObras.value--
+    }
+    fetchObras(false)
   }
 }
 
@@ -1751,16 +2328,16 @@ const fetchGastronomia = async () => {
   cargandoGastro.value = true
   // 🔥 FIX: Añadimos .limit(10000) para evitar que Supabase recorte el menú.
   let query = supabase.from('menu_gastronomia').select('*').order('created_at', { ascending: false }).limit(10000)
-  
+
   if (rolUsuario.value === 'admin_cafe' && localAsignado.value) {
     query = query.ilike('local', `%${localAsignado.value}%`)
   }
-  
+
   const { data } = await query
   todosLosPlatos.value = data || []
-  
+
   if (todosLosPlatos.value.length > 0 && categoriaActivaGastro.value === 'todas') {
-      categoriaActivaGastro.value = 'todas';
+    categoriaActivaGastro.value = 'todas';
   }
   cargandoGastro.value = false
 }
@@ -1782,7 +2359,7 @@ const subcategoriasGastroDisponiblesMenu = computed(() => {
   if (!categoriaActivaGastro.value || categoriaActivaGastro.value === 'todas') return []
   const itemsDeCategoria = todosLosPlatos.value.filter(item => item.categoria === categoriaActivaGastro.value)
   let sub = [...new Set(itemsDeCategoria.map(item => item.subcategoria).filter(Boolean))]
-  
+
   const ordenEstricto = [
     'entradas', 'cremas', 'ensaladas', 'ceviche', 'comida_rapida', 'carnes', 'pollo', 'pescados', 'menu_ejecutivo', 'añadidos',
     'cocteles', 'cervezas', 'tragos', 'botellas',
@@ -1796,17 +2373,17 @@ const subcategoriasGastroDisponiblesMenu = computed(() => {
     if (indexB === -1) indexB = 999
     return indexA - indexB
   })
-  
+
   return sub
 })
 
 const gastroFiltrados = computed(() => {
   let filtrados = todosLosPlatos.value
-  
+
   if (categoriaActivaGastro.value !== 'todas') {
     filtrados = filtrados.filter(item => item.categoria === categoriaActivaGastro.value)
   }
-  
+
   if (subcategoriaActivaGastro.value !== 'todas') {
     filtrados = filtrados.filter(item => item.subcategoria === subcategoriaActivaGastro.value)
   }
@@ -1815,7 +2392,7 @@ const gastroFiltrados = computed(() => {
   if (query) {
     filtrados = filtrados.filter(o => o.nombre.toLowerCase().includes(query) || (o.nombre_en && o.nombre_en.toLowerCase().includes(query)) || o.categoria.toLowerCase().includes(query))
   }
-  
+
   return filtrados
 })
 
@@ -1824,10 +2401,10 @@ const menuAgrupado = computed(() => {
   gastroFiltrados.value.forEach(item => {
     const cat = item.categoria || 'otros'
     const sub = item.subcategoria || 'general'
-    
+
     if (!agrupado[cat]) agrupado[cat] = {}
     if (!agrupado[cat][sub]) agrupado[cat][sub] = []
-    
+
     agrupado[cat][sub].push(item)
   })
   return agrupado
@@ -1855,9 +2432,9 @@ const obtenerNombreSubcategoria = (id) => {
 const openGastroForm = (item = null) => {
   if (item) {
     gastroEditandoId.value = item.id
-    formGastro.value = { 
+    formGastro.value = {
       ...item,
-      locales: item.local ? item.local.split(',').map(l => l.trim()) : [], 
+      locales: item.local ? item.local.split(',').map(l => l.trim()) : [],
       subcategoria: item.subcategoria || '',
       nombre_en: item.nombre_en || '', descripcion_en: item.descripcion_en || '',
       nombre_fr: item.nombre_fr || '', descripcion_fr: item.descripcion_fr || '',
@@ -1878,7 +2455,7 @@ const guardarGastro = async () => {
   enviandoGastro.value = true
   try {
     const payload = { ...formGastro.value }
-    
+
     if (rolUsuario.value === 'admin_cafe') {
       payload.local = localAsignado.value
     } else {
@@ -1889,8 +2466,8 @@ const guardarGastro = async () => {
       }
       payload.local = payload.locales.join(',')
     }
-    delete payload.locales 
-    
+    delete payload.locales
+
     if (subcategoriasDisponibles.value.length === 0) {
       payload.subcategoria = null
     } else if (!payload.subcategoria) {
@@ -1898,16 +2475,16 @@ const guardarGastro = async () => {
       enviandoGastro.value = false;
       return;
     }
-    
+
     payload.nombre = formatoTitulo(payload.nombre)
     payload.descripcion = formatoParrafo(payload.descripcion)
-    if(payload.nombre_en) payload.nombre_en = formatoTitulo(payload.nombre_en)
-    if(payload.descripcion_en) payload.descripcion_en = formatoParrafo(payload.descripcion_en)
-    if(payload.nombre_fr) payload.nombre_fr = formatoTitulo(payload.nombre_fr)
-    if(payload.descripcion_fr) payload.descripcion_fr = formatoParrafo(payload.descripcion_fr)
-    if(payload.nombre_ja) payload.nombre_ja = payload.nombre_ja.trim()
-    if(payload.descripcion_ja) payload.descripcion_ja = payload.descripcion_ja.trim()
-    if(payload.etiqueta) payload.etiqueta = formatoTitulo(payload.etiqueta)
+    if (payload.nombre_en) payload.nombre_en = formatoTitulo(payload.nombre_en)
+    if (payload.descripcion_en) payload.descripcion_en = formatoParrafo(payload.descripcion_en)
+    if (payload.nombre_fr) payload.nombre_fr = formatoTitulo(payload.nombre_fr)
+    if (payload.descripcion_fr) payload.descripcion_fr = formatoParrafo(payload.descripcion_fr)
+    if (payload.nombre_ja) payload.nombre_ja = payload.nombre_ja.trim()
+    if (payload.descripcion_ja) payload.descripcion_ja = payload.descripcion_ja.trim()
+    if (payload.etiqueta) payload.etiqueta = formatoTitulo(payload.etiqueta)
 
     delete payload.id; delete payload.created_at;
 
@@ -1918,7 +2495,7 @@ const guardarGastro = async () => {
       const { error } = await supabase.from('menu_gastronomia').insert([payload])
       if (error) throw error
     }
-    
+
     alert("¡Plato procesado con éxito!")
     showGastroForm.value = false
     fetchGastronomia()
@@ -1947,10 +2524,10 @@ const formQR = ref({ piso: '', nombre: '', es_punto_final: false })
 const abrirModalQR = (punto = null) => {
   if (punto && punto.id) {
     qrEditandoId.value = punto.id
-    formQR.value = { 
-      piso: punto.piso, 
-      nombre: punto.nombre, 
-      es_punto_final: punto.es_punto_final 
+    formQR.value = {
+      piso: punto.piso,
+      nombre: punto.nombre,
+      es_punto_final: punto.es_punto_final
     }
   } else {
     qrEditandoId.value = null
@@ -2004,7 +2581,7 @@ const generarYGuardarQR = async () => {
     }
 
     nuevoQRGuardado.value = data
-    fetchPuntosControl() 
+    fetchPuntosControl()
   } catch (error) {
     console.error(error)
     alert('Error al procesar el punto de control: ' + error.message)
@@ -2066,12 +2643,25 @@ const imprimirQRActual = () => {
   iframe.contentDocument.close();
 }
 
-onMounted(() => { 
+let handleClickFueraAutor = null
+
+onMounted(() => {
   cargarPerfilYDatos()
-  fetchPuntosControl() 
+  fetchPuntosControl()
+  cargarAutores()
+
+  handleClickFueraAutor = (e) => {
+    if (autorComboboxRef.value && !autorComboboxRef.value.contains(e.target)) {
+      dropdownAutorAbierto.value = false
+    }
+  }
+  document.addEventListener('click', handleClickFueraAutor)
 })
 
 onUnmounted(() => {
+  if (handleClickFueraAutor) {
+    document.removeEventListener('click', handleClickFueraAutor)
+  }
   if (subscripcionPos) {
     supabase.removeChannel(subscripcionPos)
     subscripcionPos = null
@@ -2084,10 +2674,43 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
+}
+
+/* Transición suave para el desplegable del Combobox de autores */
+.dropdown-slide-enter-active,
+.dropdown-slide-leave-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-slide-enter-from,
+.dropdown-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* Scrollbar personalizado dorado */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
 }
 </style>
