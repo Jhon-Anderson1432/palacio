@@ -6,6 +6,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig()
     const publicConfig = config.public as any
     const activeUrl: string = publicConfig.supabase?.url
+    const activeKey: string = publicConfig.supabase?.key
     const backupUrl: string = publicConfig.backupDB?.url
     const backupKey: string = publicConfig.backupDB?.key
     const primaryUrl: string = publicConfig.primaryUrl || activeUrl
@@ -37,8 +38,17 @@ export default defineNuxtPlugin((nuxtApp) => {
         const newUrl = targetUrl.replace(activeUrl, backupUrl)
         const newHeaders = new Headers(init?.headers)
 
-        if (newHeaders.has('apikey')) newHeaders.set('apikey', backupKey)
-        if (newHeaders.has('Authorization')) newHeaders.set('Authorization', `Bearer ${backupKey}`)
+        // Siempre sustituimos el apikey por la clave del proyecto de reserva
+        newHeaders.set('apikey', backupKey)
+
+        const authHeader = newHeaders.get('Authorization')
+        const isAnon = !authHeader || 
+                       (activeKey && authHeader.includes(activeKey)) || 
+                       (backupKey && authHeader.includes(backupKey))
+
+        if (isAnon) {
+            newHeaders.set('Authorization', `Bearer ${backupKey}`)
+        }
 
         const backupResponse = await originalFetch(newUrl, {
             ...init,
@@ -50,10 +60,14 @@ export default defineNuxtPlugin((nuxtApp) => {
             const originalBody = await backupResponse.text()
             const rewrittenBody = rewriteStorageUrls(originalBody)
 
+            const responseHeaders = new Headers(backupResponse.headers)
+            responseHeaders.delete('content-encoding')
+            responseHeaders.delete('content-length')
+
             return new Response(rewrittenBody, {
                 status: backupResponse.status,
                 statusText: backupResponse.statusText,
-                headers: backupResponse.headers
+                headers: responseHeaders
             })
         }
 
@@ -87,10 +101,14 @@ export default defineNuxtPlugin((nuxtApp) => {
                 const originalBody = await response.text()
                 if (originalBody.includes(primaryUrl)) {
                     const rewrittenBody = rewriteStorageUrls(originalBody)
+                    const responseHeaders = new Headers(response.headers)
+                    responseHeaders.delete('content-encoding')
+                    responseHeaders.delete('content-length')
+
                     return new Response(rewrittenBody, {
                         status: response.status,
                         statusText: response.statusText,
-                        headers: response.headers
+                        headers: responseHeaders
                     })
                 }
                 return new Response(originalBody, {
