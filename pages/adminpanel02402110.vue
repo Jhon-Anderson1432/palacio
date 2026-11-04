@@ -2259,10 +2259,41 @@ const uploadImageAndGetUrl = async (file) => {
 const formatoTitulo = (texto) => {
   if (typeof texto !== 'string' || !texto) return '';
   const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
-  return texto.trim().toLowerCase().split(/\s+/).map((word, index) => {
-    if (index > 0 && menores.includes(word)) return word;
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  }).join(' ');
+  return texto
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, index, arr) => {
+      // Separar símbolos de apertura, cuerpo alfanumérico y puntuación de cierre
+      const match = word.match(/^([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)(.*?)([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)$/i);
+      if (!match) return word;
+
+      const leading = match[1];
+      const core = match[2];
+      const trailing = match[3];
+
+      if (!core) return word;
+
+      // Si tiene símbolo de apertura o sigue a dos puntos ':', inicia frase/cita y se capitaliza
+      const tieneSimboloApertura = /[“"«‘'(\[{¿¡]/.test(leading);
+      const sigueADosPuntos = index > 0 && /:$/.test(arr[index - 1]);
+
+      if (index > 0 && !tieneSimboloApertura && !sigueADosPuntos && menores.includes(core)) {
+        return leading + core + trailing;
+      }
+
+      // Capitalizar segmento(s), soportando palabras compuestas con guion o apóstrofe
+      const coreFormateado = core
+        .split(/([-\'])/)
+        .map((part) => {
+          if (part === '-' || part === "'") return part;
+          return part.charAt(0).toUpperCase() + part.slice(1);
+        })
+        .join('');
+
+      return leading + coreFormateado + trailing;
+    })
+    .join(' ');
 }
 
 const formatoParrafo = (texto) => {
