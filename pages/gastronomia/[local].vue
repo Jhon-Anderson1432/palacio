@@ -509,10 +509,38 @@ const agruparItemsPorSubcategoria = (items) => {
 // =====================================
 const formatoTitulo = (texto) => {
   if (typeof texto !== 'string' || !texto) return ''
-  return texto.trim().toLowerCase().split(/\s+/).map((word, index) => {
-    if (index > 0 && PALABRAS_MENORES_TITULO.includes(word)) return word
-    return word.charAt(0).toUpperCase() + word.slice(1)
-  }).join(' ')
+  return texto
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, index, arr) => {
+      const match = word.match(/^([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)(.*?)([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)$/i)
+      if (!match) return word
+
+      const leading = match[1]
+      const core = match[2]
+      const trailing = match[3]
+
+      if (!core) return word
+
+      const tieneSimboloApertura = /[“"«‘'(\[{¿¡]/.test(leading)
+      const sigueADosPuntos = index > 0 && /:$/.test(arr[index - 1])
+
+      if (index > 0 && !tieneSimboloApertura && !sigueADosPuntos && PALABRAS_MENORES_TITULO.includes(core)) {
+        return leading + core + trailing
+      }
+
+      const coreFormateado = core
+        .split(/([-\'])/)
+        .map((part) => {
+          if (part === '-' || part === "'") return part
+          return part.charAt(0).toUpperCase() + part.slice(1)
+        })
+        .join('')
+
+      return leading + coreFormateado + trailing
+    })
+    .join(' ')
 }
 
 const formatoParrafo = (texto) => {
