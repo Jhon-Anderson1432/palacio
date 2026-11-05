@@ -777,6 +777,115 @@
               </div>
             </div>
 
+            <!-- PODIO TOP 3 OBRAS DESTACADAS (MÁS VISITADAS) -->
+            <div class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
+              <div class="absolute -right-10 -bottom-10 bg-[#D4AF37]/5 w-48 h-48 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4 relative z-10 gap-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xl">🏆</span>
+                    <h3 class="text-base md:text-lg font-serif text-[#D4AF37]">Obras Destacadas</h3>
+                  </div>
+                  <p class="text-[10px] text-neutral-400 uppercase tracking-widest mt-1">
+                    Top 3 obras con mayor interés en el detalle público
+                  </p>
+                </div>
+                <button @click="cargarObrasDestacadas" :disabled="cargandoDestacadas"
+                  class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/40 px-3 py-1.5 rounded-xl transition-all duration-300 flex items-center gap-1.5 focus:outline-none">
+                  <span :class="{'animate-spin': cargandoDestacadas}">🔄</span>
+                  <span>{{ cargandoDestacadas ? 'Actualizando...' : 'Actualizar' }}</span>
+                </button>
+              </div>
+
+              <!-- Estado Cargando -->
+              <div v-if="cargandoDestacadas" class="py-12 text-center text-neutral-400 text-xs">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4AF37] border-r-transparent mb-3"></div>
+                <p class="uppercase tracking-widest text-[10px]">Cargando obras destacadas...</p>
+              </div>
+
+              <!-- Podio Top 3 -->
+              <div v-else-if="obrasDestacadas.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative z-10">
+                <div v-for="(obra, idx) in obrasDestacadas" :key="obra.id"
+                  :class="[
+                    'rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden',
+                    idx === 0 
+                      ? 'bg-gradient-to-b from-[#D4AF37]/15 to-neutral-900 border-2 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/10' 
+                      : idx === 1 
+                        ? 'bg-neutral-900/90 border border-neutral-400/40 hover:border-neutral-300' 
+                        : 'bg-neutral-900/90 border border-amber-600/40 hover:border-amber-500'
+                  ]">
+                  
+                  <!-- Insignia de Medalla / Puesto -->
+                  <div class="flex items-center justify-between mb-3">
+                    <span :class="[
+                      'px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1',
+                      idx === 0 
+                        ? 'bg-[#D4AF37] text-black shadow-md' 
+                        : idx === 1 
+                          ? 'bg-neutral-300 text-black' 
+                          : 'bg-amber-700 text-white'
+                    ]">
+                      <span>{{ idx === 0 ? '🥇 1º Puesto' : (idx === 1 ? '🥈 2º Puesto' : '🥉 3º Puesto') }}</span>
+                    </span>
+                    <div class="flex items-center gap-1 bg-black/40 px-2.5 py-1 rounded-full border border-white/5">
+                      <span class="text-xs">👁️</span>
+                      <span class="text-xs font-bold text-white">{{ obra.visitas }}</span>
+                      <span class="text-[9px] text-neutral-400 uppercase tracking-tighter">visitas</span>
+                    </div>
+                  </div>
+
+                  <!-- Imagen de la Obra -->
+                  <div class="relative w-full h-44 rounded-xl overflow-hidden bg-black/50 mb-3 border border-white/5">
+                    <img v-if="obra.imagen_1" :src="obra.imagen_1" :alt="obra.titulo"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">
+                      Sin Imagen
+                    </div>
+                    <span class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-[9px] text-neutral-300 uppercase px-2 py-0.5 rounded-md font-mono">
+                      {{ obra.tipo || 'Arte' }}
+                    </span>
+                  </div>
+
+                  <!-- Información de la Obra -->
+                  <div class="space-y-1 mb-4 flex-1">
+                    <h4 class="font-serif text-sm md:text-base text-white font-bold line-clamp-1 group-hover:text-[#D4AF37] transition-colors" :title="obra.titulo">
+                      {{ formatoTitulo(obra.titulo) }}
+                    </h4>
+                    <p class="text-xs text-neutral-300 truncate">
+                      {{ obra.autor || 'Autor no especificado' }}
+                    </p>
+                    <p class="text-[10px] text-neutral-500 uppercase tracking-wider truncate">
+                      {{ obra.tecnica || 'Técnica no especificada' }}
+                    </p>
+                  </div>
+
+                  <!-- Botones de Acción -->
+                  <div class="flex gap-2 pt-3 border-t border-white/5">
+                    <button @click="openForm(obra)"
+                      class="flex-1 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 text-center">
+                      Editar
+                    </button>
+                    <a :href="`/DetalleObra/${obra.id}`" target="_blank"
+                      class="px-3 py-1.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1"
+                      title="Ver en página pública">
+                      <span>Ver</span>
+                      <span class="text-xs">↗</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estado Vacío -->
+              <div v-else class="py-10 text-center text-neutral-400 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl relative z-10 px-4">
+                <span class="text-3xl mb-2 block">✨</span>
+                <p class="text-xs md:text-sm font-medium text-neutral-300 mb-1">Aún no hay visitas registradas</p>
+                <p class="text-[10px] md:text-xs text-neutral-500 max-w-md mx-auto">
+                  A medida que el público explore las obras en la galería y acceda al detalle de cada una, aquí se mostrarán automáticamente las 3 más populares.
+                </p>
+              </div>
+            </div>
+
             <div
               class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
               <div class="absolute -right-10 -top-10 bg-[#D4AF37]/5 w-40 h-40 rounded-full blur-3xl"></div>
@@ -2114,7 +2223,7 @@ const fetchObras = async (resetPagina = false) => {
   let query = supabase
     .from('obras')
     .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, precio, tecnica, medidas, medidas_en, medidas_fr, medidas_ja, tipo, imagen_1, imagen_2, imagen_3, created_at', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .order('titulo', { ascending: true })
 
   const term = searchQuery?.value ? searchQuery.value.trim() : ''
   if (term) {
@@ -2131,7 +2240,38 @@ const fetchObras = async (resetPagina = false) => {
   cargando.value = false
 }
 
+const obrasDestacadas = ref([])
+const cargandoDestacadas = ref(false)
+
+const cargarObrasDestacadas = async () => {
+  cargandoDestacadas.value = true
+  try {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, precio, tecnica, medidas, medidas_en, medidas_fr, medidas_ja, tipo, imagen_1, imagen_2, imagen_3, visitas')
+      .gt('visitas', 0)
+      .order('visitas', { ascending: false })
+      .limit(3)
+
+    if (!error && data) {
+      obrasDestacadas.value = data.map((obra, index) => ({
+        ...obra,
+        visitas: obra.visitas || 0,
+        posicion: index + 1
+      }))
+    } else {
+      obrasDestacadas.value = []
+    }
+  } catch (err) {
+    console.error('Error al cargar obras destacadas:', err)
+    obrasDestacadas.value = []
+  } finally {
+    cargandoDestacadas.value = false
+  }
+}
+
 const calcularEstadisticas = async () => {
+  cargarObrasDestacadas()
   try {
     // Conteo exacto en servidor para que las métricas reflejen siempre el catálogo completo
     const [resTotal, resPinturas, resEsculturas] = await Promise.all([
