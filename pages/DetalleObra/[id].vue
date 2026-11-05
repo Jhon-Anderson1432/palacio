@@ -228,8 +228,24 @@ const preguntarPorWhatsApp = () => {
   }
 }
 
+const registrarVisita = async () => {
+  if (!route.params.id) return
+  const claveSesion = `visita_obra_${route.params.id}`
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    if (sessionStorage.getItem(claveSesion)) return
+    sessionStorage.setItem(claveSesion, '1')
+  }
+
+  try {
+    await supabase.rpc('incrementar_visita_obra', { id_obra: route.params.id })
+  } catch (e) {
+    console.warn('Registro de visita no disponible:', e)
+  }
+}
+
 onMounted(() => {
   componenteActivo.value = true
+  registrarVisita()
 })
 
 onBeforeUnmount(() => {

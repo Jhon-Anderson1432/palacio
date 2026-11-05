@@ -660,7 +660,7 @@ const { data: obrasData, status } = await useAsyncData('obras-galeria', async ()
   const { data, error } = await supabase
     .from('obras')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('titulo', { ascending: true })
   
   if (error) throw error
   return data || []
@@ -822,7 +822,10 @@ const obrasProcesadas = computed(() => {
     )
   }
 
-  return filtradas.map(o => {
+  // Ordenamiento alfabético estricto A-Z por título
+  const ordenadas = [...filtradas].sort((a, b) => (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' }))
+
+  return ordenadas.map(o => {
     const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean)
     return { ...o, listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen'] }
   })
