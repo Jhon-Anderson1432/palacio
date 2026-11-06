@@ -549,6 +549,14 @@
                   <div
                     class="absolute top-3 left-3 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-bold uppercase tracking-widest shadow-sm">
                     {{ obra.tipo || 'Pintura' }}</div>
+
+                  <!-- Badge Contador de Vistas -->
+                  <div
+                    class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 text-[10px] text-neutral-300 font-medium flex items-center gap-1.5 shadow-sm group-hover:border-[#D4AF37]/40 transition-colors">
+                    <span class="text-xs">👁️</span>
+                    <span class="font-bold text-white">{{ obra.visitas || 0 }}</span>
+                    <span class="text-[8px] uppercase tracking-wider text-neutral-400">vistas</span>
+                  </div>
                 </div>
                 <div class="space-y-3">
                   <h3
@@ -2222,7 +2230,7 @@ const fetchObras = async (resetPagina = false) => {
 
   let query = supabase
     .from('obras')
-    .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, precio, tecnica, medidas, medidas_en, medidas_fr, medidas_ja, tipo, imagen_1, imagen_2, imagen_3, created_at', { count: 'exact' })
+    .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, precio, tecnica, medidas, medidas_en, medidas_fr, medidas_ja, tipo, imagen_1, imagen_2, imagen_3, visitas, created_at', { count: 'exact' })
     .order('titulo', { ascending: true })
 
   const term = searchQuery?.value ? searchQuery.value.trim() : ''
@@ -2458,7 +2466,7 @@ const guardarObra = async () => {
     if (payload.titulo_fr) payload.titulo_fr = formatoTitulo(payload.titulo_fr)
     if (payload.titulo_ja) payload.titulo_ja = payload.titulo_ja.trim()
 
-    delete payload.id; delete payload.created_at;
+    delete payload.id; delete payload.created_at; delete payload.visitas;
 
     if (obraEditandoId.value) {
       const { error } = await supabase.from('obras').update(payload).eq('id', obraEditandoId.value)
