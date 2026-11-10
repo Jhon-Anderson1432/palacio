@@ -236,6 +236,7 @@ const TRADUCCIONES = {
     home: 'Inicio',
     gallery: 'Galería',
     gastro: 'Gastronomía',
+    events: 'Eventos',
     history: 'Historia',
     locations: 'Sedes',
     contact: 'Contactos'
@@ -246,6 +247,7 @@ const TRADUCCIONES = {
     home: 'Home',
     gallery: 'Gallery',
     gastro: 'Gastronomy',
+    events: 'Events',
     history: 'History',
     locations: 'Locations',
     contact: 'Contacts'
@@ -256,6 +258,7 @@ const TRADUCCIONES = {
     home: 'Accueil',
     gallery: 'Galerie',
     gastro: 'Gastronomie',
+    events: 'Événements',
     history: 'Histoire',
     locations: 'Sites',
     contact: 'Contacts'
@@ -266,6 +269,7 @@ const TRADUCCIONES = {
     home: 'ホーム',
     gallery: 'ギャラリー',
     gastro: 'ガストロノミー',
+    events: 'イベント',
     history: '歴史',
     locations: '拠点',
     contact: '連絡先'
@@ -298,8 +302,8 @@ const navItems = computed(() => [
   { path: '/', label: t.value.home },
   { path: '/exposiciones', label: t.value.gallery },
   { path: '/homegastro', label: t.value.gastro },
+  { path: '/eventos', label: t.value.events },
   { path: '/historia', label: t.value.history },
-  { path: '/proximamente', label: t.value.locations },
   { path: '/contactos', label: t.value.contact }
 ])
 
