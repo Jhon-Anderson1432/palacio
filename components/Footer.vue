@@ -36,7 +36,11 @@
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
-                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.events }}</NuxtLink>
+                <NuxtLink to="/eventos" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.events }}</NuxtLink>
+              </li>
+              <li class="flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
+                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.locations }}</NuxtLink>
               </li>
             </ul>
             <ul class="space-y-3">
@@ -46,7 +50,7 @@
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
-                <NuxtLink to="/proximamente" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.faq }}</NuxtLink>
+                <NuxtLink to="/faq" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.faq }}</NuxtLink>
               </li>
               <li class="flex items-center gap-2 group">
                 <span class="w-1.5 h-1.5 bg-[#D4AF37] rounded-full group-hover:scale-150 transition-all duration-300"></span>
@@ -103,7 +107,7 @@ const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 const TRADUCCIONES = {
   es: {
     desc: 'Bienvenido a uno de los tesoros arquitectónicos más icónicos de Medellín. Inaugurado en 1933 y diseñado por el arquitecto belga Agustín Goovaerts.',
-    explore: 'Explorar', history: 'Nuestra Historia', collections: 'Colecciones', events: 'Nuestros eventos', galleries: 'Galerías', news: 'Últimas Noticias', faq: 'Preguntas frecuentes', contact: 'Contacto',
+    explore: 'Explorar', history: 'Nuestra Historia', collections: 'Colecciones', events: 'Nuestros eventos', locations: 'Sedes', galleries: 'Galerías', news: 'Últimas Noticias', faq: 'Preguntas frecuentes', contact: 'Contacto',
     contactTitle: 'Contacto', address: 'Cra. 52 #48-45, La Candelaria, Medellín',
     hoursTitle: 'Horario', hours: 'Diario: 9.00 AM–7.00 PM',
     rights: 'Copyright © Palacio Nacional, Todos los derechos reservados.',
@@ -111,7 +115,7 @@ const TRADUCCIONES = {
   },
   en: {
     desc: 'Welcome to one of the most iconic architectural treasures of Medellin. Opened in 1933 and designed by Belgian architect Agustín Goovaerts.',
-    explore: 'Explore', history: 'Our History', collections: 'Collections', events: 'Our Events', galleries: 'Galleries', news: 'Latest News', faq: 'FAQ', contact: 'Contact',
+    explore: 'Explore', history: 'Our History', collections: 'Collections', events: 'Our Events', locations: 'Locations', galleries: 'Galleries', news: 'Latest News', faq: 'FAQ', contact: 'Contact',
     contactTitle: 'Contact', address: 'Cra. 52 #48-45, La Candelaria, Medellin',
     hoursTitle: 'Hours', hours: 'Daily: 9.00 AM–7.00 PM',
     rights: 'Copyright © Palacio Nacional, All rights reserved.',
@@ -119,15 +123,15 @@ const TRADUCCIONES = {
   },
   fr: {
     desc: 'Bienvenue dans l\'un des trésors architecturaux les plus emblématiques de Medellín. Inauguré en 1933 et conçu par l\'architecte belge Agustín Goovaerts.',
-    explore: 'Explorer', history: 'Notre Histoire', collections: 'Collections', events: 'Nos Événements', galleries: 'Galeries', news: 'Dernières Nouvelles', faq: 'FAQ', contact: 'Contact',
+    explore: 'Explorer', history: 'Notre Histoire', collections: 'Collections', events: 'Nos Événements', locations: 'Sites', galleries: 'Galeries', news: 'Dernières Nouvelles', faq: 'FAQ', contact: 'Contact',
     contactTitle: 'Contact', address: 'Cra. 52 #48-45, La Candelaria, Medellín',
-    hoursTitle: 'Horaires', hours: 'Tous les jours: 7.00 AM–6.00 PM',
+    hoursTitle: 'Horaires', hours: 'Tous les jours: 9.00 AM–7.00 PM',
     rights: 'Copyright © Palacio Nacional, Tous droits réservés.',
     terms: 'Termes & conditions | Politique de confidentialité | Conditions d\'utilisation'
   },
   ja: {
     desc: 'メデジンで最も象徴的な建築の宝物の一つへようこそ。1933年にオープンし、ベルギーの建築家アグスティン・ゴーヴァルツによって設計されました。',
-    explore: '探索', history: '私たちの歴史', collections: 'コレクション', events: 'イベント', galleries: 'ギャラリー', news: '最新ニュース', faq: 'よくある質問', contact: '連絡先',
+    explore: '探索', history: '私たちの歴史', collections: 'コレクション', events: 'イベント', locations: '拠点', galleries: 'ギャラリー', news: '最新ニュース', faq: 'よくある質問', contact: '連絡先',
     contactTitle: '連絡先', address: 'Cra. 52 #48-45, La Candelaria, Medellín',
     hoursTitle: '営業時間', hours: '毎日: 9.00 AM–7.00 PM',
     rights: '著作権 © Palacio Nacional、無断複写・転載を禁じます。',

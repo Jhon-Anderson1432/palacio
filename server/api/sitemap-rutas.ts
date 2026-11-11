@@ -46,6 +46,20 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // ==========================================
+    // 3. PÁGINAS INSTITUCIONALES (FAQ Y EVENTOS)
+    // ==========================================
+    rutas.push({
+      loc: '/faq',
+      changefreq: 'monthly',
+      priority: 0.7
+    })
+    rutas.push({
+      loc: '/eventos',
+      changefreq: 'weekly',
+      priority: 0.8
+    })
+
     return rutas
 
   } catch (error) {

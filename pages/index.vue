@@ -247,7 +247,145 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 4. SECCIÓN: HISTORIA Y PATRIMONIO          -->
+    <!-- 4. SECCIÓN: NUESTROS EVENTOS (PISO 5)      -->
+    <!-- ========================================== -->
+    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10" aria-label="Nuestros Eventos y Agenda Cultural">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Encabezado de la sección -->
+        <header class="text-center mb-16 max-w-2xl mx-auto">
+          <span class="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#D4AF37] font-bold block mb-2">
+            {{ t.eventsBadge }}
+          </span>
+          <h2 class="text-2xl md:text-4xl font-serif font-light uppercase tracking-wider text-white mb-4">
+            {{ t.eventsTitle }}
+          </h2>
+          <p class="text-neutral-400 text-xs md:text-sm font-light leading-relaxed">
+            {{ t.eventsDesc }}
+          </p>
+        </header>
+
+        <!-- Card Destacada: La Noche de Galerías -->
+        <div class="bg-gradient-to-br from-[#111111] via-[#0a0a0a] to-[#14120b] border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 rounded-3xl p-6 sm:p-10 md:p-12 transition-all duration-500 shadow-2xl relative overflow-hidden group">
+          <!-- Luz ambiental dorada sutil -->
+          <div class="absolute -right-20 -top-20 w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#D4AF37]/15 transition-all duration-700"></div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+            
+            <!-- Columna Izquierda: Información, Pilares y Botones -->
+            <div class="lg:col-span-7 space-y-6">
+              
+              <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">
+                <span>🌙</span>
+                <span>{{ t.eventsCardBadge }}</span>
+              </div>
+
+              <h3 class="text-2xl sm:text-3xl font-serif uppercase tracking-wide text-white leading-tight">
+                {{ t.eventsCardHeading }}
+              </h3>
+
+              <p class="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed text-justify sm:text-left">
+                {{ t.eventsCardText }}
+              </p>
+
+              <!-- Grid de 4 Atributos Destacados -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-lg">🎖️</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-white">{{ t.eventsPillar1Title }}</h4>
+                    <p class="text-[11px] text-neutral-400 font-light">{{ t.eventsPillar1Desc }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-lg">🎨</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-white">{{ t.eventsPillar2Title }}</h4>
+                    <p class="text-[11px] text-neutral-400 font-light">{{ t.eventsPillar2Desc }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-lg">🎹</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-white">{{ t.eventsPillar3Title }}</h4>
+                    <p class="text-[11px] text-neutral-400 font-light">{{ t.eventsPillar3Desc }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-lg">🍸</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-white">{{ t.eventsPillar4Title }}</h4>
+                    <p class="text-[11px] text-neutral-400 font-light">{{ t.eventsPillar4Desc }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones de Acción -->
+              <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                <NuxtLink 
+                  to="/eventos" 
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40 text-center"
+                >
+                  <span>{{ t.btnMoreEvents }}</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </NuxtLink>
+
+                <a 
+                  href="https://wa.me/573116390177?text=Hola%20Palacio%20Nacional,%20deseo%20informaci%C3%B3n%20sobre%20la%20Noche%20de%20Galer%C3%ADas" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/15 hover:border-[#D4AF37]/50 font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300 text-center"
+                >
+                  <span>💬</span>
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+
+            </div>
+
+            <!-- Columna Derecha: Tarjeta Fotográfica de la Noche -->
+            <div class="lg:col-span-5 flex justify-center">
+              <div class="relative w-full max-w-sm rounded-2xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] group/img">
+                <NuxtImg 
+                  src="/pa4.jpg" 
+                  alt="Noche de Galerías en el Palacio Nacional Medellín" 
+                  class="w-full h-80 sm:h-96 object-cover grayscale opacity-75 group-hover/img:grayscale-0 group-hover/img:opacity-100 group-hover/img:scale-105 transition-all duration-700"
+                  loading="lazy"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
+                
+                <!-- Badge flotante de Piso y Horario -->
+                <div class="absolute top-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 rounded-full text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest">
+                  📍 Piso 5
+                </div>
+
+                <div class="absolute bottom-5 left-5 right-5 text-center sm:text-left space-y-1">
+                  <span class="text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold block">
+                    Horario Extendido
+                  </span>
+                  <p class="text-sm font-serif text-white uppercase tracking-wider">
+                    Hasta las 12 de la Noche
+                  </p>
+                  <p class="text-[10px] text-neutral-400 font-light">
+                    Entrada 100% Libre y Gratuita
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 5. SECCIÓN: HISTORIA Y PATRIMONIO          -->
     <!-- ========================================== -->
     <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10" aria-label="Historia del Palacio Nacional">
       <div class="max-w-6xl mx-auto">
@@ -399,6 +537,22 @@ const traducciones = {
     descCafe: 'Café de especialidad colombiano, repostería exclusiva y un refugio de calma en el centro.',
     descPescado: 'El auténtico sabor del mar, mariscos frescos y cocina ejecutiva de primer nivel.',
     descSky: 'Cócteles de autor, terraza al aire libre y la vista más emblemática de la ciudad.',
+    // Eventos
+    eventsBadge: 'Agenda Cultural • Noche de Galerías',
+    eventsTitle: 'Nuestros Eventos',
+    eventsDesc: 'Vive veladas donde convergen las artes plásticas, condecoraciones al mérito cultural, música en vivo y gastronomía en el emblemático Piso 5.',
+    eventsCardBadge: 'Último Jueves del Mes • 6:00 PM a 12:00 AM',
+    eventsCardHeading: 'La Noche de Galerías',
+    eventsCardText: 'Cada último jueves de mes, el Palacio Nacional extiende su horario habitual hasta la medianoche en el Piso 5. Una noche de bohemia artística donde se rinde homenaje a los mecenas, se sortean pinturas originales en vivo y se disfruta de música en directo y gastronomía.',
+    eventsPillar1Title: 'Condecoraciones al Arte',
+    eventsPillar1Desc: 'Reconocimiento solemne a quienes apoyan la cultura.',
+    eventsPillar2Title: 'Sorteo de Pinturas',
+    eventsPillar2Desc: 'Obras originales rifadas entre los asistentes.',
+    eventsPillar3Title: 'Música en Vivo',
+    eventsPillar3Desc: 'Piano acústico y sesiones de DJ en directo.',
+    eventsPillar4Title: 'Gastronomía y Rooftop',
+    eventsPillar4Desc: 'Chao Café, Chao Pescao y Sky Bar hasta tarde.',
+    btnMoreEvents: 'Descubrir Noche de Galerías',
     // Historia
     historyBadge: 'Monumento Nacional • Desde 1920',
     historyTitle: 'Un Siglo de Memoria y Patrimonio',
@@ -423,6 +577,22 @@ const traducciones = {
     descCafe: 'Colombian specialty coffee, exclusive pastries, and a peaceful haven in downtown.',
     descPescado: 'The authentic taste of the sea, fresh seafood, and top-tier executive cuisine.',
     descSky: 'Signature cocktails, open-air terrace, and the city\'s most iconic panoramic view.',
+    // Eventos
+    eventsBadge: 'Cultural Agenda • Gallery Night',
+    eventsTitle: 'Our Events',
+    eventsDesc: 'Experience evenings where fine arts, cultural honors, live music, and dining merge on the iconic 5th floor.',
+    eventsCardBadge: 'Last Thursday of the Month • 6:00 PM to 12:00 AM',
+    eventsCardHeading: 'Gallery Night (Noche de Galerías)',
+    eventsCardText: 'Every last Thursday of the month, Palacio Nacional extends its schedule until midnight on Floor 5. An artistic evening honoring cultural patrons, featuring live original painting giveaways, live music, and rooftop dining.',
+    eventsPillar1Title: 'Cultural Honors',
+    eventsPillar1Desc: 'Solemn recognition to arts benefactors and patrons.',
+    eventsPillar2Title: 'Painting Giveaways',
+    eventsPillar2Desc: 'Original paintings raffled live among attendees.',
+    eventsPillar3Title: 'Live Music',
+    eventsPillar3Desc: 'Acoustic grand piano and live DJ sets.',
+    eventsPillar4Title: 'Dining & Rooftop',
+    eventsPillar4Desc: 'Chao Café, Chao Pescao, and Sky Bar open late.',
+    btnMoreEvents: 'Explore Gallery Night',
     // Historia
     historyBadge: 'National Monument • Since 1920',
     historyTitle: 'A Century of Heritage and Memory',
@@ -447,6 +617,22 @@ const traducciones = {
     descCafe: 'Café de spécialité colombien, pâtisserie exclusive et havre de paix au centre-ville.',
     descPescado: 'Le goût authentique de la mer, fruits de mer frais et cuisine de haute volée.',
     descSky: 'Cocktails signature, terrasse à ciel ouvert et vue panoramique emblématique.',
+    // Eventos
+    eventsBadge: 'Agenda Culturel • Nuit des Galeries',
+    eventsTitle: 'Nos Événements',
+    eventsDesc: 'Vivez des soirées où convergent les beaux-arts, les hommages culturels, la musique en direct et la gastronomie au 5e étage.',
+    eventsCardBadge: 'Dernier Jeudi du Mois • 18h00 à 00h00',
+    eventsCardHeading: 'La Nuit des Galeries',
+    eventsCardText: 'Chaque dernier jeudi du mois, le Palacio Nacional prolonge ses horaires jusqu\'à minuit au 5e étage. Une soirée artistique rendant hommage aux mécènes, avec tirage au sort de peintures originales, musique en direct et gastronomie.',
+    eventsPillar1Title: 'Mérite Culturel',
+    eventsPillar1Desc: 'Hommage solennel aux bienfaiteurs de la création.',
+    eventsPillar2Title: 'Tirage de Peintures',
+    eventsPillar2Desc: 'Peintures originales offertes aux visiteurs inscrits.',
+    eventsPillar3Title: 'Musique en Direct',
+    eventsPillar3Desc: 'Piano acoustique et élégantes sessions de DJ.',
+    eventsPillar4Title: 'Gastronomie & Terrasse',
+    eventsPillar4Desc: 'Chao Café, Chao Pescao et Sky Bar ouverts tard.',
+    btnMoreEvents: 'Découvrir la Nuit des Galeries',
     // Historia
     historyBadge: 'Monument National • Depuis 1920',
     historyTitle: 'Un Siècle de Mémoire et Patrimoine',
@@ -471,6 +657,22 @@ const traducciones = {
     descCafe: 'コロンビア特選コーヒー、手作りスイーツ、都心の静寂な隠れ家。',
     descPescado: '海の本格的な風味、新鮮な魚介類、最高峰の料理。',
     descSky: '特製カクテル、オープンエアテラス、市内随一のパノラマビュー。',
+    // Eventos
+    eventsBadge: '公式文化イベント • ギャラリー・ナイト',
+    eventsTitle: '注目のイベント',
+    eventsDesc: '5階フロアで繰り広げられる美術、文化功労者への顕彰、生演奏、そして美食が融合する特別な夜。',
+    eventsCardBadge: '毎月最終木曜日 • 午後6:00 ～ 深夜12:00',
+    eventsCardHeading: 'ギャラリー・ナイト（Noche de Galerias）',
+    eventsCardText: '毎月最終木曜日、メデジン国立宮殿は5階フロアで深夜12時まで開館時間を特別延長します。芸術支援者への叙勲式、本物の絵画作品が当たる生抽選会、ピアノ生演奏やDJセット、そしてテラスでの美食をお楽しみいただけます。',
+    eventsPillar1Title: '文化功労者への顕彰',
+    eventsPillar1Desc: '芸術の振興に尽力した支援者を称える叙勲式。',
+    eventsPillar2Title: '絵画作品の生抽選会',
+    eventsPillar2Desc: '来場者の中から本物の絵画作品をその場で抽選。',
+    eventsPillar3Title: '生演奏',
+    eventsPillar3Desc: 'アコースティックピアノ演奏とDJライブセット。',
+    eventsPillar4Title: '美食＆ルーフトップ',
+    eventsPillar4Desc: 'Chao Cafe、Chao Pescao、Sky Barが深夜まで営業。',
+    btnMoreEvents: 'イベント詳細を見る',
     // Historia
     historyBadge: '国定記念物 • 1920年より',
     historyTitle: '遺産と記憶の一世紀',

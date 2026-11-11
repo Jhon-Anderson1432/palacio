@@ -31,6 +31,8 @@ export default defineNuxtConfig({
   // 2. EL BÚNKER DE SEGURIDAD (Route Rules)
   // ==========================================
   routeRules: {
+    '/nuestros-eventos': { redirect: { to: '/eventos', statusCode: 301 } },
+    '/preguntas-frecuentes': { redirect: { to: '/faq', statusCode: 301 } },
     '/adminpanel02402110': { index: false },
     '/LoginAdmin': { index: false },
     '/terminal-pos': { index: false },
@@ -99,7 +101,11 @@ export default defineNuxtConfig({
         '/terminal-pos',
         '/login-meseras',
         '/vigilante-scan',
-        '/proximamente'
+        '/proximamente',
+        '/faq',
+        '/preguntas-frecuentes',
+        '/eventos',
+        '/nuestros-eventos'
       ]
     }
   },
