@@ -164,7 +164,7 @@ useHead({
           "url": "https://palacionacionalmedellin.com/historia",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Carrera 52 # 52-43",
+            "streetAddress": "Carrera 52 # 48-45",
             "addressLocality": "Medellín",
             "addressRegion": "Antioquia",
             "addressCountry": "CO"

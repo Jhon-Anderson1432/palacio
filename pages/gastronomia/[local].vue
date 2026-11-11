@@ -421,7 +421,7 @@ const seoSchemaBase = computed(() => {
 
 const defaultDesc = computed(() => {
   if (localActual.value === 'sky-bar') return "Disfruta de la mejor terraza bar en el centro de Medellín. Cócteles de autor, cafés premium y licores exclusivos en el piso 5 del Palacio Nacional."
-  if (localActual.value === 'chao-pescado') return "El mejor restaurante de comida gourmet y menús ejecutivos en el centro de Medellín. Sabor exclusivo en el piso 5 del Palacio Nacional del arte y la moda."
+  if (localActual.value === 'chao-pescado') return "El mejor restaurante de comida gourmet y menús ejecutivos en el centro de Medellín. Sabor exclusivo en el piso 5 del Palacio Nacional, epicentro del arte y la gastronomía."
   return "Tómate un verdadero café de especialidad colombiano en el centro de Medellín. Repostería artesanal y tranquilidad en el piso 5 del histórico Palacio Nacional."
 })
 

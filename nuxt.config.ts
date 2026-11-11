@@ -31,6 +31,7 @@ export default defineNuxtConfig({
   // 2. EL BÚNKER DE SEGURIDAD (Route Rules)
   // ==========================================
   routeRules: {
+    '/contacto': { redirect: { to: '/contactos', statusCode: 301 } },
     '/nuestros-eventos': { redirect: { to: '/eventos', statusCode: 301 } },
     '/preguntas-frecuentes': { redirect: { to: '/faq', statusCode: 301 } },
     '/adminpanel02402110': { index: false },
@@ -91,6 +92,7 @@ export default defineNuxtConfig({
         '/',
         '/historia',
         '/contactos',
+        '/contacto',
         '/exposiciones',
         '/DetalleObra/*', 
         '/homegastro',
@@ -178,10 +180,10 @@ export default defineNuxtConfig({
             "url": "https://palacionacionalmedellin.com/",
             "description": "Monumento histórico en el centro de Medellín. Convergencia de arte, gastronomía e historia.",
             "image": "https://palacionacionalmedellin.com/logon.png",
-            "telephone": "+5745134422",
+            "telephone": "+573116390177",
             "address": {
               "@type": "PostalAddress",
-              "streetAddress": "Carrera 52 # 52-43",
+              "streetAddress": "Carrera 52 # 48-45",
               "addressLocality": "Medellín",
               "addressRegion": "Antioquia",
               "postalCode": "050010",

@@ -963,7 +963,7 @@ useHead({
         "image": "https://palacionacionalmedellin.com/logon.png",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Carrera 52 # 52-43",
+          "streetAddress": "Carrera 52 # 48-45",
           "addressLocality": "Medellín",
           "addressRegion": "Antioquia",
           "addressCountry": "CO"
