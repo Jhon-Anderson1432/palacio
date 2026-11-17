@@ -37,7 +37,6 @@ export default defineNuxtConfig({
     '/preguntas-frecuentes': { redirect: { to: '/faq', statusCode: 301 } },
 
     // ── CACHÉ SWR PARA PÁGINAS PÚBLICAS Stale-While-Revalidate: sirve la versión cacheada al instante y revalida en segundo plano tras expirar
-    '/': { swr: 1800 },
     '/exposiciones': { swr: 1800 },
     '/gastronomia/**': { swr: 7200 },
     '/homegastro': { swr: 7200 },
