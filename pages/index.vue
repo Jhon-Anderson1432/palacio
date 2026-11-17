@@ -1,6 +1,7 @@
 <template>
-  <main class="relative min-h-screen w-full overflow-x-hidden font-sans flex flex-col bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black">
-    
+  <main
+    class="relative min-h-screen w-full overflow-x-hidden font-sans flex flex-col bg-[#050505] text-white selection:bg-[#D4AF37] selection:text-black">
+
     <Navbar :fondoTranslucido="true" />
 
     <!-- SEO: H1 Oculto visualmente pero 100% visible para Google. -->
@@ -10,15 +11,8 @@
 
     <!-- Video de fondo ambiental para la sección Hero -->
     <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-      <video
-        autoplay
-        loop
-        muted
-        playsinline
-        disablePictureInPicture
-        preload="auto"
-        class="w-full h-full object-cover opacity-60"
-      >
+      <video autoplay loop muted playsinline disablePictureInPicture preload="auto"
+        class="w-full h-full object-cover opacity-60">
         <source src="/fondo.mp4" type="video/mp4" />
         <span class="sr-only">Video de fondo del Palacio Nacional</span>
       </video>
@@ -28,32 +22,30 @@
     <!-- ========================================== -->
     <!-- 1. HERO SECTION                            -->
     <!-- ========================================== -->
-    <section class="relative z-10 flex flex-col items-center justify-center min-h-[90vh] md:min-h-screen px-4 pt-28 pb-16 text-center" aria-label="Bienvenida al Palacio Nacional">
-      
-      <NuxtImg 
-        src="/logon.png" 
-        alt="Logotipo Palacio Nacional Medellín - Arte, Historia y Gastronomía" 
+    <section
+      class="relative z-10 flex flex-col items-center justify-center min-h-[90vh] md:min-h-screen px-4 pt-28 pb-16 text-center"
+      aria-label="Bienvenida al Palacio Nacional">
+
+      <NuxtImg src="/logon.png" alt="Logotipo Palacio Nacional Medellín - Arte, Historia y Gastronomía"
         fetchpriority="high"
-        class="w-44 sm:w-56 md:w-64 mb-6 object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.4)] animate-fade-in-down"
-      />
-      
+        class="w-44 sm:w-56 md:w-64 mb-6 object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.4)] animate-fade-in-down" />
+
       <p class="text-xs md:text-sm tracking-[0.4em] uppercase text-[#D4AF37] font-semibold mb-3 select-none">
         Monumento Nacional • Est. 1920
       </p>
 
-      <h2 class="text-xl sm:text-2xl md:text-4xl font-serif font-light tracking-[0.15em] mb-8 text-white drop-shadow-lg max-w-3xl leading-relaxed uppercase animate-fade-in">
+      <h2
+        class="text-xl sm:text-2xl md:text-4xl font-serif font-light tracking-[0.15em] mb-8 text-white drop-shadow-lg max-w-3xl leading-relaxed uppercase animate-fade-in">
         {{ t.mainTitle }}
       </h2>
 
       <!-- Indicador visual sutil para invitar a hacer scroll -->
-      <a 
-        href="#galeria" 
-        @click.prevent="scrollHaciaGaleria"
+      <a href="#galeria" @click.prevent="scrollHaciaGaleria"
         class="inline-flex flex-col items-center gap-2 text-neutral-400 hover:text-[#D4AF37] transition-colors duration-300 mt-4 group focus:outline-none cursor-pointer"
-        :aria-label="t.scrollDown"
-      >
+        :aria-label="t.scrollDown">
         <span class="text-[10px] uppercase tracking-[0.25em] font-medium">{{ t.scrollDown }}</span>
-        <svg class="w-5 h-5 animate-bounce text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="w-5 h-5 animate-bounce text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
         </svg>
       </a>
@@ -63,9 +55,11 @@
     <!-- ========================================== -->
     <!-- 2. SECCIÓN: GALERÍA DE ARTE (4 OBRAS)      -->
     <!-- ========================================== -->
-    <section id="galeria" class="relative z-10 py-20 px-4 md:px-8 bg-[#070707]/95 border-t border-white/10 backdrop-blur-md" aria-label="Obras en Galería">
+    <section id="galeria"
+      class="relative z-10 py-20 px-4 md:px-8 bg-[#070707]/95 border-t border-white/10 backdrop-blur-md"
+      aria-label="Obras en Galería">
       <div class="max-w-7xl mx-auto">
-        
+
         <!-- Encabezado de la sección -->
         <header class="text-center mb-14 max-w-2xl mx-auto">
           <span class="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#D4AF37] font-bold block mb-2">
@@ -80,24 +74,19 @@
         </header>
 
         <!-- Grid de 4 Cards de obras aleatorias -->
-        <div v-if="obrasHome && obrasHome.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <article 
-            v-for="obra in obrasHome" 
-            :key="obra.id"
-            class="group bg-[#111111] border border-white/10 hover:border-[#D4AF37]/60 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] flex flex-col"
-          >
+        <div v-if="obrasHome && obrasHome.length > 0"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <article v-for="obra in obrasHome" :key="obra.id"
+            class="group bg-[#111111] border border-white/10 hover:border-[#D4AF37]/60 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] flex flex-col">
             <!-- Imagen de la obra -->
-            <NuxtLink :to="'/DetalleObra/' + obra.id" class="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 block" :aria-label="'Ver detalle de ' + obtenerTituloObra(obra)">
-              <NuxtImg 
-                :src="obra.imagenPrincipal" 
-                :alt="obtenerTituloObra(obra) + ' - Palacio Nacional Medellín'"
+            <NuxtLink :to="'/DetalleObra/' + obra.id"
+              class="relative aspect-[4/3] w-full overflow-hidden bg-neutral-900 block"
+              :aria-label="'Ver detalle de ' + obtenerTituloObra(obra)">
+              <NuxtImg :src="obra.imagenPrincipal" :alt="obtenerTituloObra(obra) + ' - Palacio Nacional Medellín'"
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
-              />
-              <span 
-                v-if="obra.tipo" 
-                class="absolute top-3 left-3 px-2.5 py-1 bg-black/75 backdrop-blur-md border border-[#D4AF37]/30 rounded-full text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold select-none"
-              >
+                loading="lazy" />
+              <span v-if="obra.tipo"
+                class="absolute top-3 left-3 px-2.5 py-1 bg-black/75 backdrop-blur-md border border-[#D4AF37]/30 rounded-full text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold select-none">
                 {{ obra.tipo }}
               </span>
             </NuxtLink>
@@ -105,7 +94,9 @@
             <!-- Datos de la obra -->
             <div class="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 class="text-base font-serif font-medium text-white group-hover:text-[#D4AF37] transition-colors truncate mb-1" :title="obtenerTituloObra(obra)">
+                <h3
+                  class="text-base font-serif font-medium text-white group-hover:text-[#D4AF37] transition-colors truncate mb-1"
+                  :title="obtenerTituloObra(obra)">
                   {{ obtenerTituloObra(obra) }}
                 </h3>
                 <p class="text-xs text-neutral-400 font-light truncate mb-3">
@@ -115,12 +106,11 @@
 
               <div class="pt-3 border-t border-white/10 flex items-center justify-between">
                 <span class="text-sm font-serif text-[#D4AF37] font-bold">
-                  {{ obra.precio ? ('$' + Number(String(obra.precio).replace(/[^0-9.]/g, '') || 0).toLocaleString('es-CO') + ' USD') : 'Colección' }}
+                  {{ obra.precio ? ('$' + Number(String(obra.precio).replace(/[^0-9.]/g, '') ||
+                    0).toLocaleString('es-CO') + ' USD') : 'Colección' }}
                 </span>
-                <NuxtLink 
-                  :to="'/DetalleObra/' + obra.id" 
-                  class="text-[10px] uppercase tracking-widest text-neutral-300 hover:text-white flex items-center gap-1 group-hover:text-[#D4AF37] transition-colors font-medium"
-                >
+                <NuxtLink :to="'/DetalleObra/' + obra.id"
+                  class="text-[10px] uppercase tracking-widest text-neutral-300 hover:text-white flex items-center gap-1 group-hover:text-[#D4AF37] transition-colors font-medium">
                   <span>{{ t.detailsBtn }}</span>
                   <span>→</span>
                 </NuxtLink>
@@ -136,10 +126,8 @@
 
         <!-- Botón Ver más obras -->
         <div class="text-center">
-          <NuxtLink 
-            to="/exposiciones" 
-            class="inline-flex items-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40"
-          >
+          <NuxtLink to="/exposiciones"
+            class="inline-flex items-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40">
             <span>{{ t.btnMoreArt }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -153,9 +141,10 @@
     <!-- ========================================== -->
     <!-- 3. SECCIÓN: GASTRONOMÍA (PISO 5)           -->
     <!-- ========================================== -->
-    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#0a0a0a] border-t border-white/10" aria-label="Portal Gastronómico">
+    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#0a0a0a] border-t border-white/10"
+      aria-label="Portal Gastronómico">
       <div class="max-w-6xl mx-auto">
-        
+
         <header class="text-center mb-16 max-w-2xl mx-auto">
           <span class="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#D4AF37] font-bold block mb-2">
             {{ t.gastroBadge }}
@@ -170,16 +159,17 @@
 
         <!-- Grid de los 3 Restaurantes -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
-          
+
           <!-- Chao Café -->
-          <NuxtLink 
-            to="/gastronomia/chao-cafe"
-            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
-          >
-            <div class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
-              <NuxtImg src="/logonc.png" alt="Logo Chao Café Artesanal" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+          <NuxtLink to="/gastronomia/chao-cafe"
+            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30">
+            <div
+              class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
+              <NuxtImg src="/logonc.png" alt="Logo Chao Café Artesanal"
+                class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
             </div>
-            <h3 class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
+            <h3
+              class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
               Chao Cafe
             </h3>
             <span class="text-[9px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold mb-3">
@@ -191,14 +181,15 @@
           </NuxtLink>
 
           <!-- Chao Pescao -->
-          <NuxtLink 
-            to="/gastronomia/chao-pescado"
-            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
-          >
-            <div class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
-              <NuxtImg src="/logonp.png" alt="Logo Chao Pescao Restaurante" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+          <NuxtLink to="/gastronomia/chao-pescado"
+            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30">
+            <div
+              class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
+              <NuxtImg src="/logonp.png" alt="Logo Chao Pescao Restaurante"
+                class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
             </div>
-            <h3 class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
+            <h3
+              class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
               Chao Pescao
             </h3>
             <span class="text-[9px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold mb-3">
@@ -210,14 +201,15 @@
           </NuxtLink>
 
           <!-- Sky Bar -->
-          <NuxtLink 
-            to="/gastronomia/sky-bar"
-            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
-          >
-            <div class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
-              <NuxtImg src="/logons.png" alt="Logo Sky Bar Rooftop" class="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+          <NuxtLink to="/gastronomia/sky-bar"
+            class="group flex flex-col items-center text-center p-8 bg-[#111111] border border-white/10 hover:border-[#D4AF37] rounded-3xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(212,175,55,0.2)] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30">
+            <div
+              class="w-24 h-24 mb-6 rounded-full border border-[#D4AF37]/30 bg-black p-3 flex items-center justify-center shadow-inner group-hover:border-[#D4AF37] transition-colors">
+              <NuxtImg src="/logons.png" alt="Logo Sky Bar Rooftop" class="w-full h-full object-contain drop-shadow-md"
+                loading="lazy" />
             </div>
-            <h3 class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
+            <h3
+              class="text-xl font-serif uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors mb-2">
               Sky Bar
             </h3>
             <span class="text-[9px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold mb-3">
@@ -232,10 +224,8 @@
 
         <!-- Botón Saber más -->
         <div class="text-center">
-          <NuxtLink 
-            to="/homegastro" 
-            class="inline-flex items-center gap-3 px-8 py-4 bg-transparent border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.15)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40"
-          >
+          <NuxtLink to="/homegastro"
+            class="inline-flex items-center gap-3 px-8 py-4 bg-transparent border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.15)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40">
             <span>{{ t.btnMoreGastro }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -249,9 +239,10 @@
     <!-- ========================================== -->
     <!-- 4. SECCIÓN: NUESTROS EVENTOS (PISO 5)      -->
     <!-- ========================================== -->
-    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10" aria-label="Nuestros Eventos y Agenda Cultural">
+    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10"
+      aria-label="Nuestros Eventos y Agenda Cultural">
       <div class="max-w-6xl mx-auto">
-        
+
         <!-- Encabezado de la sección -->
         <header class="text-center mb-16 max-w-2xl mx-auto">
           <span class="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#D4AF37] font-bold block mb-2">
@@ -266,16 +257,20 @@
         </header>
 
         <!-- Card Destacada: La Noche de Galerías -->
-        <div class="bg-gradient-to-br from-[#111111] via-[#0a0a0a] to-[#14120b] border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 rounded-3xl p-6 sm:p-10 md:p-12 transition-all duration-500 shadow-2xl relative overflow-hidden group">
+        <div
+          class="bg-gradient-to-br from-[#111111] via-[#0a0a0a] to-[#14120b] border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 rounded-3xl p-6 sm:p-10 md:p-12 transition-all duration-500 shadow-2xl relative overflow-hidden group">
           <!-- Luz ambiental dorada sutil -->
-          <div class="absolute -right-20 -top-20 w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#D4AF37]/15 transition-all duration-700"></div>
+          <div
+            class="absolute -right-20 -top-20 w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#D4AF37]/15 transition-all duration-700">
+          </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
-            
+
             <!-- Columna Izquierda: Información, Pilares y Botones -->
             <div class="lg:col-span-7 space-y-6">
-              
-              <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">
+
+              <div
+                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">
                 <span>🌙</span>
                 <span>{{ t.eventsCardBadge }}</span>
               </div>
@@ -325,22 +320,18 @@
 
               <!-- Botones de Acción -->
               <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
-                <NuxtLink 
-                  to="/eventos" 
-                  class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40 text-center"
-                >
+                <NuxtLink to="/eventos"
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40 text-center">
                   <span>{{ t.btnMoreEvents }}</span>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
+                    </path>
                   </svg>
                 </NuxtLink>
 
-                <a 
-                  href="https://wa.me/573116390177?text=Hola%20Palacio%20Nacional,%20deseo%20informaci%C3%B3n%20sobre%20la%20Noche%20de%20Galer%C3%ADas" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/15 hover:border-[#D4AF37]/50 font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300 text-center"
-                >
+                <a href="https://wa.me/573116390177?text=Hola%20Palacio%20Nacional,%20deseo%20informaci%C3%B3n%20sobre%20la%20Noche%20de%20Galer%C3%ADas"
+                  target="_blank" rel="noopener noreferrer"
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/15 hover:border-[#D4AF37]/50 font-bold uppercase tracking-widest text-xs rounded-full transition-all duration-300 text-center">
                   <span>💬</span>
                   <span>WhatsApp</span>
                 </a>
@@ -350,17 +341,18 @@
 
             <!-- Columna Derecha: Tarjeta Fotográfica de la Noche -->
             <div class="lg:col-span-5 flex justify-center">
-              <div class="relative w-full max-w-sm rounded-2xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] group/img">
-                <NuxtImg 
-                  src="/pa4.jpg" 
-                  alt="Noche de Galerías en el Palacio Nacional Medellín" 
+              <div
+                class="relative w-full max-w-sm rounded-2xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] group/img">
+                <NuxtImg src="/pa4.jpg" alt="Noche de Galerías en el Palacio Nacional Medellín"
                   class="w-full h-80 sm:h-96 object-cover grayscale opacity-75 group-hover/img:grayscale-0 group-hover/img:opacity-100 group-hover/img:scale-105 transition-all duration-700"
-                  loading="lazy"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
-                
+                  loading="lazy" />
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none">
+                </div>
+
                 <!-- Badge flotante de Piso y Horario -->
-                <div class="absolute top-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 rounded-full text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest">
+                <div
+                  class="absolute top-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-md border border-[#D4AF37]/40 rounded-full text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest">
                   📍 Piso 5
                 </div>
 
@@ -387,17 +379,19 @@
     <!-- ========================================== -->
     <!-- 5. SECCIÓN: HISTORIA Y PATRIMONIO          -->
     <!-- ========================================== -->
-    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10" aria-label="Historia del Palacio Nacional">
+    <section class="relative z-10 py-24 px-4 md:px-8 bg-[#070707] border-t border-white/10"
+      aria-label="Historia del Palacio Nacional">
       <div class="max-w-6xl mx-auto">
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          
+
           <!-- Columna Izquierda: Narrativa e Hitos -->
           <div class="lg:col-span-7 flex flex-col items-start">
             <span class="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#D4AF37] font-bold block mb-3">
               {{ t.historyBadge }}
             </span>
-            <h2 class="text-2xl md:text-4xl font-serif font-light uppercase tracking-wider text-white mb-6 leading-tight">
+            <h2
+              class="text-2xl md:text-4xl font-serif font-light uppercase tracking-wider text-white mb-6 leading-tight">
               {{ t.historyTitle }}
             </h2>
             <p class="text-neutral-300 text-sm md:text-base font-light leading-relaxed mb-8 text-justify">
@@ -421,27 +415,26 @@
             </div>
 
             <!-- Botón Conoce más -->
-            <NuxtLink 
-              to="/historia" 
-              class="inline-flex items-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40"
-            >
+            <NuxtLink to="/historia"
+              class="inline-flex items-center gap-3 px-8 py-4 bg-[#D4AF37] text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#D4AF37]/40">
               <span>{{ t.btnMoreHistory }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
+                </path>
               </svg>
             </NuxtLink>
           </div>
 
           <!-- Columna Derecha: Fotografía histórica enmarcada -->
           <div class="lg:col-span-5 flex justify-center">
-            <div class="relative w-full max-w-md rounded-3xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] group">
-              <NuxtImg 
-                src="/pa1.jpg" 
-                alt="Fotografía histórica del Palacio Nacional Medellín - 1920" 
+            <div
+              class="relative w-full max-w-md rounded-3xl overflow-hidden border border-[#D4AF37]/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] group">
+              <NuxtImg src="/pa1.jpg" alt="Fotografía histórica del Palacio Nacional Medellín - 1920"
                 class="w-full h-80 sm:h-96 object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                loading="lazy"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none"></div>
+                loading="lazy" />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none">
+              </div>
               <div class="absolute bottom-4 left-4 right-4 text-center">
                 <p class="text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold">
                   Palacio Nacional • Medellín
@@ -458,9 +451,6 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- FOOTER                                     -->
-    <!-- ========================================== -->
     <Footer />
   </main>
 </template>
@@ -490,7 +480,7 @@ const { data: obrasHome } = await useAsyncData('obras-home-aleatorias', async ()
       .from('obras')
       .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, tecnica, precio, imagen_1, imagen_2, imagen_3, tipo')
       .order('created_at', { ascending: false })
-      .limit(40)
+      .limit(8)  // Solo mostramos 4 cards aleatorias; 8 da margen suficiente
 
     if (error || !data || data.length === 0) return []
 
@@ -782,17 +772,31 @@ html {
 .animate-fade-in-down {
   animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 .animate-fade-in {
   opacity: 0;
   animation: fadeIn 1.2s ease-in forwards 0.3s;
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 </style>

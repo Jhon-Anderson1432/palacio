@@ -657,13 +657,21 @@ const obtenerTecnica = (obra) => {
 
 // === 2. FETCH SSR: DATOS DESDE SUPABASE ===
 const { data: obrasData, status } = await useAsyncData('obras-galeria', async () => {
-  const { data, error } = await supabase
-    .from('obras')
-    .select('*')
-    .order('titulo', { ascending: true })
-  
-  if (error) throw error
-  return data || []
+  try {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, tecnica, medidas, precio, tipo, imagen_1, imagen_2, imagen_3')
+      .order('titulo', { ascending: true })
+    
+    if (error) {
+      console.error('Error cargando galería:', error.message)
+      return []
+    }
+    return data || []
+  } catch (err) {
+    console.error('Excepción cargando galería:', err)
+    return []
+  }
 })
 
 // === 3. LISTAS DERIVADAS PARA LOS SELECTORES ===
