@@ -31,9 +31,22 @@ export default defineNuxtConfig({
   // 2. EL BÚNKER DE SEGURIDAD (Route Rules)
   // ==========================================
   routeRules: {
+    // ── REDIRECCIONES 301 ──
     '/contacto': { redirect: { to: '/contactos', statusCode: 301 } },
     '/nuestros-eventos': { redirect: { to: '/eventos', statusCode: 301 } },
     '/preguntas-frecuentes': { redirect: { to: '/faq', statusCode: 301 } },
+
+    // ── CACHÉ SWR PARA PÁGINAS PÚBLICAS Stale-While-Revalidate: sirve la versión cacheada al instante y revalida en segundo plano tras expirar
+    '/': { swr: 1800 },
+    '/exposiciones': { swr: 1800 },
+    '/gastronomia/**': { swr: 7200 },
+    '/homegastro': { swr: 7200 },
+    '/historia': { swr: 86400 },
+    '/faq': { swr: 86400 },
+    '/contactos': { swr: 86400 },
+    '/eventos': { swr: 3600 },
+
+    // ── BLOQUEO DE INDEXACIÓN (PÁGINAS PRIVADAS) ──
     '/adminpanel02402110': { index: false },
     '/LoginAdmin': { index: false },
     '/terminal-pos': { index: false },
@@ -42,9 +55,9 @@ export default defineNuxtConfig({
     '/confirm': { index: false },
     '/api/**': { index: false }, // Oculta todos los endpoints de datos crudos
     // LA SOLUCIÓN A LOS 380 TENTÁCULOS: Bloqueo a nivel de cabecera HTTP
-    '/DetalleObra/**': { 
+    '/DetalleObra/**': {
       index: false,
-      headers: { 'X-Robots-Tag': 'noindex, nofollow' } 
+      headers: { 'X-Robots-Tag': 'noindex, nofollow' }
     }
   },
 
@@ -94,7 +107,7 @@ export default defineNuxtConfig({
         '/contactos',
         '/contacto',
         '/exposiciones',
-        '/DetalleObra/*', 
+        '/DetalleObra/*',
         '/homegastro',
         '/gastronomia/*',
         '/adminpanel02402110',
@@ -129,19 +142,19 @@ export default defineNuxtConfig({
         { charset: 'UTF-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
         { name: 'google-site-verification', content: '_t76qXScY-j8mS0Wz7rUYfuV4dF22O2eW1219YQiCPU' },
-        
+
         // Prevención de Errores de Rastreo y Directivas para Crawlers
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
-        
+
         // SEO Local y Autoría
         { name: 'author', content: 'Palacio Nacional Medellín' },
         { name: 'geo.region', content: 'CO-ANT' },
         { name: 'geo.placename', content: 'Medellín' },
-        
+
         // TEXTOS LIMPIOS: Sin rastros de "centro comercial" o "moda urbana"
         { name: 'description', content: 'Visita el histórico Palacio Nacional en el centro de Medellín. El destino definitivo donde convergen galerías de arte, historia patrimonial y la mejor gastronomía (Chao Cafe, Chao Pescao y Sky Bar).' },
         { name: 'keywords', content: 'Palacio Nacional Medellin, galerias de arte Medellin, monumento historico medellin, restaurantes centro Medellin, rooftop Medellin, Chao Pescao, Sky Bar, Chao Cafe, historia de medellin' },
-        
+
         // Red de Seguridad Open Graph (WhatsApp, Facebook, LinkedIn)
         { property: 'og:site_name', content: 'Palacio Nacional Medellín' },
         { property: 'og:type', content: 'website' },
@@ -152,7 +165,7 @@ export default defineNuxtConfig({
         { property: 'og:image', content: 'https://palacionacionalmedellin.com/logon.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
-        
+
         // Red de Seguridad Twitter Cards (X)
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@PalacioNacional' },

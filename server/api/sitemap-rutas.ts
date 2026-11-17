@@ -7,26 +7,14 @@ export default defineEventHandler(async (event) => {
 
   try {
     // ==========================================
-    // 1. EXTRAER OBRAS DE ARTE DINÁMICAS
+    // NOTA: La sección de obras se eliminó intencionalmente.
+    // /DetalleObra/** tiene noindex/nofollow, así que incluirlas
+    // en el sitemap era contradictorio y generaba queries innecesarios
+    // a Supabase (~380+ filas por cada regeneración del sitemap).
     // ==========================================
-    // Solo traemos el ID y la fecha para optimizar memoria
-    const { data: obras } = await supabase
-      .from('obras')
-      .select('id, created_at')
-
-    if (obras) {
-      obras.forEach((obra) => {
-        rutas.push({
-          loc: `/DetalleObra/${obra.id}`,
-          lastmod: obra.created_at,       // Le dice a Google cuándo se subió
-          changefreq: 'monthly',          // Una obra rara vez cambia
-          priority: 0.8                   // Prioridad alta en tu web
-        })
-      })
-    }
 
     // ==========================================
-    // 2. EXTRAER LOCALES GASTRONÓMICOS
+    // 1. EXTRAER LOCALES GASTRONÓMICOS
     // ==========================================
     // Traemos la columna 'local' para saber qué restaurantes están activos
     const { data: menu } = await supabase
@@ -47,7 +35,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // ==========================================
-    // 3. PÁGINAS INSTITUCIONALES (FAQ Y EVENTOS)
+    // 2. PÁGINAS INSTITUCIONALES (FAQ Y EVENTOS)
     // ==========================================
     rutas.push({
       loc: '/faq',

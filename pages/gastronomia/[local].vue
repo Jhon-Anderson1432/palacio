@@ -350,7 +350,7 @@ const { data: fetchedMenu, pending: isPending } = await useAsyncData(
   async () => {
     const { data, error } = await supabase
       .from('menu_gastronomia')
-      .select('*')
+      .select('id, nombre, nombre_en, nombre_fr, nombre_ja, descripcion, descripcion_en, descripcion_fr, descripcion_ja, precio, etiqueta, categoria, subcategoria, local')
       .ilike('local', `%${localActual.value}%`)
       .order('nombre', { ascending: true })
       
