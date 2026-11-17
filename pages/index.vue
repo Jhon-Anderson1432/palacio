@@ -480,7 +480,7 @@ const { data: obrasHome } = await useAsyncData('obras-home-aleatorias', async ()
       .from('obras')
       .select('id, titulo, titulo_en, titulo_fr, titulo_ja, autor, tecnica, precio, imagen_1, imagen_2, imagen_3, tipo')
       .order('created_at', { ascending: false })
-      .limit(8)  // Solo mostramos 4 cards aleatorias; 8 da margen suficiente
+      .limit(40) // Universo suficiente para garantizar variedad aleatoria en cada recarga
 
     if (error || !data || data.length === 0) return []
 
