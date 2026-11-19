@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[999] bg-[#0a0a0a] overflow-y-auto text-white font-sans flex antialiased">
+  <div class="fixed inset-0 z-[999] bg-[#0a0a0a] overflow-y-auto text-white font-sans flex antialiased w-full max-w-[100vw] overflow-x-hidden">
 
     <div v-if="menuAbierto" @click="menuAbierto = false"
       class="fixed inset-0 bg-black/80 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
@@ -24,13 +24,12 @@
       <nav class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
         <div v-if="rolUsuario === 'admin_galeria' || rolUsuario === 'asistente_galeria' || rolUsuario === 'superadmin'"
           class="space-y-4">
-          <button @click="pestañaActiva = 'inventario'; menuAbierto = false"
+          <button @click="cambiarPestaña('inventario')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'inventario' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Inventario Arte</span>
           </button>
 
-          <button v-if="rolUsuario !== 'asistente_galeria'"
-            @click="pestañaActiva = 'estadisticas'; calcularEstadisticas(); menuAbierto = false"
+          <button v-if="rolUsuario !== 'asistente_galeria'" @click="cambiarPestaña('estadisticas')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Métricas Arte</span>
           </button>
@@ -38,17 +37,17 @@
 
         <div v-if="rolUsuario === 'admin_cafe' || rolUsuario === 'superadmin'"
           class="space-y-4 pt-4 border-t border-white/5">
-          <button @click="pestañaActiva = 'caja'; fetchOrdenesCaja(); menuAbierto = false"
+          <button @click="cambiarPestaña('caja')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'caja' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Caja Registradora</span>
           </button>
 
-          <button @click="pestañaActiva = 'estadisticas_pos'; calcularEstadisticasPos(); menuAbierto = false"
+          <button @click="cambiarPestaña('estadisticas_pos')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'estadisticas_pos' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Métricas POS</span>
           </button>
 
-          <button @click="pestañaActiva = 'gastronomia'; fetchGastronomia(); menuAbierto = false"
+          <button @click="cambiarPestaña('gastronomia')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'gastronomia' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Gestión Menú</span>
           </button>
@@ -56,7 +55,7 @@
 
         <div v-if="rolUsuario === 'admin_seguridad' || rolUsuario === 'superadmin'"
           class="space-y-4 pt-4 border-t border-white/5">
-          <button @click="pestañaActiva = 'seguridad'; fetchSeguridad(); menuAbierto = false"
+          <button @click="cambiarPestaña('seguridad')"
             :class="['w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-300 focus:outline-none', pestañaActiva === 'seguridad' ? 'text-[#D4AF37] bg-[#D4AF37]/10 shadow-inner' : 'text-neutral-500 hover:text-white hover:bg-white/5']">
             <span class="font-medium text-sm uppercase tracking-widest">Monitoreo Seguridad</span>
           </button>
@@ -74,55 +73,57 @@
       </NuxtLink>
     </aside>
 
-    <main class="flex-1 flex flex-col relative">
+    <main class="flex-1 flex flex-col relative min-w-0 w-full max-w-full overflow-x-hidden">
       <nav
-        class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-4 md:p-6 flex items-center justify-between gap-3 md:gap-6 shadow-sm">
+        class="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-white/5 p-3 sm:p-4 md:p-6 flex items-center justify-between gap-2 sm:gap-3 md:gap-6 shadow-sm w-full min-w-0">
 
         <button @click="menuAbierto = true"
-          class="md:hidden text-[#D4AF37] p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          class="shrink-0 md:hidden text-[#D4AF37] p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50"
+          aria-label="Abrir menú de navegación">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
 
         <div v-if="pestañaActiva === 'inventario' || pestañaActiva === 'gastronomia'"
-          class="flex-1 max-w-xl relative group">
+          class="flex-1 min-w-0 max-w-xl relative group">
           <input v-model="searchQuery" type="text"
             :placeholder="pestañaActiva === 'inventario' ? 'Buscar obra...' : 'Buscar plato...'"
-            class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 md:py-3 md:pl-12 pr-4 text-xs md:text-sm outline-none focus:border-[#D4AF37]/50 focus:bg-white/10 focus:ring-2 focus:ring-[#D4AF37]/20 transition-all duration-300 text-white" />
+            class="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-9 pr-3 sm:py-2.5 sm:pl-10 md:py-3 md:pl-12 md:pr-4 text-xs md:text-sm outline-none focus:border-[#D4AF37]/50 focus:bg-white/10 focus:ring-2 focus:ring-[#D4AF37]/20 transition-all duration-300 text-white" />
           <span
-            class="absolute left-4 top-3 md:left-5 md:top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors">🔍</span>
+            class="absolute left-3 top-2.5 sm:left-4 sm:top-3 md:left-5 md:top-3.5 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors text-xs sm:text-sm">🔍</span>
         </div>
-        <div v-else class="flex-1">
-          <h2 class="text-lg md:text-xl font-serif text-white truncate drop-shadow-md">
+        <div v-else class="flex-1 min-w-0">
+          <h2 class="text-base sm:text-lg md:text-xl font-serif text-white truncate drop-shadow-md">
             {{ pestañaActiva === 'caja' ? 'Sistema POS' : (pestañaActiva === 'estadisticas_pos' ? 'Métricas de Ventas' :
               (pestañaActiva === 'seguridad' ? 'Control de Vigilancia' : 'Estadísticas de la Galería')) }}
           </h2>
         </div>
 
         <button v-if="pestañaActiva === 'inventario'" @click="openForm()"
-          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+          class="shrink-0 bg-[#D4AF37] text-black px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-1 sm:gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> OBRA
         </button>
 
         <button v-if="pestañaActiva === 'gastronomia'" @click="openGastroForm()"
-          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+          class="shrink-0 bg-[#D4AF37] text-black px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-1 sm:gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">AGREGAR</span> PLATO
         </button>
 
         <button v-if="pestañaActiva === 'seguridad'" @click="abrirModalQR()"
-          class="bg-[#D4AF37] text-black px-4 py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
+          class="shrink-0 bg-[#D4AF37] text-black px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-full font-bold hover:bg-yellow-600 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300 active:scale-95 text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-1 sm:gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-[#D4AF37]">
           <span class="text-sm md:text-base">+</span> <span class="hidden sm:inline">NUEVO</span> PUNTO QR
         </button>
 
         <button v-if="pestañaActiva === 'caja' || pestañaActiva === 'seguridad'"
-          @click="pestañaActiva === 'caja' ? fetchOrdenesCaja() : fetchSeguridad()"
-          class="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">
+          @click="cambiarPestaña(pestañaActiva, true)"
+          class="shrink-0 p-2 sm:p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30"
+          title="Actualizar datos">
           🔄
         </button>
       </nav>
 
-      <div class="p-4 md:p-8 lg:p-12 overflow-y-auto">
+      <div class="p-3 sm:p-4 md:p-8 lg:p-12 overflow-y-auto w-full min-w-0 max-w-full">
 
         <div v-if="pestañaActiva === 'caja'">
           <header class="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -176,7 +177,7 @@
                   <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
                     <div>
                       <h3 class="text-2xl font-serif text-white">Mesa: <span class="text-[#D4AF37] drop-shadow-sm">{{
-                          orden.mesa }}</span></h3>
+                        orden.mesa }}</span></h3>
                       <p class="text-[11px] text-neutral-400 uppercase tracking-widest mt-1">Mesera: <span
                           class="text-white font-bold">{{ orden.perfiles?.nombre || 'Desconocida' }}</span></p>
                       <p class="text-[9px] text-neutral-600 uppercase tracking-widest mt-1">{{ new
@@ -359,7 +360,7 @@
                           <span class="text-gray-300 truncate pr-2 capitalize">{{ prod.toLowerCase() }}</span>
                           <span
                             class="text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded-md whitespace-nowrap">x{{
-                            cant }}</span>
+                              cant }}</span>
                         </div>
                       </div>
                     </div>
@@ -640,18 +641,18 @@
           </div>
         </div>
 
-        <div v-if="pestañaActiva === 'gastronomia'">
-          <header class="mb-6">
-            <h1 class="text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
-            <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">
+        <div v-if="pestañaActiva === 'gastronomia'" class="w-full min-w-0 max-w-full">
+          <header class="mb-4 sm:mb-6">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-serif text-white">Gestión Gastronómica</h1>
+            <p v-if="localAsignado" class="text-neutral-500 text-[10px] md:text-xs mt-1.5 sm:mt-2 uppercase tracking-[0.2em]">
               Filtrado por
               sede: {{ localAsignado.replace(/-/g, ' ') }}</p>
-            <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
+            <p v-else class="text-neutral-500 text-[10px] md:text-xs mt-1.5 sm:mt-2 uppercase tracking-[0.2em]">Gestión Global</p>
           </header>
 
-          <div class="mb-4 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
+          <div class="mb-3 sm:mb-4 flex overflow-x-auto gap-2 sm:gap-3 hide-scrollbar pb-2 w-full min-w-0 max-w-full">
             <button @click="categoriaActivaGastro = 'todas'" :class="[
-              'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+              'shrink-0 whitespace-nowrap uppercase tracking-widest text-[10px] sm:text-[11px] px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
               categoriaActivaGastro === 'todas'
                 ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]'
                 : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
@@ -660,7 +661,7 @@
             </button>
             <button v-for="cat in categoriasGastroDisponiblesMenu" :key="cat" @click="categoriaActivaGastro = cat"
               :class="[
-                'whitespace-nowrap uppercase tracking-widest text-[11px] px-5 py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+                'shrink-0 whitespace-nowrap uppercase tracking-widest text-[10px] sm:text-[11px] px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-medium focus:outline-none',
                 categoriaActivaGastro === cat
                   ? 'bg-[#D4AF37] text-black shadow-[0_4px_15px_rgba(212,175,55,0.3)]'
                   : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
@@ -670,9 +671,9 @@
           </div>
 
           <div v-if="categoriaActivaGastro !== 'todas' && subcategoriasGastroDisponiblesMenu.length > 0"
-            class="mb-8 flex overflow-x-auto gap-3 hide-scrollbar pb-2">
+            class="mb-6 sm:mb-8 flex overflow-x-auto gap-2 sm:gap-3 hide-scrollbar pb-2 w-full min-w-0 max-w-full">
             <button @click="subcategoriaActivaGastro = 'todas'" :class="[
-              'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+              'shrink-0 whitespace-nowrap uppercase tracking-widest text-[9px] sm:text-[10px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
               subcategoriaActivaGastro === 'todas'
                 ? 'bg-[#D4AF37]/80 text-black shadow-sm'
                 : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
@@ -681,7 +682,7 @@
             </button>
             <button v-for="sub in subcategoriasGastroDisponiblesMenu" :key="sub" @click="subcategoriaActivaGastro = sub"
               :class="[
-                'whitespace-nowrap uppercase tracking-widest text-[10px] px-4 py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
+                'shrink-0 whitespace-nowrap uppercase tracking-widest text-[9px] sm:text-[10px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-300 font-medium focus:outline-none',
                 subcategoriaActivaGastro === sub
                   ? 'bg-[#D4AF37]/80 text-black shadow-sm'
                   : 'bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20'
@@ -694,65 +695,65 @@
             class="text-center py-20 text-neutral-500 animate-pulse text-xs uppercase tracking-widest">
             Cargando Menús...</div>
 
-          <div v-else class="space-y-10">
+          <div v-else class="space-y-8 sm:space-y-10 w-full min-w-0">
             <div v-if="gastroFiltrados.length === 0"
               class="text-center py-20 text-neutral-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
               No se encontraron platos con ese filtro.
             </div>
 
-            <div v-for="(subcategorias, categoriaId) in menuAgrupado" :key="categoriaId" class="mb-10">
-              <h2 class="text-2xl md:text-3xl font-serif text-[#D4AF37] mb-6 border-b border-[#D4AF37]/20 pb-3">{{
+            <div v-for="(subcategorias, categoriaId) in menuAgrupado" :key="categoriaId" class="mb-8 sm:mb-10 w-full min-w-0">
+              <h2 class="text-xl sm:text-2xl md:text-3xl font-serif text-[#D4AF37] mb-4 sm:mb-6 border-b border-[#D4AF37]/20 pb-2.5 sm:pb-3">{{
                 obtenerNombreCategoria(categoriaId) }}</h2>
 
-              <div v-for="(platos, subcategoriaId) in subcategorias" :key="subcategoriaId" class="mb-8 last:mb-0">
+              <div v-for="(platos, subcategoriaId) in subcategorias" :key="subcategoriaId" class="mb-6 sm:mb-8 last:mb-0 w-full min-w-0">
                 <h3 v-if="subcategoriaId !== 'general' && subcategoriaId !== 'null'"
-                  class="text-sm md:text-base text-white/80 font-bold uppercase tracking-[0.15em] mb-4 pl-2 border-l-2 border-[#D4AF37]">
+                  class="text-xs sm:text-sm md:text-base text-white/80 font-bold uppercase tracking-[0.15em] mb-3 sm:mb-4 pl-2 border-l-2 border-[#D4AF37]">
                   {{ obtenerNombreSubcategoria(subcategoriaId) }}
                 </h3>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 md:gap-8 w-full min-w-0">
                   <div v-for="item in platos" :key="item.id"
-                    class="bg-neutral-900 border border-white/5 rounded-3xl p-4 md:p-5 hover:border-[#D4AF37]/20 transition-all duration-300 relative flex flex-col justify-between shadow-lg hover:shadow-xl">
+                    class="bg-neutral-900 border border-white/5 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 hover:border-[#D4AF37]/20 transition-all duration-300 relative flex flex-col justify-between shadow-lg hover:shadow-xl w-full min-w-0 overflow-hidden box-border">
                     <div>
-                      <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
-                        <div class="pr-2">
-                          <h3 class="text-white font-serif text-lg md:text-xl leading-tight">{{
+                      <div class="flex justify-between items-start gap-2 mb-3 sm:mb-4 border-b border-white/10 pb-3 sm:pb-4">
+                        <div class="min-w-0 flex-1 pr-1 sm:pr-2">
+                          <h3 class="text-white font-serif text-base sm:text-lg md:text-xl leading-tight break-words">{{
                             formatoTitulo(item.nombre) }}
                           </h3>
-                          <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1">{{
+                          <p v-if="item.nombre_en" class="text-neutral-500 text-[10px] italic mt-1 break-words">{{
                             formatoTitulo(item.nombre_en) }}</p>
                         </div>
                         <span
-                          class="bg-black/60 backdrop-blur-md px-2 py-1 md:px-3 rounded-full border border-white/10 text-[10px] text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap shadow-sm">${{
-                          item.precio }}</span>
+                          class="shrink-0 bg-black/60 backdrop-blur-md px-2.5 py-1 md:px-3 rounded-full border border-white/10 text-[10px] sm:text-xs text-[#D4AF37] font-bold tracking-tighter whitespace-nowrap shadow-sm">${{
+                            item.precio }}</span>
                       </div>
 
-                      <div class="space-y-2 mb-6">
-                        <p v-if="item.descripcion" class="text-gray-400 text-[10px] md:text-xs line-clamp-2">{{
+                      <div class="space-y-2 mb-4 sm:mb-6">
+                        <p v-if="item.descripcion" class="text-gray-400 text-[10px] sm:text-xs line-clamp-3 sm:line-clamp-2 break-words">{{
                           formatoParrafo(item.descripcion) }}</p>
                         <div
-                          class="flex flex-wrap gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-3">
+                          class="flex flex-wrap gap-1.5 sm:gap-2 text-[8px] text-white font-bold uppercase tracking-widest mt-2 sm:mt-3">
                           <span
-                            class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded-sm border border-[#D4AF37]/20">{{
+                            class="bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 sm:py-1 rounded-sm border border-[#D4AF37]/20 max-w-full truncate">{{
                               item.local ? item.local.replace(/-/g, ' ').replace(/,/g, ' | ') : 'Global' }}</span>
-                          <span class="bg-white/10 px-2 py-1 rounded-sm border border-white/10">{{
+                          <span class="bg-white/10 px-2 py-0.5 sm:py-1 rounded-sm border border-white/10 max-w-full truncate">{{
                             obtenerNombreCategoria(item.categoria) }}</span>
                           <span v-if="item.subcategoria"
-                            class="bg-white/20 text-white px-2 py-1 rounded-sm border border-white/10">{{
-                            obtenerNombreSubcategoria(item.subcategoria) }}</span>
+                            class="bg-white/20 text-white px-2 py-0.5 sm:py-1 rounded-sm border border-white/10 max-w-full truncate">{{
+                              obtenerNombreSubcategoria(item.subcategoria) }}</span>
                           <span v-if="item.etiqueta"
-                            class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-sm border border-blue-500/20">{{
-                            item.etiqueta
+                            class="bg-blue-500/20 text-blue-400 px-2 py-0.5 sm:py-1 rounded-sm border border-blue-500/20 max-w-full truncate">{{
+                              item.etiqueta
                             }}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div class="flex gap-2 mt-auto pt-4 border-t border-white/5">
+                    <div class="flex items-center gap-2 mt-auto pt-3 sm:pt-4 border-t border-white/5">
                       <button @click="openGastroForm(item)"
-                        class="flex-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
+                        class="flex-1 min-w-0 py-2 sm:py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 truncate text-center focus:outline-none focus:ring-2 focus:ring-white/30">Editar</button>
                       <button @click="deleteProductoGastro(item)"
-                        class="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
+                        class="shrink-0 py-2 sm:py-2.5 px-3 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50">Eliminar</button>
                     </div>
                   </div>
                 </div>
@@ -786,10 +787,14 @@
             </div>
 
             <!-- PODIO TOP 3 OBRAS DESTACADAS (MÁS VISITADAS) -->
-            <div class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
-              <div class="absolute -right-10 -bottom-10 bg-[#D4AF37]/5 w-48 h-48 rounded-full blur-3xl pointer-events-none"></div>
+            <div
+              class="bg-neutral-900 border border-[#D4AF37]/30 rounded-3xl p-5 md:p-8 shadow-xl relative overflow-hidden">
+              <div
+                class="absolute -right-10 -bottom-10 bg-[#D4AF37]/5 w-48 h-48 rounded-full blur-3xl pointer-events-none">
+              </div>
 
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4 relative z-10 gap-4">
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4 relative z-10 gap-4">
                 <div>
                   <div class="flex items-center gap-2">
                     <span class="text-xl">🏆</span>
@@ -801,37 +806,39 @@
                 </div>
                 <button @click="cargarObrasDestacadas" :disabled="cargandoDestacadas"
                   class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/40 px-3 py-1.5 rounded-xl transition-all duration-300 flex items-center gap-1.5 focus:outline-none">
-                  <span :class="{'animate-spin': cargandoDestacadas}">🔄</span>
+                  <span :class="{ 'animate-spin': cargandoDestacadas }">🔄</span>
                   <span>{{ cargandoDestacadas ? 'Actualizando...' : 'Actualizar' }}</span>
                 </button>
               </div>
 
               <!-- Estado Cargando -->
               <div v-if="cargandoDestacadas" class="py-12 text-center text-neutral-400 text-xs">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4AF37] border-r-transparent mb-3"></div>
+                <div
+                  class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4AF37] border-r-transparent mb-3">
+                </div>
                 <p class="uppercase tracking-widest text-[10px]">Cargando obras destacadas...</p>
               </div>
 
               <!-- Podio Top 3 -->
-              <div v-else-if="obrasDestacadas.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative z-10">
-                <div v-for="(obra, idx) in obrasDestacadas" :key="obra.id"
-                  :class="[
-                    'rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden',
-                    idx === 0 
-                      ? 'bg-gradient-to-b from-[#D4AF37]/15 to-neutral-900 border-2 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/10' 
-                      : idx === 1 
-                        ? 'bg-neutral-900/90 border border-neutral-400/40 hover:border-neutral-300' 
-                        : 'bg-neutral-900/90 border border-amber-600/40 hover:border-amber-500'
-                  ]">
-                  
+              <div v-else-if="obrasDestacadas.length > 0"
+                class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative z-10">
+                <div v-for="(obra, idx) in obrasDestacadas" :key="obra.id" :class="[
+                  'rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden',
+                  idx === 0
+                    ? 'bg-gradient-to-b from-[#D4AF37]/15 to-neutral-900 border-2 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/10'
+                    : idx === 1
+                      ? 'bg-neutral-900/90 border border-neutral-400/40 hover:border-neutral-300'
+                      : 'bg-neutral-900/90 border border-amber-600/40 hover:border-amber-500'
+                ]">
+
                   <!-- Insignia de Medalla / Puesto -->
                   <div class="flex items-center justify-between mb-3">
                     <span :class="[
                       'px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1',
-                      idx === 0 
-                        ? 'bg-[#D4AF37] text-black shadow-md' 
-                        : idx === 1 
-                          ? 'bg-neutral-300 text-black' 
+                      idx === 0
+                        ? 'bg-[#D4AF37] text-black shadow-md'
+                        : idx === 1
+                          ? 'bg-neutral-300 text-black'
                           : 'bg-amber-700 text-white'
                     ]">
                       <span>{{ idx === 0 ? '🥇 1º Puesto' : (idx === 1 ? '🥈 2º Puesto' : '🥉 3º Puesto') }}</span>
@@ -846,18 +853,22 @@
                   <!-- Imagen de la Obra -->
                   <div class="relative w-full h-44 rounded-xl overflow-hidden bg-black/50 mb-3 border border-white/5">
                     <img v-if="obra.imagen_1" :src="obra.imagen_1" :alt="obra.titulo"
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy" />
                     <div v-else class="w-full h-full flex items-center justify-center text-neutral-600 text-xs">
                       Sin Imagen
                     </div>
-                    <span class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-[9px] text-neutral-300 uppercase px-2 py-0.5 rounded-md font-mono">
+                    <span
+                      class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-[9px] text-neutral-300 uppercase px-2 py-0.5 rounded-md font-mono">
                       {{ obra.tipo || 'Arte' }}
                     </span>
                   </div>
 
                   <!-- Información de la Obra -->
                   <div class="space-y-1 mb-4 flex-1">
-                    <h4 class="font-serif text-sm md:text-base text-white font-bold line-clamp-1 group-hover:text-[#D4AF37] transition-colors" :title="obra.titulo">
+                    <h4
+                      class="font-serif text-sm md:text-base text-white font-bold line-clamp-1 group-hover:text-[#D4AF37] transition-colors"
+                      :title="obra.titulo">
                       {{ formatoTitulo(obra.titulo) }}
                     </h4>
                     <p class="text-xs text-neutral-300 truncate">
@@ -885,11 +896,14 @@
               </div>
 
               <!-- Estado Vacío -->
-              <div v-else class="py-10 text-center text-neutral-400 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl relative z-10 px-4">
+              <div v-else
+                class="py-10 text-center text-neutral-400 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl relative z-10 px-4">
                 <span class="text-3xl mb-2 block">✨</span>
                 <p class="text-xs md:text-sm font-medium text-neutral-300 mb-1">Aún no hay visitas registradas</p>
                 <p class="text-[10px] md:text-xs text-neutral-500 max-w-md mx-auto">
-                  A medida que el público explore las obras en la galería y acceda al detalle de cada una, aquí se mostrarán automáticamente las 3 más populares.
+                  A medida que el público explore las obras en la galería y acceda al detalle de cada una, aquí se
+                  mostrarán
+                  automáticamente las 3 más populares.
                 </p>
               </div>
             </div>
@@ -1019,70 +1033,50 @@
             <!-- Combobox de Autor con Menú Desplegable y Sugerencias -->
             <div :class="['relative', dropdownAutorAbierto ? 'z-40' : 'z-10']" ref="autorComboboxRef">
               <div class="relative">
-                <input 
-                  v-model="form.autor" 
-                  @focus="dropdownAutorAbierto = true"
-                  @input="dropdownAutorAbierto = true"
+                <input v-model="form.autor" @focus="dropdownAutorAbierto = true" @input="dropdownAutorAbierto = true"
                   placeholder="AUTOR (BUSCAR O ESCRIBIR NUEVO)"
                   class="w-full bg-white/5 border border-white/10 pl-3 pr-16 py-3 rounded-xl outline-none text-xs md:text-sm text-white focus:border-[#D4AF37]/50 focus:ring-2 focus:ring-[#D4AF37]/20 uppercase transition-all placeholder:text-neutral-500"
-                  :class="{ 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20': dropdownAutorAbierto }"
-                  required
-                  autocomplete="off"
-                >
-                
+                  :class="{ 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20': dropdownAutorAbierto }" required
+                  autocomplete="off">
+
                 <!-- Botón para limpiar si hay texto -->
-                <button 
-                  v-if="form.autor"
-                  type="button"
-                  @click="form.autor = ''; dropdownAutorAbierto = true"
+                <button v-if="form.autor" type="button" @click="form.autor = ''; dropdownAutorAbierto = true"
                   class="absolute right-8 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 text-xs transition-colors"
-                  title="Limpiar autor"
-                >
+                  title="Limpiar autor">
                   ✕
                 </button>
 
                 <!-- Flecha para abrir/cerrar menú desplegable -->
-                <button 
-                  type="button" 
-                  @click="toggleDropdownAutor"
+                <button type="button" @click="toggleDropdownAutor"
                   class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#D4AF37] p-1 text-xs transition-transform duration-200"
-                  :class="{ 'rotate-180 text-[#D4AF37]': dropdownAutorAbierto }"
-                  aria-label="Abrir listado de autores"
-                >
+                  :class="{ 'rotate-180 text-[#D4AF37]': dropdownAutorAbierto }" aria-label="Abrir listado de autores">
                   ▼
                 </button>
               </div>
 
               <!-- Menú desplegable con sugerencias -->
               <transition name="dropdown-slide">
-                <div 
-                  v-if="dropdownAutorAbierto" 
-                  class="absolute left-0 right-0 top-full mt-1.5 bg-[#0d0d0d] border border-[#D4AF37]/30 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-[60] max-h-56 overflow-y-auto py-1.5 backdrop-blur-xl custom-scrollbar"
-                >
+                <div v-if="dropdownAutorAbierto"
+                  class="absolute left-0 right-0 top-full mt-1.5 bg-[#0d0d0d] border border-[#D4AF37]/30 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-[60] max-h-56 overflow-y-auto py-1.5 backdrop-blur-xl custom-scrollbar">
                   <!-- Indicador de total / estado -->
-                  <div class="px-3 py-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold border-b border-white/5 flex justify-between items-center select-none">
+                  <div
+                    class="px-3 py-1.5 text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold border-b border-white/5 flex justify-between items-center select-none">
                     <span>Artistas registrados</span>
                     <span class="text-neutral-500">{{ autoresSugeridos.length }}</span>
                   </div>
 
                   <!-- Lista de autores sugeridos -->
-                  <button 
-                    v-for="autor in autoresSugeridos" 
-                    :key="autor"
-                    type="button"
-                    @click="seleccionarAutor(autor)"
+                  <button v-for="autor in autoresSugeridos" :key="autor" type="button" @click="seleccionarAutor(autor)"
                     class="w-full text-left px-3.5 py-2 text-xs text-neutral-300 hover:bg-[#D4AF37]/15 hover:text-[#D4AF37] transition-colors flex items-center justify-between group"
-                    :class="{ 'text-[#D4AF37] font-bold bg-[#D4AF37]/10': form.autor && form.autor.toLowerCase() === autor.toLowerCase() }"
-                  >
+                    :class="{ 'text-[#D4AF37] font-bold bg-[#D4AF37]/10': form.autor && form.autor.toLowerCase() === autor.toLowerCase() }">
                     <span class="truncate">{{ autor }}</span>
-                    <span v-if="form.autor && form.autor.toLowerCase() === autor.toLowerCase()" class="text-[#D4AF37] text-xs">✓</span>
+                    <span v-if="form.autor && form.autor.toLowerCase() === autor.toLowerCase()"
+                      class="text-[#D4AF37] text-xs">✓</span>
                   </button>
 
                   <!-- Mensaje cuando es un autor nuevo -->
-                  <div 
-                    v-if="autoresSugeridos.length === 0" 
-                    class="px-4 py-3 text-xs text-neutral-400 italic bg-white/[0.02]"
-                  >
+                  <div v-if="autoresSugeridos.length === 0"
+                    class="px-4 py-3 text-xs text-neutral-400 italic bg-white/[0.02]">
                     <p class="text-amber-400/90 font-medium not-italic">✨ Nuevo autor:</p>
                     <p class="text-white font-semibold mt-0.5 truncate not-italic">"{{ form.autor }}"</p>
                     <p class="text-[10px] text-neutral-500 mt-1">Se guardará como autor de la obra al publicar.</p>
@@ -1371,6 +1365,16 @@ const pestañaActiva = ref('inventario')
 const searchQuery = ref('')
 const menuAbierto = ref(false)
 
+// Control reactivo de carga diferida (lazy loading) por pestaña
+const pestañasCargadas = reactive({
+  inventario: false,
+  estadisticas: false,
+  caja: false,
+  estadisticas_pos: false,
+  gastronomia: false,
+  seguridad: false
+})
+
 const rolUsuario = ref('superadmin')
 const localAsignado = ref(null)
 
@@ -1611,30 +1615,72 @@ const cargarPerfilYDatos = async () => {
       }
     }
 
+    let tabInicial = 'inventario'
     if (perfil.rol === 'admin_cafe') {
-      pestañaActiva.value = 'caja'
-      fetchOrdenesCaja()
-      inicializarRealtime()
-      fetchGastronomia()
-    } else if (perfil.rol === 'admin_galeria' || perfil.rol === 'asistente_galeria') {
-      pestañaActiva.value = 'inventario'
-      fetchObras()
+      tabInicial = 'caja'
     } else if (perfil.rol === 'admin_seguridad') {
-      pestañaActiva.value = 'seguridad'
-      fetchSeguridad()
-      inicializarRealtimeSeguridad()
-    } else {
-      pestañaActiva.value = 'inventario'
-      fetchObras()
-      fetchGastronomia()
-      fetchOrdenesCaja()
-      fetchSeguridad()
-      inicializarRealtime()
-      inicializarRealtimeSeguridad()
+      tabInicial = 'seguridad'
     }
+    await cambiarPestaña(tabInicial)
   } else {
-    fetchObras()
-    fetchGastronomia()
+    await cambiarPestaña('inventario')
+  }
+}
+
+// Despacho bajo demanda con caché en sesión para cada pestaña
+const cambiarPestaña = async (tab, forzarRecarga = false) => {
+  pestañaActiva.value = tab
+  menuAbierto.value = false
+
+  const requiereCarga = forzarRecarga || !pestañasCargadas[tab]
+
+  switch (tab) {
+    case 'inventario':
+      if (requiereCarga) {
+        await fetchObras()
+        pestañasCargadas.inventario = true
+      }
+      break
+
+    case 'estadisticas':
+      if (requiereCarga) {
+        await calcularEstadisticas()
+        pestañasCargadas.estadisticas = true
+      }
+      break
+
+    case 'caja':
+      if (requiereCarga) {
+        await fetchOrdenesCaja()
+        inicializarRealtime()
+        pestañasCargadas.caja = true
+      }
+      break
+
+    case 'estadisticas_pos':
+      if (requiereCarga) {
+        await calcularEstadisticasPos()
+        pestañasCargadas.estadisticas_pos = true
+      }
+      break
+
+    case 'gastronomia':
+      if (requiereCarga) {
+        await fetchGastronomia()
+        pestañasCargadas.gastronomia = true
+      }
+      break
+
+    case 'seguridad':
+      if (requiereCarga) {
+        await Promise.all([
+          fetchSeguridad(),
+          puntosDeControl.value.length === 0 ? fetchPuntosControl() : Promise.resolve()
+        ])
+        inicializarRealtimeSeguridad()
+        pestañasCargadas.seguridad = true
+      }
+      break
   }
 }
 
@@ -2372,6 +2418,9 @@ const handleImageChange = (e, index) => {
 }
 
 const openForm = (obra = null) => {
+  if (listaAutores.value.length === 0) {
+    cargarAutores()
+  }
   imgFiles[1] = null; imgFiles[2] = null; imgFiles[3] = null;
   dropdownAutorAbierto.value = false
   if (obra) {
@@ -2826,8 +2875,6 @@ let handleClickFueraAutor = null
 
 onMounted(() => {
   cargarPerfilYDatos()
-  fetchPuntosControl()
-  cargarAutores()
 
   handleClickFueraAutor = (e) => {
     if (autorComboboxRef.value && !autorComboboxRef.value.contains(e.target)) {
@@ -2872,6 +2919,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .dropdown-slide-leave-active {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .dropdown-slide-enter-from,
 .dropdown-slide-leave-to {
   opacity: 0;
@@ -2882,13 +2930,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.02);
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(212, 175, 55, 0.3);
   border-radius: 9999px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 55, 0.6);
 }
