@@ -7,11 +7,6 @@ on:
         description: 'Escribe "RECUPERAR" para confirmar la transferencia de Reserva hacia Principal'
         required: true
         default: 'RECUPERAR'
-      sincronizar_vistas:
-        description: 'Sincronizar y preservar contador de vistas (visitas) de las obras'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   failback:
@@ -44,5 +39,4 @@ jobs:
           PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
           BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
           BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
-          SYNC_VISTAS: ${{ github.event.inputs.sincronizar_vistas || 'true' }}
         run: node sync-failback.mjs

@@ -6,7 +6,6 @@ const PRIMARY_URL = process.env.PRIMARY_SUPABASE_URL
 const PRIMARY_KEY = process.env.PRIMARY_SERVICE_ROLE_KEY
 const BACKUP_URL  = process.env.BACKUP_SUPABASE_URL
 const BACKUP_KEY  = process.env.BACKUP_SERVICE_ROLE_KEY
-const SYNC_VISTAS = process.env.SYNC_VISTAS !== 'false'
 
 if (!PRIMARY_URL || !PRIMARY_KEY || !BACKUP_URL || !BACKUP_KEY) {
   console.error('Error: Faltan variables de entorno requeridas:')
@@ -209,16 +208,7 @@ function rewriteUrlsToPrimary(rows, fields = []) {
 
 // Fusión inteligente y segura de vistas (visitas) para evitar pérdida o sobrescritura regresiva en Principal
 function mergeVistasObras(sourceRows, destRows) {
-  if (!SYNC_VISTAS) {
-    console.log('  Sincronización de vistas desactivada (SYNC_VISTAS=false). Preservando vistas existentes de Principal.')
-    const destMap = new Map(destRows.map(r => [r.id, r]))
-    return sourceRows.map(row => {
-      const destRow = destMap.get(row.id)
-      return destRow ? { ...row, visitas: destRow.visitas ?? 0 } : row
-    })
-  }
-
-  console.log('  Analizando y sincronizando contador de vistas (visitas) hacia Principal...')
+  console.log('  Sincronizando automáticamente contador de vistas (visitas) hacia Principal...')
   const destMap = new Map(destRows.map(r => [r.id, r]))
   let obrasConNuevasVistas = 0
   let vistasTransferidas = 0
@@ -384,7 +374,6 @@ async function main() {
   console.log('========================================================')
   console.log('FAILBACK: Recuperación DB Principal desde Reserva')
   console.log(`Dirección : Reserva (${BACKUP_URL}) -> Principal (${PRIMARY_URL})`)
-  console.log(`Sincronizar Vistas: ${SYNC_VISTAS ? 'ACTIVO (Math.max)' : 'INACTIVO'}`)
   console.log(`Fecha/Hora: ${new Date().toISOString()}`)
   console.log('========================================================')
 

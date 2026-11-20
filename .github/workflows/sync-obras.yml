@@ -6,12 +6,6 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
     # Permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
-    inputs:
-      sincronizar_vistas:
-        description: 'Sincronizar y reflejar vistas en la DB de Reserva'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   sync-obras:
@@ -38,5 +32,4 @@ jobs:
           PRIMARY_SERVICE_ROLE_KEY: ${{ secrets.PRIMARY_SERVICE_ROLE_KEY }}
           BACKUP_SUPABASE_URL: ${{ secrets.BACKUP_SUPABASE_URL }}
           BACKUP_SERVICE_ROLE_KEY: ${{ secrets.BACKUP_SERVICE_ROLE_KEY }}
-          SYNC_VISTAS: ${{ github.event.inputs.sincronizar_vistas || 'true' }}
         run: node sync-obras.mjs
