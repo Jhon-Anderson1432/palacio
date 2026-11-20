@@ -6,6 +6,7 @@ const PRIMARY_URL = process.env.PRIMARY_SUPABASE_URL
 const PRIMARY_KEY = process.env.PRIMARY_SERVICE_ROLE_KEY
 const BACKUP_URL  = process.env.BACKUP_SUPABASE_URL
 const BACKUP_KEY  = process.env.BACKUP_SERVICE_ROLE_KEY
+const SYNC_VISTAS = process.env.SYNC_VISTAS !== 'false'
 
 if (!PRIMARY_URL || !PRIMARY_KEY || !BACKUP_URL || !BACKUP_KEY) {
   console.error('Error: Faltan variables de entorno requeridas:')
@@ -206,6 +207,50 @@ function rewriteUrlsToPrimary(rows, fields = []) {
   return processed
 }
 
+// Fusión inteligente y segura de vistas (visitas) para evitar pérdida o sobrescritura regresiva en Principal
+function mergeVistasObras(sourceRows, destRows) {
+  if (!SYNC_VISTAS) {
+    console.log('  Sincronización de vistas desactivada (SYNC_VISTAS=false). Preservando vistas existentes de Principal.')
+    const destMap = new Map(destRows.map(r => [r.id, r]))
+    return sourceRows.map(row => {
+      const destRow = destMap.get(row.id)
+      return destRow ? { ...row, visitas: destRow.visitas ?? 0 } : row
+    })
+  }
+
+  console.log('  Analizando y sincronizando contador de vistas (visitas) hacia Principal...')
+  const destMap = new Map(destRows.map(r => [r.id, r]))
+  let obrasConNuevasVistas = 0
+  let vistasTransferidas = 0
+  let totalVistasPrincipal = 0
+
+  const merged = sourceRows.map(row => {
+    const destRow = destMap.get(row.id)
+    const backupVisitas = Math.max(0, parseInt(row.visitas, 10) || 0)
+    const primaryVisitas = destRow ? Math.max(0, parseInt(destRow.visitas, 10) || 0) : 0
+
+    // Regla no-regresiva: nunca reducimos vistas existentes en Principal
+    const finalVisitas = Math.max(primaryVisitas, backupVisitas)
+
+    if (finalVisitas > primaryVisitas) {
+      obrasConNuevasVistas++
+      vistasTransferidas += (finalVisitas - primaryVisitas)
+    }
+
+    totalVistasPrincipal += finalVisitas
+    return { ...row, visitas: finalVisitas }
+  })
+
+  if (obrasConNuevasVistas > 0) {
+    console.log(`  ✨ Vistas recuperadas: ${obrasConNuevasVistas} obras recibieron nuevas vistas desde Reserva (+${vistasTransferidas} vistas transferidas).`)
+  } else {
+    console.log('  ✨ Vistas: Todas las obras en Principal ya cuentan con el máximo de vistas al día.')
+  }
+  console.log(`  Total de vistas acumuladas en el catálogo de Principal: ${totalVistasPrincipal}`)
+
+  return merged
+}
+
 // Upsert aditivo hacia la DB Principal (NO se borra nada de la Principal)
 async function upsertBatchToPrimary(tableName, rows) {
   const BATCH_SIZE = 200
@@ -236,7 +281,13 @@ async function syncTableToPrimary(tableName, imageFields = [], orderCol = 'id') 
     return
   }
 
-  const processedRows = rewriteUrlsToPrimary(sourceRows, imageFields)
+  let processedRows = rewriteUrlsToPrimary(sourceRows, imageFields)
+
+  // Tratamiento inteligente de vistas para la tabla 'obras'
+  if (tableName === 'obras') {
+    processedRows = mergeVistasObras(processedRows, destRows)
+  }
+
   const { toUpsert, newCount, modifiedCount, skippedCount } = getChangedRows(processedRows, destRows)
 
   if (toUpsert.length === 0) {
@@ -333,6 +384,7 @@ async function main() {
   console.log('========================================================')
   console.log('FAILBACK: Recuperación DB Principal desde Reserva')
   console.log(`Dirección : Reserva (${BACKUP_URL}) -> Principal (${PRIMARY_URL})`)
+  console.log(`Sincronizar Vistas: ${SYNC_VISTAS ? 'ACTIVO (Math.max)' : 'INACTIVO'}`)
   console.log(`Fecha/Hora: ${new Date().toISOString()}`)
   console.log('========================================================')
 

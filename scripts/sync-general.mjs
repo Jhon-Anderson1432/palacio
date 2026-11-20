@@ -6,6 +6,7 @@ const PRIMARY_URL = process.env.PRIMARY_SUPABASE_URL
 const PRIMARY_KEY = process.env.PRIMARY_SERVICE_ROLE_KEY
 const BACKUP_URL  = process.env.BACKUP_SUPABASE_URL
 const BACKUP_KEY  = process.env.BACKUP_SERVICE_ROLE_KEY
+const SYNC_VISTAS = process.env.SYNC_VISTAS !== 'false'
 
 if (!PRIMARY_URL || !PRIMARY_KEY || !BACKUP_URL || !BACKUP_KEY) {
   console.error('Error: Faltan variables de entorno requeridas:')
@@ -216,6 +217,50 @@ function getChangedRows(sourceRows, destRows) {
   return { toUpsert, newCount, modifiedCount, skippedCount }
 }
 
+// Fusión inteligente y segura de vistas (visitas) para reflejarlas en Reserva sin pérdida
+function mergeVistasObras(sourceRows, destRows) {
+  if (!SYNC_VISTAS) {
+    console.log('  Sincronización de vistas desactivada (SYNC_VISTAS=false). Preservando vistas existentes de Reserva.')
+    const destMap = new Map(destRows.map(r => [r.id, r]))
+    return sourceRows.map(row => {
+      const destRow = destMap.get(row.id)
+      return destRow ? { ...row, visitas: destRow.visitas ?? 0 } : row
+    })
+  }
+
+  console.log('  Analizando y sincronizando contador de vistas (visitas) hacia Reserva...')
+  const destMap = new Map(destRows.map(r => [r.id, r]))
+  let obrasConNuevasVistas = 0
+  let vistasTransferidas = 0
+  let totalVistasReserva = 0
+
+  const merged = sourceRows.map(row => {
+    const destRow = destMap.get(row.id)
+    const primaryVisitas = Math.max(0, parseInt(row.visitas, 10) || 0)
+    const backupVisitas = destRow ? Math.max(0, parseInt(destRow.visitas, 10) || 0) : 0
+
+    // Regla no-regresiva: reflejamos el máximo de vistas en Reserva sin perder posibles vistas locales
+    const finalVisitas = Math.max(primaryVisitas, backupVisitas)
+
+    if (finalVisitas > backupVisitas) {
+      obrasConNuevasVistas++
+      vistasTransferidas += (finalVisitas - backupVisitas)
+    }
+
+    totalVistasReserva += finalVisitas
+    return { ...row, visitas: finalVisitas }
+  })
+
+  if (obrasConNuevasVistas > 0) {
+    console.log(`  ✨ Vistas reflejadas en Reserva: ${obrasConNuevasVistas} obras actualizaron sus vistas (+${vistasTransferidas} vistas transferidas).`)
+  } else {
+    console.log('  ✨ Vistas: Todas las obras en Reserva ya cuentan con el contador de vistas al día.')
+  }
+  console.log(`  Total de vistas acumuladas en el catálogo de Reserva: ${totalVistasReserva}`)
+
+  return merged
+}
+
 async function syncTable(tableName, imageFields = [], orderCol = 'id') {
   console.log(`\nSincronizando tabla: "${tableName}"...`)
 
@@ -225,7 +270,13 @@ async function syncTable(tableName, imageFields = [], orderCol = 'id') {
   ])
   console.log(`  Principal: ${sourceRows.length} | Reserva: ${destRows.length}`)
 
-  const processedRows = rewriteUrls(sourceRows, imageFields)
+  let processedRows = rewriteUrls(sourceRows, imageFields)
+
+  // Tratamiento inteligente de vistas para la tabla 'obras'
+  if (tableName === 'obras') {
+    processedRows = mergeVistasObras(processedRows, destRows)
+  }
+
   const { toUpsert, newCount, modifiedCount, skippedCount } = getChangedRows(processedRows, destRows)
 
   if (toUpsert.length === 0) {
@@ -323,6 +374,7 @@ async function main() {
   const startTime = Date.now()
   console.log('========================================================')
   console.log('Sincronización General Completa (Principal -> Reserva)')
+  console.log(`Sincronizar Vistas: ${SYNC_VISTAS ? 'ACTIVO (Math.max)' : 'INACTIVO'}`)
   console.log(`Fecha/Hora: ${new Date().toISOString()}`)
   console.log('========================================================')
 
