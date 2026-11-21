@@ -206,6 +206,41 @@ function rewriteUrlsToPrimary(rows, fields = []) {
   return processed
 }
 
+// Fusión inteligente y segura de vistas (visitas) para evitar pérdida o sobrescritura regresiva en Principal
+function mergeVistasObras(sourceRows, destRows) {
+  console.log('  Sincronizando automáticamente contador de vistas (visitas) hacia Principal...')
+  const destMap = new Map(destRows.map(r => [r.id, r]))
+  let obrasConNuevasVistas = 0
+  let vistasTransferidas = 0
+  let totalVistasPrincipal = 0
+
+  const merged = sourceRows.map(row => {
+    const destRow = destMap.get(row.id)
+    const backupVisitas = Math.max(0, parseInt(row.visitas, 10) || 0)
+    const primaryVisitas = destRow ? Math.max(0, parseInt(destRow.visitas, 10) || 0) : 0
+
+    // Regla no-regresiva: nunca reducimos vistas existentes en Principal
+    const finalVisitas = Math.max(primaryVisitas, backupVisitas)
+
+    if (finalVisitas > primaryVisitas) {
+      obrasConNuevasVistas++
+      vistasTransferidas += (finalVisitas - primaryVisitas)
+    }
+
+    totalVistasPrincipal += finalVisitas
+    return { ...row, visitas: finalVisitas }
+  })
+
+  if (obrasConNuevasVistas > 0) {
+    console.log(`  ✨ Vistas recuperadas: ${obrasConNuevasVistas} obras recibieron nuevas vistas desde Reserva (+${vistasTransferidas} vistas transferidas).`)
+  } else {
+    console.log('  ✨ Vistas: Todas las obras en Principal ya cuentan con el máximo de vistas al día.')
+  }
+  console.log(`  Total de vistas acumuladas en el catálogo de Principal: ${totalVistasPrincipal}`)
+
+  return merged
+}
+
 // Upsert aditivo hacia la DB Principal (NO se borra nada de la Principal)
 async function upsertBatchToPrimary(tableName, rows) {
   const BATCH_SIZE = 200
@@ -236,7 +271,13 @@ async function syncTableToPrimary(tableName, imageFields = [], orderCol = 'id') 
     return
   }
 
-  const processedRows = rewriteUrlsToPrimary(sourceRows, imageFields)
+  let processedRows = rewriteUrlsToPrimary(sourceRows, imageFields)
+
+  // Tratamiento inteligente de vistas para la tabla 'obras'
+  if (tableName === 'obras') {
+    processedRows = mergeVistasObras(processedRows, destRows)
+  }
+
   const { toUpsert, newCount, modifiedCount, skippedCount } = getChangedRows(processedRows, destRows)
 
   if (toUpsert.length === 0) {
