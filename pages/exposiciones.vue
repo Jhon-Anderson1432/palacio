@@ -831,12 +831,7 @@ const obrasProcesadas = computed(() => {
   }
 
   // Ordenamiento alfabético estricto A-Z por título
-  const ordenadas = [...filtradas].sort((a, b) => (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' }))
-
-  return ordenadas.map(o => {
-    const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean)
-    return { ...o, listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen'] }
-  })
+  return [...filtradas].sort((a, b) => (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' }))
 })
 
 // === 5. PAGINACIÓN NUMÉRICA CON SALTO (1 2 3 ... n) ===
@@ -881,7 +876,11 @@ const paginasVisibles = computed(() => {
 
 const obrasFiltradas = computed(() => {
   const inicio = (paginaActual.value - 1) * limitePorPagina
-  return obrasProcesadas.value.slice(inicio, inicio + limitePorPagina)
+  const paginaItems = obrasProcesadas.value.slice(inicio, inicio + limitePorPagina)
+  return paginaItems.map(o => {
+    const imgs = [o.imagen_1, o.imagen_2, o.imagen_3].filter(Boolean)
+    return { ...o, listaImagenes: imgs.length > 0 ? imgs : ['sin-imagen'] }
+  })
 })
 
 watch([filtroTipo, filtroArtista, filtroTecnica, filtroPrecio, searchQuery], () => {
@@ -1018,12 +1017,6 @@ html {
 </style>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-
-.font-serif {
-  font-family: 'Playfair Display', serif;
-}
-
 .obra-card {
   animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

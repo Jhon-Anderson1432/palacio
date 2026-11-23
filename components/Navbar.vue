@@ -195,6 +195,19 @@ watch(() => route.path, () => {
   dropdownAbierto.value = false
 })
 
+// Bloqueo de scroll en el body mientras el menú móvil está abierto
+watch(menuMovilAbierto, (abierto) => {
+  if (import.meta.client) {
+    document.body.style.overflow = abierto ? 'hidden' : ''
+  }
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) {
+    document.body.style.overflow = ''
+  }
+})
+
 // PROPS
 defineProps({
   ocultarBuscador: {
