@@ -95,33 +95,9 @@ export default defineNuxtConfig({
   },
 
   supabase: {
-    redirectOptions: {
-      // Ruta por defecto para usuarios no autenticados
-      login: '/login-meseras',
-      callback: '/confirm',
-      // Lista blanca: rutas que CUALQUIER persona puede visitar sin iniciar sesión
-      exclude: [
-        '/',
-        '/historia',
-        '/contactos',
-        '/contacto',
-        '/exposiciones',
-        '/DetalleObra/*',
-        '/homegastro',
-        '/gastronomia/*',
-        '/adminpanel02402110',
-        '/LoginAdmin',
-        '/loginadmin', // <--- SALVAVIDAS AGREGADO AQUÍ
-        '/terminal-pos',
-        '/login-meseras',
-        '/vigilante-scan',
-        '/proximamente',
-        '/faq',
-        '/preguntas-frecuentes',
-        '/eventos',
-        '/nuestros-eventos'
-      ]
-    }
+    // Desactivamos la redirección global automática de Supabase para que no secuestre las rutas 404.
+    // La protección de rutas privadas (/adminpanel02402110 y /terminal-pos) la maneja middleware/auth.global.js.
+    redirect: false
   },
 
   css: [
@@ -177,6 +153,7 @@ export default defineNuxtConfig({
         { rel: 'canonical', href: 'https://palacionacionalmedellin.com' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap' },
         { rel: 'icon', type: 'image/png', href: '/logon.png' }
       ],
       script: [

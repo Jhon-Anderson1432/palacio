@@ -10,6 +10,20 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        palacio: {
+          gold: '#D4AF37',
+          'gold-light': '#F3E5AB',
+          'gold-dark': '#B8972E',
+          bg: '#050505',
+          dark: '#0a0a0a',
+          card: '#111111',
+          border: 'rgba(212, 175, 55, 0.25)',
+        }
+      },
+      fontFamily: {
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+      },
       // AQUÍ ES DONDE SUCEDE LA MAGIA[cite: 15]
       keyframes: {
         'fade-in-up': {
