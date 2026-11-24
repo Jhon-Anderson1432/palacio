@@ -104,17 +104,8 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const dropdownOpen = ref(false)
-
 // ESTADO GLOBAL SSR NUXT 3
 const idiomaGlobal = useState('idiomaGlobal', () => 'es')
-
-const idiomas = [
-  { code: 'es', label: 'Español' },
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'ja', label: '日本語' }
-]
 
 const traducciones = {
   es: { subtitulo: 'Piso 5 • Gastronomía', descCafe: 'Cafetería Artesanal', descPescado: 'Restaurante & Bar', descSky: 'Cócteles de Autor' },
@@ -124,15 +115,6 @@ const traducciones = {
 }
 
 const t = computed(() => traducciones[idiomaGlobal.value] || traducciones.es)
-
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value
-}
-
-const seleccionarIdioma = (codigo) => {
-  idiomaGlobal.value = codigo
-  dropdownOpen.value = false
-}
 
 // === 2. SCHEMA LOCAL BUSINESS Y ARQUITECTURA BASE ===
 useHead({
