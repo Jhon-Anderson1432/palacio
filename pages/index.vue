@@ -100,7 +100,7 @@
                   {{ obtenerTituloObra(obra) }}
                 </h3>
                 <p class="text-xs text-neutral-400 font-light truncate mb-3">
-                  <span class="text-neutral-600 font-normal">{{ t.by }}</span> {{ obra.autor || 'Autor Anónimo' }}
+                  <span class="text-neutral-600 font-normal">{{ t.by }}</span> {{ obra.autor ? formatoTitulo(obra.autor) : 'Autor Anónimo' }}
                 </p>
               </div>
 
@@ -456,6 +456,8 @@
 </template>
 
 <script setup>
+import { formatoTitulo } from '~/utils/formatoTexto'
+
 definePageMeta({
   layout: false
 })
@@ -501,10 +503,10 @@ const { data: obrasHome } = await useAsyncData('obras-home-aleatorias', async ()
 
 // Función reactiva para obtener el título según el idioma global
 const obtenerTituloObra = (obra) => {
-  if (idiomaGlobal.value === 'en' && obra.titulo_en) return obra.titulo_en
-  if (idiomaGlobal.value === 'fr' && obra.titulo_fr) return obra.titulo_fr
-  if (idiomaGlobal.value === 'ja' && obra.titulo_ja) return obra.titulo_ja
-  return obra.titulo || 'Obra en Exhibición'
+  if (idiomaGlobal.value === 'en' && obra.titulo_en) return formatoTitulo(obra.titulo_en)
+  if (idiomaGlobal.value === 'fr' && obra.titulo_fr) return formatoTitulo(obra.titulo_fr)
+  if (idiomaGlobal.value === 'ja' && obra.titulo_ja) return obra.titulo_ja.trim()
+  return obra.titulo ? formatoTitulo(obra.titulo) : 'Obra en Exhibición'
 }
 
 // === 3. TRADUCCIONES EN 4 IDIOMAS ===

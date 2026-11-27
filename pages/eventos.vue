@@ -15,19 +15,6 @@
     <!-- 1. ENCABEZADO / HERO DE EVENTOS                          -->
     <!-- ======================================================== -->
     <header class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-6 pb-12 sm:pb-16 w-full">
-      
-      <!-- Migas de Pan (Breadcrumbs) -->
-      <nav aria-label="Migas de pan" class="flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest text-neutral-400 mb-6 font-medium">
-        <NuxtLink to="/" class="hover:text-[#D4AF37] transition-colors focus:outline-none focus:text-[#D4AF37]">{{ t.home }}</NuxtLink>
-        <span class="text-neutral-600">/</span>
-        <span class="text-[#D4AF37]">{{ t.breadcrumb }}</span>
-      </nav>
-
-      <!-- Badge de Sección -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-[11px] sm:text-xs uppercase tracking-[0.25em] font-bold mb-6 backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.15)] animate-fade-in">
-        <span class="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping"></span>
-        <span>✨ {{ t.heroBadge }}</span>
-      </div>
 
       <!-- Título Principal -->
       <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-light tracking-wide text-white uppercase mb-6 leading-tight drop-shadow-md">
@@ -293,9 +280,6 @@ const idiomaGlobal = useState('idiomaGlobal', () => 'es')
 // ========================================================
 const TRADUCCIONES = {
   es: {
-    home: 'Inicio',
-    breadcrumb: 'Eventos',
-    heroBadge: 'Agenda Cultural Oficial',
     heroTitle: 'Nuestros Eventos',
     heroSubtitle: 'Descubre veladas inolvidables donde convergen el arte contemporáneo, homenajes al mérito cultural, música en vivo y gastronomía en el emblemático Palacio Nacional de Medellín.',
     nextBadge: 'Próxima Edición Confirmada',
@@ -340,9 +324,6 @@ const TRADUCCIONES = {
     ctaContactBtn: 'Formulario de Contacto'
   },
   en: {
-    home: 'Home',
-    breadcrumb: 'Events',
-    heroBadge: 'Official Cultural Agenda',
     heroTitle: 'Our Events',
     heroSubtitle: 'Discover unforgettable evenings where contemporary fine art, cultural honors, live music, and rooftop dining merge in the historic heart of Medellin.',
     nextBadge: 'Next Edition Confirmed',
@@ -387,9 +368,6 @@ const TRADUCCIONES = {
     ctaContactBtn: 'Contact Form'
   },
   fr: {
-    home: 'Accueil',
-    breadcrumb: 'Événements',
-    heroBadge: 'Agenda Culturel Officiel',
     heroTitle: 'Nos Événements',
     heroSubtitle: 'Découvrez des soirées inoubliables où convergent l\'art contemporain, les hommages culturels, la musique en direct et la haute gastronomie au cœur historique de Medellín.',
     nextBadge: 'Prochaine Édition Confirmée',
@@ -434,9 +412,6 @@ const TRADUCCIONES = {
     ctaContactBtn: 'Formulaire de Contact'
   },
   ja: {
-    home: 'ホーム',
-    breadcrumb: 'イベント',
-    heroBadge: '公式文化イベント情報',
     heroTitle: '注目のイベント',
     heroSubtitle: '現代美術、文化功労者への顕彰、生演奏、そして美食が歴史的建造物で交差するメデジン屈指の特別な夜をお楽しみください。',
     nextBadge: '次回開催日 確定',

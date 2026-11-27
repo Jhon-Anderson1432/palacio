@@ -241,6 +241,8 @@
 </template>
 
 <script setup>
+import { formatoTitulo, formatoParrafo } from '~/utils/formatoTexto'
+
 const props = defineProps({
   rolUsuario: {
     type: String,
@@ -411,49 +413,6 @@ const obtenerNombreSubcategoria = (id) => {
   ]
   const sub = todasSubcategorias.find(s => s.id === id)
   return sub ? sub.nombre : id
-}
-
-const formatoTitulo = (texto) => {
-  if (typeof texto !== 'string' || !texto) return '';
-  const menores = ['de', 'del', 'con', 'y', 'e', 'o', 'u', 'el', 'la', 'los', 'las', 'en', 'por', 'un', 'una', 'unos', 'unas', 'a', 'al', 'with', 'and', 'of', 'in', 'the', 'et', 'au', 'aux', 'à'];
-  return texto
-    .trim()
-    .toLowerCase()
-    .split(/\s+/)
-    .map((word, index, arr) => {
-      const match = word.match(/^([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)(.*?)([^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9]*)$/i);
-      if (!match) return word;
-
-      const leading = match[1];
-      const core = match[2];
-      const trailing = match[3];
-
-      if (!core) return word;
-
-      const tieneSimboloApertura = /[“"«‘'(\[{¿¡]/.test(leading);
-      const sigueADosPuntos = index > 0 && /:$/.test(arr[index - 1]);
-
-      if (index > 0 && !tieneSimboloApertura && !sigueADosPuntos && menores.includes(core)) {
-        return leading + core + trailing;
-      }
-
-      const coreFormateado = core
-        .split(/([-\'])/)
-        .map((part) => {
-          if (part === '-' || part === "'") return part;
-          return part.charAt(0).toUpperCase() + part.slice(1);
-        })
-        .join('');
-
-      return leading + coreFormateado + trailing;
-    })
-    .join(' ');
-}
-
-const formatoParrafo = (texto) => {
-  if (typeof texto !== 'string' || !texto) return '';
-  const t = texto.trim();
-  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 const openGastroForm = (item = null) => {
