@@ -127,18 +127,18 @@
         </figure>
         
         <div class="text-center space-y-3 mb-8 mt-8">
-          <h1 itemprop="name" class="text-3xl md:text-5xl font-serif text-white leading-tight lowercase capitalize drop-shadow-2xl">
+          <h1 itemprop="name" class="text-3xl md:text-5xl font-serif text-white leading-tight drop-shadow-2xl">
             {{ tituloPrincipal }}
           </h1>
-          <p itemprop="creator" itemscope itemtype="https://schema.org/Person" class="text-xl md:text-2xl text-[#D4AF37] pt-2 font-serif lowercase capitalize tracking-wider drop-shadow-md">
-            <span itemprop="name">{{ obra.autor }}</span>
+          <p itemprop="creator" itemscope itemtype="https://schema.org/Person" class="text-xl md:text-2xl text-[#D4AF37] pt-2 font-serif tracking-wider drop-shadow-md">
+            <span itemprop="name">{{ autorPrincipal }}</span>
           </p>
         </div>
         
         <div class="max-w-sm mx-auto space-y-4 mb-10 border-t border-white/10 pt-8 text-center bg-white/[0.03] p-8 rounded-3xl backdrop-blur-md shadow-inner">
           <p class="text-sm flex justify-between border-b border-white/5 pb-3 transition-colors hover:text-[#D4AF37]">
             <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.techniqueLabel }}</span>
-            <span itemprop="artMedium" class="text-white lowercase capitalize font-medium">{{ tecnicaPrincipal }}</span>
+            <span itemprop="artMedium" class="text-white font-medium">{{ tecnicaPrincipal }}</span>
           </p>
           <p class="text-sm flex justify-between border-b border-white/5 pb-3 transition-colors hover:text-[#D4AF37]">
             <span class="text-neutral-400 font-light tracking-widest uppercase text-xs">{{ t.dimensionsLabel }}</span>
@@ -276,6 +276,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
+import { formatoTitulo } from '~/utils/formatoTexto';
 
 const modules = [Autoplay, EffectFade];
 const route = useRoute();
@@ -396,18 +397,23 @@ watch(lightboxAbierto, (abierto) => {
 
 const tituloPrincipal = computed(() => {
   if (!obra.value) return '';
-  if (idiomaGlobal.value === 'en' && obra.value.titulo_en) return obra.value.titulo_en;
-  if (idiomaGlobal.value === 'fr' && obra.value.titulo_fr) return obra.value.titulo_fr;
-  if (idiomaGlobal.value === 'ja' && obra.value.titulo_ja) return obra.value.titulo_ja;
-  return obra.value.titulo;
+  if (idiomaGlobal.value === 'en' && obra.value.titulo_en) return formatoTitulo(obra.value.titulo_en);
+  if (idiomaGlobal.value === 'fr' && obra.value.titulo_fr) return formatoTitulo(obra.value.titulo_fr);
+  if (idiomaGlobal.value === 'ja' && obra.value.titulo_ja) return obra.value.titulo_ja.trim();
+  return formatoTitulo(obra.value.titulo);
+})
+
+const autorPrincipal = computed(() => {
+  if (!obra.value) return '';
+  return formatoTitulo(obra.value.autor);
 })
 
 const tecnicaPrincipal = computed(() => {
   if (!obra.value) return '';
-  if (idiomaGlobal.value === 'en' && obra.value.medidas_en) return obra.value.medidas_en;
-  if (idiomaGlobal.value === 'fr' && obra.value.medidas_fr) return obra.value.medidas_fr;
-  if (idiomaGlobal.value === 'ja' && obra.value.medidas_ja) return obra.value.medidas_ja;
-  return obra.value.tecnica;
+  if (idiomaGlobal.value === 'en' && obra.value.medidas_en) return formatoTitulo(obra.value.medidas_en);
+  if (idiomaGlobal.value === 'fr' && obra.value.medidas_fr) return formatoTitulo(obra.value.medidas_fr);
+  if (idiomaGlobal.value === 'ja' && obra.value.medidas_ja) return obra.value.medidas_ja.trim();
+  return formatoTitulo(obra.value.tecnica);
 })
 
 // === SEO MAESTRO PARA TENTÁCULOS (ELIMINACIÓN DE GOOGLE + WHATSAPP PERFECTO) ===
@@ -415,13 +421,13 @@ useSeoMeta({
   // Título elegante en el navegador: "Nombre de Obra | Palacio Nacional"
   title: () => obra.value ? `${tituloPrincipal.value} | Palacio Nacional` : 'Cargando Obra...',
   
-  description: () => obra.value ? `Obra: ${tituloPrincipal.value} creada por ${obra.value.autor}. Técnica: ${tecnicaPrincipal.value}.` : 'Detalle de la obra de arte.',
+  description: () => obra.value ? `Obra: ${tituloPrincipal.value} creada por ${autorPrincipal.value}. Técnica: ${tecnicaPrincipal.value}.` : 'Detalle de la obra de arte.',
   
   // LA CLAVE MAGISTRAL: Le ordena a Google desindexar y eliminar esta página de sus resultados
   robots: 'noindex, nofollow',
   
   // Open Graph optimizado para que al compartir el link en WhatsApp se vea perfecto
-  ogTitle: () => obra.value ? `${tituloPrincipal.value} de ${obra.value.autor}` : 'Obra de Arte',
+  ogTitle: () => obra.value ? `${tituloPrincipal.value} de ${autorPrincipal.value}` : 'Obra de Arte',
   ogDescription: () => obra.value ? `Descubre los detalles, medidas y precio de esta fascinante obra en la Galería del Palacio Nacional.` : 'Explora nuestra galería.',
   ogImage: () => obra.value?.imagen_1 && obra.value.imagen_1 !== 'sin-imagen' ? obra.value.imagen_1 : 'https://palacionacionalmedellin.com/logon.png',
   twitterCard: 'summary_large_image',
@@ -441,13 +447,13 @@ useHead(() => {
         innerHTML: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "VisualArtwork",
-          "name": obra.value.titulo,
+          "name": tituloPrincipal.value,
           "image": obra.value.imagen_1,
           "creator": {
             "@type": "Person",
-            "name": obra.value.autor
+            "name": autorPrincipal.value
           },
-          "artMedium": obra.value.tecnica,
+          "artMedium": tecnicaPrincipal.value,
           "artDimensions": obra.value.medidas,
           "offers": {
             "@type": "Offer",
@@ -467,7 +473,7 @@ const preguntarPorWhatsApp = () => {
   const dominio = typeof window !== 'undefined' ? window.location.origin : 'https://palacionacionalmedellin.com'
   const urlDetalle = `${dominio}/DetalleObra/${obra.value.id}`
   const precioFormat = isNaN(obra.value.precio) ? obra.value.precio : '$' + Number(obra.value.precio).toLocaleString('es-CO') + ' USD'
-  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${obra.value.titulo}\n*Autor:* ${obra.value.autor}\n*Precio:* ${precioFormat}\n\n*Enlace:* ${urlDetalle}`
+  const texto = `Hola Palacio, estoy interesado en adquirir esta obra:\n\n*Título:* ${tituloPrincipal.value}\n*Autor:* ${autorPrincipal.value}\n*Precio:* ${precioFormat}\n\n*Enlace:* ${urlDetalle}`
   const urlWa = `https://wa.me/573116390177?text=${encodeURIComponent(texto)}`
   if (typeof window !== 'undefined') {
     window.open(urlWa, '_blank')

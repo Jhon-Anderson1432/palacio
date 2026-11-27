@@ -55,14 +55,14 @@
             {{ obtenerTitulo(obra) }}
           </h2>
           <p itemprop="creator" class="text-xs uppercase tracking-widest text-neutral-400 font-light mb-6">
-            {{ t.by }} <span class="text-white font-medium">{{ obra.autor }}</span>
+            {{ t.by }} <span class="text-white font-medium">{{ formatoTitulo(obra.autor) }}</span>
           </p>
 
           <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/10 mb-6">
             
             <div class="text-left">
               <span class="text-[9px] uppercase text-[#D4AF37] tracking-[0.2em] font-bold block mb-1.5">{{ t.techniqueLabel }}</span>
-              <p itemprop="artMedium" class="text-xs text-neutral-300 font-medium line-clamp-2 leading-relaxed lowercase">{{ obtenerTecnica(obra) }}</p>
+              <p itemprop="artMedium" class="text-xs text-neutral-300 font-medium line-clamp-2 leading-relaxed">{{ obtenerTecnica(obra) }}</p>
             </div>
 
             <div class="text-left border-l border-white/10 pl-4">
@@ -99,6 +99,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
+import { formatoTitulo } from '~/utils/formatoTexto';
 
 const props = defineProps({
   obras: {
@@ -122,17 +123,17 @@ const props = defineProps({
 const modules = [Autoplay, EffectFade];
 
 const obtenerTitulo = (obra) => {
-  if (props.idiomaGlobal === 'en' && obra.titulo_en) return obra.titulo_en;
-  if (props.idiomaGlobal === 'fr' && obra.titulo_fr) return obra.titulo_fr;
-  if (props.idiomaGlobal === 'ja' && obra.titulo_ja) return obra.titulo_ja;
-  return obra.titulo; 
+  if (props.idiomaGlobal === 'en' && obra.titulo_en) return formatoTitulo(obra.titulo_en);
+  if (props.idiomaGlobal === 'fr' && obra.titulo_fr) return formatoTitulo(obra.titulo_fr);
+  if (props.idiomaGlobal === 'ja' && obra.titulo_ja) return obra.titulo_ja.trim();
+  return formatoTitulo(obra.titulo); 
 }
 
 const obtenerTecnica = (obra) => {
-  if (props.idiomaGlobal === 'en' && obra.tecnica_en) return obra.tecnica_en;
-  if (props.idiomaGlobal === 'fr' && obra.tecnica_fr) return obra.tecnica_fr;
-  if (props.idiomaGlobal === 'ja' && obra.tecnica_ja) return obra.tecnica_ja;
-  return obra.tecnica; 
+  if (props.idiomaGlobal === 'en' && obra.tecnica_en) return formatoTitulo(obra.tecnica_en);
+  if (props.idiomaGlobal === 'fr' && obra.tecnica_fr) return formatoTitulo(obra.tecnica_fr);
+  if (props.idiomaGlobal === 'ja' && obra.tecnica_ja) return obra.tecnica_ja.trim();
+  return formatoTitulo(obra.tecnica); 
 }
 </script>
 
